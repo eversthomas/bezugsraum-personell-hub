@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Mobil – Start</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@200..800&amp;display=swap">
+<style>
+body{margin:0}
+.ph{--bg:#F4F5F7;--surface:#FFFFFF;--surface2:#ECEEF2;--line:#E2E5EA;--line2:#EEF0F3;--ink:#16181D;--ink2:#3F444D;--muted:#5B616E;--border:#D5D9E0;--accent:#16181D;--accent-fg:#FFFFFF;--seg:#E7E9EE;--seg-on:#FFFFFF;--now:#DC2626;--now-text:#B91C1C;--ok-bg:#E2F2E7;--ok-fg:#14532D;--info-bg:#EEF3FE;--info-fg:#1E3A8A;--danger:#B91C1C;--danger-line:#F3C4C4;--scrim:rgba(22,24,29,0.45);--toast:#16181D;--toast-fg:#FFFFFF;--toast-link:#93C5FD;--ph:#D9DDE3}
+.ph.dark{--bg:#111317;--surface:#1A1D22;--surface2:#262A31;--line:#2C3138;--line2:#252A31;--ink:#ECEEF1;--ink2:#C3C8D0;--muted:#9AA1AC;--border:#3A404A;--accent:#ECEEF1;--accent-fg:#111317;--seg:#23272E;--seg-on:#3A414B;--now:#F05252;--now-text:#F87171;--ok-bg:#12301F;--ok-fg:#86EFAC;--info-bg:#1C2741;--info-fg:#BFD3FB;--danger:#F87171;--danger-line:#5A2626;--scrim:rgba(0,0,0,0.6);--toast:#ECEEF1;--toast-fg:#111317;--toast-link:#1D4ED8;--ph:#2C3138}
+.ph button,.ph input,.ph textarea{font:inherit;color:inherit}
+.ph input::placeholder,.ph textarea::placeholder{color:var(--muted)}
+.ph .pr:active{transform:scale(0.98)}
+.ph .noscroll{scrollbar-width:none}
+.ph .noscroll::-webkit-scrollbar{display:none}
+.ph button:focus-visible,.ph textarea:focus-visible,.ph input:focus-visible{outline:2px solid #3B82F6;outline-offset:2px}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--bg); font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; color: var(--ink)">
+
+  <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 76px; overflow-y: auto; box-sizing: border-box; padding: 18px 18px 28px">
+
+    <sc-if value="{{isHome}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <span style="display: flex; align-items: center; gap: 8px">
+            <button type="button" onClick="{{openMenu}}" aria-label="Menü öffnen" style="width: 40px; height: 40px; margin-left: -8px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; background: transparent; cursor: pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+            <span style="font-size: 19px; font-weight: 700; letter-spacing: -0.01em">Personal Hub</span>
+          </span>
+          <button type="button" onClick="{{cycleTheme}}" aria-label="{{themeAria}}" style="display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); font-size: 13px; font-weight: 500; cursor: pointer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"></path></svg>{{themeLabel}}</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 15px; font-weight: 500; color: var(--ink2)">Dienstag, 3. November</span>
+          <div style="display: flex; align-items: center; gap: 14px">
+            <span style="font-size: 52px; font-weight: 300; line-height: 1.05; letter-spacing: -0.03em; font-variant-numeric: tabular-nums">12:35</span>
+            <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 13px">
+              <span style="color: var(--muted)">Nächster Termin in 25 Min</span>
+              <span style="display: flex; align-items: center; gap: 6px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"><span aria-hidden="true" style="{{nextDot}}"></span>13:00 Betriebsratssitzung</span>
+            </span>
+          </div>
+        </div>
+
+        <form onSubmit="{{quickSave}}" style="display: flex; gap: 8px">
+          <label for="q" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Schnell erfassen</label>
+          <input id="q" type="text" value="{{quick}}" onChange="{{onQuick}}" placeholder="Idee, Aufgabe, Link …" autocomplete="off" style="flex: 1; min-width: 0; height: 50px; box-sizing: border-box; padding: 0 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); font-size: 16px">
+          <button type="submit" style="height: 50px; padding: 0 16px; border: 0; border-radius: 14px; background: var(--accent); color: var(--accent-fg); font-size: 15px; font-weight: 600; cursor: pointer">Sichern</button>
+        </form>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <button type="button" class="pr" onClick="{{openVoice}}" style="height: 72px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 16px; background: var(--surface2); font-size: 15px; font-weight: 600; cursor: pointer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>Sprechen</button>
+          <button type="button" class="pr" onClick="{{openPhoto}}" style="height: 72px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 16px; background: var(--surface2); font-size: 15px; font-weight: 600; cursor: pointer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>Foto</button>
+        </div>
+
+        <div class="noscroll" role="group" aria-label="Kalender ein- und ausblenden" style="display: flex; gap: 8px; overflow-x: auto; margin: 4px -18px 0; padding: 0 18px">
+          <sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+            <button type="button" onClick="{{c.toggle}}" aria-pressed="{{c.pressed}}" style="flex: 0 0 auto; display: flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 13px; border: 1px solid; border-radius: 999px; font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer; {{c.chipStyle}}"><span aria-hidden="true" style="{{c.dotStyle}}"></span>{{c.name}}</button>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
+          <div role="group" aria-label="Ansicht" style="display: flex; padding: 3px; border-radius: 10px; background: var(--seg)">
+            <button type="button" onClick="{{setDay}}" aria-pressed="{{dayPressed}}" style="min-height: 34px; padding: 0 16px; border: 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; {{dayBtn}}">Tag</button>
+            <button type="button" onClick="{{setList}}" aria-pressed="{{listPressed}}" style="min-height: 34px; padding: 0 16px; border: 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; {{listBtn}}">Liste</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 2px">
+            <button type="button" onClick="{{prev}}" disabled="{{noPrev}}" aria-label="Vorheriger Tag" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; background: transparent; cursor: pointer; {{prevStyle}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+            <button type="button" onClick="{{goToday}}" style="min-height: 40px; padding: 0 6px; border: 0; background: transparent; font-size: 14px; font-weight: 600; cursor: pointer">{{navLabel}}</button>
+            <button type="button" onClick="{{next}}" disabled="{{noNext}}" aria-label="Nächster Tag" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; background: transparent; cursor: pointer; {{nextStyle}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+          </div>
+        </div>
+
+        <sc-if value="{{isDayView}}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{hasAllDay}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-wrap: wrap; gap: 6px">
+              <sc-for list="{{allDay}}" as="a" hint-placeholder-count="1">
+                <span style="display: flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 6px; font-size: 13px; {{a.chipStyle}}"><span aria-hidden="true" style="{{a.dotStyle}}"></span>{{a.t}}</span>
+              </sc-for>
+            </div>
+          </sc-if>
+          <div style="position: relative; height: 644px; margin-top: 10px; background: var(--surface); border-radius: 14px; padding: 0">
+            <sc-for list="{{hours}}" as="h" hint-placeholder-count="15">
+              <div aria-hidden="true" style="position: absolute; left: 10px; right: 10px; height: 0; border-top: 1px solid var(--line2); {{h.pos}}">
+                <span style="position: absolute; left: 0; top: -9px; padding-right: 6px; background: var(--surface); font-variant-numeric: tabular-nums; font-size: 11px; color: var(--muted)">{{h.label}}</span>
+              </div>
+            </sc-for>
+            <sc-for list="{{timed}}" as="ev" hint-placeholder-count="5">
+              <button type="button" onClick="{{ev.pick}}" aria-label="{{ev.aria}}" style="position: absolute; left: 58px; right: 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 1px; padding: 4px 10px 4px 12px; border: 1.5px solid; border-radius: 8px; text-align: left; overflow: hidden; cursor: pointer; {{ev.pos}}">
+                <span style="font-size: 14px; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%">{{ev.t}}</span>
+                <sc-if value="{{ev.full}}" hint-placeholder-val="{{ true }}">
+                  <span style="font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ink2)">{{ev.time}}</span>
+                </sc-if>
+              </button>
+            </sc-for>
+            <sc-if value="{{showNow}}" hint-placeholder-val="{{ true }}">
+              <div aria-hidden="true" style="position: absolute; left: 50px; right: 10px; height: 0; border-top: 2px solid var(--now); {{nowPos}}">
+                <span style="position: absolute; left: -5px; top: -6px; width: 10px; height: 10px; border-radius: 50%; background: var(--now)"></span>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isListView}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 14px">
+            <sc-for list="{{days}}" as="d" hint-placeholder-count="4">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <span style="font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em">{{d.label}}</span>
+                <sc-for list="{{d.events}}" as="e" hint-placeholder-count="2">
+                  <button type="button" onClick="{{e.pick}}" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 14px; border: 1.5px solid; border-radius: 12px; text-align: left; cursor: pointer; {{e.rowStyle}}">
+                    <span style="width: 48px; flex: 0 0 48px; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 500">{{e.time}}</span>
+                    <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                      <span style="font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{e.t}}</span>
+                      <span style="font-size: 12px; color: var(--ink2)">{{e.loc}}</span>
+                    </span>
+                  </button>
+                </sc-for>
+                <sc-if value="{{d.empty}}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 13px; color: var(--muted)">keine Termine</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isInbox}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div>
+          <h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.015em">Inbox</h1>
+          <p style="margin: 4px 0 0; font-size: 14px; color: var(--muted)">Antippen, um einen Eintrag einzusortieren.</p>
+        </div>
+        <sc-for list="{{inbox}}" as="i" hint-placeholder-count="3">
+          <button type="button" class="pr" onClick="{{i.open}}" style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); text-align: left; cursor: pointer">
+            <span aria-hidden="true" style="flex: 0 0 36px; width: 36px; height: 36px; border-radius: 10px; background: var(--surface2); display: flex; align-items: center; justify-content: center">
+              <sc-if value="{{i.isText}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></sc-if>
+              <sc-if value="{{i.isVoice}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></sc-if>
+              <sc-if value="{{i.isPhoto}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></sc-if>
+              <sc-if value="{{i.isLink}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1"></path><path d="M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"></path></svg></sc-if>
+            </span>
+            <span style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+              <span style="font-size: 15px; line-height: 1.4">{{i.text}}</span>
+              <span style="font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted)">{{i.meta}}</span>
+            </span>
+          </button>
+        </sc-for>
+        <sc-if value="{{inboxEmpty}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 40px 20px; text-align: center; border: 1px dashed var(--border); border-radius: 14px">
+            <p style="margin: 0; font-size: 16px; font-weight: 600">Alles sortiert.</p>
+            <p style="margin: 6px 0 0; font-size: 14px; color: var(--muted)">Neue Gedanken landen hier, bis du Zeit zum Einordnen hast.</p>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isTasks}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <h1 style="margin: 0 0 4px; font-size: 26px; font-weight: 600; letter-spacing: -0.015em">Aufgaben</h1>
+        <sc-for list="{{tasks}}" as="t" hint-placeholder-count="4">
+          <label style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; cursor: pointer">
+            <input type="checkbox" checked="{{t.done}}" onChange="{{t.toggle}}" style="width: 22px; height: 22px; margin: 0; accent-color: #3B82F6; flex: 0 0 22px">
+            <span style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+              <span style="font-size: 15px; line-height: 1.4; {{t.textStyle}}">{{t.title}}</span>
+              <span style="display: flex; gap: 8px; font-size: 12px">
+                <span style="padding: 1px 7px; border-radius: 4px; background: var(--surface2); color: var(--ink2)">{{t.ctx}}</span>
+                <span style="{{t.dueStyle}}">{{t.due}}</span>
+              </span>
+            </span>
+          </label>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isNotes}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <h1 style="margin: 0 0 4px; font-size: 26px; font-weight: 600; letter-spacing: -0.015em">Notizen</h1>
+        <sc-for list="{{notes}}" as="n" hint-placeholder-count="2">
+          <article style="display: flex; flex-direction: column; gap: 8px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px">
+            <sc-if value="{{n.isPhoto}}" hint-placeholder-val="{{ false }}">
+              <div aria-hidden="true" style="height: 120px; border-radius: 10px; background: var(--ph); display: flex; align-items: center; justify-content: center; color: var(--muted)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.6"></circle><path d="M21 16l-5-5-8 8"></path></svg></div>
+            </sc-if>
+            <span style="font-size: 15px; line-height: 1.4">{{n.text}}</span>
+            <span style="display: flex; gap: 8px; font-size: 12px; color: var(--muted)">
+              <span style="padding: 1px 7px; border-radius: 4px; background: var(--surface2); color: var(--ink2)">{{n.ctx}}</span>{{n.when}}</span>
+          </article>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: absolute; left: 18px; right: 18px; bottom: 92px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 12px; background: var(--toast); color: var(--toast-fg); font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.25)">
+      <span>{{toast}}</span>
+      <sc-if value="{{canUndo}}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{undo}}" style="min-height: 36px; padding: 0 8px; border: 0; background: transparent; color: var(--toast-link); font-size: 14px; font-weight: 600; cursor: pointer">Rückgängig</button>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <nav aria-label="Hauptnavigation" style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; box-sizing: border-box; padding: 6px 8px 10px; background: var(--surface); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px">
+    <button type="button" onClick="{{goHome}}" aria-current="{{homeCur}}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 0; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; {{navHome}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"></path></svg>Start</button>
+    <button type="button" onClick="{{goInbox}}" aria-current="{{inboxCur}}" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 0; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; {{navInbox}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13l3-8h12l3 8v6H3z"></path><path d="M3 13h5l1 3h6l1-3h5"></path></svg>Inbox
+      <sc-if value="{{hasInbox}}" hint-placeholder-val="{{ true }}"><span style="position: absolute; top: 4px; right: 22px; min-width: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: var(--now); color: #FFFFFF; font-variant-numeric: tabular-nums; font-size: 11px; line-height: 18px; text-align: center">{{inboxCount}}</span></sc-if>
+    </button>
+    <button type="button" onClick="{{goTasks}}" aria-current="{{tasksCur}}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 0; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; {{navTasks}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M8 12l3 3 5-6"></path></svg>Aufgaben</button>
+    <button type="button" onClick="{{goNotes}}" aria-current="{{notesCur}}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 0; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; {{navNotes}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"></path><path d="M9 12h7M9 16h5"></path></svg>Notizen</button>
+  </nav>
+
+  <sc-if value="{{hasComposer}}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-label="{{composerTitle}}" style="position: absolute; inset: 0; background: var(--surface); display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 12px; border-bottom: 1px solid var(--line2)">
+        <button type="button" onClick="{{cancel}}" style="min-height: 44px; padding: 0 10px; border: 0; background: transparent; font-size: 15px; cursor: pointer">Abbrechen</button>
+        <span style="font-size: 16px; font-weight: 600">{{composerTitle}}</span>
+        <button type="button" onClick="{{save}}" style="min-height: 44px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--accent); color: var(--accent-fg); font-size: 15px; font-weight: 600; cursor: pointer">Sichern</button>
+      </div>
+      <div style="flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <sc-if value="{{isPhotoComposer}}" hint-placeholder-val="{{ false }}">
+          <div role="img" aria-label="Aufgenommenes Foto (Beispiel)" style="height: 300px; border-radius: 14px; background: var(--ph); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--ink2)">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.6"></circle><path d="M21 16l-5-5-8 8"></path></svg>
+            <span style="font-size: 13px">Foto aus der Kamera</span>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px">
+            <span style="padding: 4px 9px; border-radius: 999px; background: var(--ok-bg); color: var(--ok-fg)">Standort entfernt</span>
+            <span style="padding: 4px 9px; border-radius: 999px; background: var(--surface2); color: var(--ink2)">verkleinert auf 1600 px</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{isVoiceComposer}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 12px; background: var(--info-bg); color: var(--info-fg)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: 0 0 22px"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+            <span style="font-size: 14px; line-height: 1.45">Tippe auf das Mikrofon deiner Tastatur und sprich. Der Text erscheint hier, du kannst ihn danach korrigieren.</span>
+          </div>
+          <button type="button" onClick="{{dictate}}" style="align-self: flex-start; min-height: 40px; padding: 0 14px; border: 1px dashed var(--border); border-radius: 10px; background: transparent; font-size: 13px; color: var(--ink2); cursor: pointer">Prototyp: Diktat simulieren</button>
+        </sc-if>
+        <textarea value="{{draft}}" onChange="{{onDraft}}" placeholder="{{placeholder}}" aria-label="Text" style="flex: 1; min-height: 160px; box-sizing: border-box; padding: 4px 2px; border: 0; resize: none; font-size: 18px; line-height: 1.5; background: transparent"></textarea>
+        <p style="margin: 0; font-size: 12px; color: var(--muted)">Landet in der Inbox. Einsortieren kannst du später.</p>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasSort}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim); display: flex; flex-direction: column; justify-content: flex-end">
+      <button type="button" onClick="{{closeSort}}" aria-label="Schließen" style="flex: 1; border: 0; background: transparent; cursor: pointer"></button>
+      <div role="dialog" aria-label="Eintrag einsortieren" style="background: var(--surface); border-radius: 20px 20px 0 0; padding: 10px 18px 22px; display: flex; flex-direction: column; gap: 16px">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: var(--border)"></span>
+        <p style="margin: 0; font-size: 16px; line-height: 1.45">{{sortText}}</p>
+        <div role="group" aria-label="Einsortieren als" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+          <button type="button" onClick="{{asTask}}" aria-pressed="{{taskPressed}}" style="min-height: 48px; border: 1.5px solid; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; {{taskBtn}}">Aufgabe</button>
+          <button type="button" onClick="{{asNote}}" aria-pressed="{{notePressed}}" style="min-height: 48px; border: 1.5px solid; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; {{noteBtn}}">Notiz</button>
+          <button type="button" onClick="{{del}}" style="min-height: 48px; border: 1.5px solid var(--danger-line); border-radius: 12px; background: transparent; color: var(--danger); font-size: 14px; font-weight: 600; cursor: pointer">Löschen</button>
+        </div>
+        <sc-if value="{{hasMode}}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{isTaskMode}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <span style="font-size: 13px; font-weight: 600">Fällig</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                <sc-for list="{{dues}}" as="d" hint-placeholder-count="4">
+                  <button type="button" onClick="{{d.pick}}" aria-pressed="{{d.pressed}}" style="min-height: 38px; padding: 0 14px; border: 1px solid; border-radius: 999px; font-size: 14px; cursor: pointer; {{d.style}}">{{d.label}}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 13px; font-weight: 600">Kontext</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{ctxs}}" as="c" hint-placeholder-count="5">
+                <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 38px; padding: 0 14px; border: 1px solid; border-radius: 999px; font-size: 14px; cursor: pointer; {{c.style}}">{{c.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+          <button type="button" onClick="{{confirm}}" style="min-height: 52px; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-fg); font-size: 16px; font-weight: 600; cursor: pointer">{{confirmLabel}}</button>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; display: flex">
+      <div role="dialog" aria-label="Menü" style="width: 300px; height: 100%; box-sizing: border-box; padding: 18px 14px 20px; background: var(--surface); box-shadow: 8px 0 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 18px; overflow-y: auto">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 6px">
+          <span style="font-size: 18px; font-weight: 700">Personal Hub</span>
+          <button type="button" onClick="{{closeMenu}}" aria-label="Menü schließen" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; background: var(--surface2); cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="padding: 0 6px 6px; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em">Schnellzugriff</span>
+          <sc-for list="{{links}}" as="l" hint-placeholder-count="6">
+            <a href="#" title="{{l.url}}" style="display: flex; align-items: center; gap: 12px; min-height: 48px; box-sizing: border-box; padding: 4px 6px; border-radius: 10px; color: var(--ink); text-decoration: none; font-size: 16px">
+              <span aria-hidden="true" style="width: 28px; height: 28px; flex: 0 0 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #FFFFFF; {{l.badge}}">{{l.initial}}</span>
+              <span style="flex: 1">{{l.label}}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--muted)"><path d="M14 5h5v5M19 5l-8 8M18 14v5H5V6h5"></path></svg>
+            </a>
+          </sc-for>
+        </div>
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding-top: 12px; border-top: 1px solid var(--line2)">
+          <a href="#" style="display: flex; align-items: center; min-height: 48px; padding: 0 6px; color: var(--ink); text-decoration: none; font-size: 16px">Kalenderquellen</a>
+          <a href="#" style="display: flex; align-items: center; min-height: 48px; padding: 0 6px; color: var(--ink); text-decoration: none; font-size: 16px">Schnellzugriff bearbeiten</a>
+          <button type="button" onClick="{{cycleTheme}}" style="display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 6px; border: 0; background: transparent; text-align: left; font-size: 16px; cursor: pointer">Darstellung<span style="font-size: 14px; color: var(--muted)">{{themeLabel}}</span></button>
+          <a href="#" style="display: flex; align-items: center; min-height: 48px; padding: 0 6px; color: var(--muted); text-decoration: none; font-size: 16px">Abmelden</a>
+        </div>
+      </div>
+      <button type="button" onClick="{{closeMenu}}" aria-label="Menü schließen" style="flex: 1; border: 0; background: var(--scrim); cursor: pointer"></button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      screen: 'home', theme: 'auto', menu: false, calView: 'day', shift: 0, off: {},
+      composer: null, draft: '', quick: '',
+      toast: null, undoId: null,
+      sortId: null, mode: null, due: 'Heute', ctx: 'Dienstlich',
+      inbox: [
+        { id: 'i1', kind: 'voice', text: 'Feedbackbögen für den Willkommenstag ausdrucken', when: 'heute 08:12' },
+        { id: 'i2', kind: 'photo', text: 'Aushang Betriebsversammlung', when: 'gestern' },
+        { id: 'i3', kind: 'text', text: 'Idee: Leitstand als Vollbild für den zweiten Monitor', when: 'gestern' },
+        { id: 'i4', kind: 'link', text: 'sabre/vobject – wiederkehrende Termine', when: 'Mo' }
+      ],
+      tasks: [
+        { id: 'k1', title: 'Rückmeldung zu den Lernreise-Texten', ctx: 'Ehrenamt', due: 'Überfällig · gestern', overdue: true, done: false },
+        { id: 'k2', title: 'Protokoll BR-Sitzung 27.10. gegenlesen', ctx: 'Betriebsrat', due: 'Heute', done: false },
+        { id: 'k3', title: 'Stellenanzeige Pflege überarbeiten', ctx: 'Dienstlich', due: 'Heute', done: false }
+      ],
+      notes: [
+        { id: 'n1', kind: 'text', text: 'Lernreise-Texte: kürzere Einstiege, mehr Fragen statt Behauptungen', ctx: 'Ehrenamt', when: 'Mo' },
+        { id: 'n2', kind: 'photo', text: 'Whiteboard nach der Teamrunde', ctx: 'Dienstlich', when: 'letzte Woche' }
+      ]
+    };
+  }
+  componentDidMount() {
+    try {
+      this._mq = window.matchMedia('(prefers-color-scheme: dark)');
+      this._mqh = () => this.forceUpdate();
+      if (this._mq.addEventListener) this._mq.addEventListener('change', this._mqh);
+    } catch (e) {}
+  }
+  componentWillUnmount() {
+    clearTimeout(this._t);
+    try { if (this._mq && this._mq.removeEventListener) this._mq.removeEventListener('change', this._mqh); } catch (e) {}
+  }
+  flash(msg, undoId) {
+    clearTimeout(this._t);
+    this.setState({ toast: msg, undoId: undoId || null });
+    this._t = setTimeout(() => this.setState({ toast: null, undoId: null }), 3000);
+  }
+  renderVals() {
+    const st = this.state;
+    let sysDark = false;
+    try { sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) {}
+    const dark = st.theme === 'dark' || (st.theme === 'auto' && sysDark);
+    const SRC = {
+      awo:  { name: 'AWO · dienstlich', color: dark ? '#6B9BF7' : '#2563EB', tint: dark ? '#1C2741' : '#E6EEFD' },
+      br:   { name: 'Betriebsrat',      color: dark ? '#F0915A' : '#C2410C', tint: dark ? '#3A2418' : '#FCEBDF' },
+      sys:  { name: 'sysTelios',        color: dark ? '#A98BFA' : '#7C3AED', tint: dark ? '#2A2140' : '#EFE7FD' },
+      priv: { name: 'Privat · Google',  color: dark ? '#4CC17E' : '#15803D', tint: dark ? '#15301F' : '#E2F2E7' }
+    };
+    const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    const WDL = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+    const wdOf = (d) => (d - 2) % 7;
+    const mins = (x) => { const p = x.split(':'); return Number(p[0]) * 60 + Number(p[1]); };
+    const dot = (c) => 'display:inline-block;width:9px;height:9px;border-radius:50%;flex:0 0 9px;background:' + c;
+
+    const EV = [];
+    let n = 0;
+    const add = (d, s, e, src, t, loc) => EV.push({ id: 'e' + (n++), d, s, e, src, t, loc, allDay: !s });
+    add(3, null, null, 'priv', 'Gelbe Tonne rausstellen', '–');
+    add(3, '08:30', '09:00', 'awo', 'Teamrunde VuP', 'Teams');
+    add(3, '10:00', '11:00', 'awo', 'Bewerbungsgespräch Pflegefachkraft', 'Raum 1.04');
+    add(3, '13:00', '15:00', 'br', 'Betriebsratssitzung', 'Sitzungsraum 2');
+    add(3, '15:30', '16:15', 'sys', 'Abstimmung Website-Relaunch', 'Videocall');
+    add(3, '18:30', '20:00', 'priv', 'Vorstand Ortsverein', 'Begegnungsstätte');
+    add(2, '09:00', '10:00', 'awo', 'Leitungsrunde', 'Geschäftsstelle');
+    add(2, '19:00', '20:00', 'priv', 'Laufgruppe', 'Pappelsee');
+    add(4, '09:30', '10:30', 'awo', 'Willkommenstag', 'Geschäftsstelle');
+    add(4, '16:00', '17:00', 'sys', 'Lernreise: Planung', 'Videocall');
+    add(5, '10:00', '12:00', 'br', 'BR-Ausschuss Personal', 'BR-Büro');
+    add(5, '13:30', '14:00', 'awo', 'Bewerbermanagement: Pilot', 'Teams');
+    add(5, '17:30', '18:00', 'priv', 'Fahrrad abholen', 'Werkstatt');
+    add(6, '09:00', '09:30', 'awo', 'Wochenabschluss VuP', 'Teams');
+    add(6, '11:00', '12:30', 'sys', 'AG Hypnosystemik', 'Videocall');
+    add(7, '10:00', '12:00', 'priv', 'Wochenmarkt', 'Innenstadt');
+    add(8, null, null, 'priv', 'Familienbesuch', '–');
+    [9, 16, 23].forEach((mo) => {
+      add(mo, '09:00', '10:00', 'awo', 'Leitungsrunde', 'Geschäftsstelle');
+      add(mo + 1, '08:30', '09:00', 'awo', 'Teamrunde VuP', 'Teams');
+      add(mo + 1, '13:00', '15:00', 'br', 'Betriebsratssitzung', 'Sitzungsraum 2');
+      add(mo + 4, '09:00', '09:30', 'awo', 'Wochenabschluss VuP', 'Teams');
+    });
+    add(12, '10:00', '12:00', 'br', 'Betriebsversammlung', 'Saal Geschäftsstelle');
+    add(14, '20:00', '22:30', 'priv', 'Konzert', 'Stadthalle');
+    add(18, '18:30', '20:00', 'priv', 'Vorstand Ortsverein', 'Begegnungsstätte');
+    add(24, '14:00', '16:00', 'awo', 'Kassenbuch-Schulung', 'Schulungsraum');
+    add(29, null, null, 'priv', '1. Advent', '–');
+    EV.sort((a, b) => {
+      if (a.d !== b.d) return a.d - b.d;
+      if (a.allDay && b.allDay) return 0;
+      if (a.allDay) return -1;
+      if (b.allDay) return 1;
+      return mins(a.s) - mins(b.s);
+    });
+
+    const NOW = 12 * 60 + 35, TODAY = 3, START = 7, PX = 46;
+    const on = (id) => !st.off[id];
+    const vis = EV.filter((e) => on(e.src));
+    const shift = Math.max(-1, Math.min(26, st.shift));
+    const d0 = TODAY + shift;
+    const isToday = d0 === TODAY;
+
+    const timed = vis.filter((e) => e.d === d0 && !e.allDay).map((e) => {
+      const s = mins(e.s), en = mins(e.e), S = SRC[e.src];
+      const h = Math.max((en - s) / 60 * PX - 3, 26);
+      const past = d0 < TODAY || (isToday && en <= NOW);
+      return {
+        t: e.t, time: e.s + '–' + e.e, full: h >= 40, pick: () => {},
+        aria: e.t + ', ' + e.s + ' bis ' + e.e + ', ' + S.name,
+        pos: 'top:' + ((s - START * 60) / 60 * PX) + 'px;height:' + h + 'px;background:' + S.tint + ';border-color:transparent;box-shadow:inset 4px 0 0 ' + S.color + ';opacity:' + (past ? 0.62 : 1)
+      };
+    });
+    const allDay = vis.filter((e) => e.d === d0 && e.allDay).map((e) => ({ t: e.t, dotStyle: dot(SRC[e.src].color), chipStyle: 'background:' + SRC[e.src].tint }));
+    const hours = [];
+    for (let h = START; h <= 21; h++) hours.push({ label: (h < 10 ? '0' : '') + h + ':00', pos: 'top:' + ((h - START) * PX + 12) + 'px' });
+    timed.forEach((t) => { t.pos = t.pos.replace(/top:([\d.]+)px/, (m, v) => 'top:' + (Number(v) + 12) + 'px'); });
+
+    const days = [];
+    for (let d = d0; d <= Math.min(d0 + 6, 29); d++) {
+      const events = vis.filter((e) => e.d === d).map((e) => {
+        const S = SRC[e.src];
+        return { t: e.t, loc: e.loc, time: e.allDay ? 'ganzt.' : e.s, pick: () => {}, rowStyle: 'background:' + S.tint + ';border-color:transparent;box-shadow:inset 4px 0 0 ' + S.color };
+      });
+      days.push({ label: (d === TODAY ? 'Heute · ' : '') + WD[wdOf(d)] + ' ' + d + '.11.', events, empty: events.length === 0 });
+    }
+
+    const chips = Object.keys(SRC).map((id) => {
+      const s = SRC[id], active = on(id);
+      return {
+        name: s.name, pressed: String(active),
+        toggle: () => this.setState({ off: Object.assign({}, this.state.off, { [id]: !this.state.off[id] }) }),
+        chipStyle: active ? 'background:' + s.tint + ';border-color:' + s.color + ';color:var(--ink)' : 'background:transparent;border-color:var(--border);color:var(--muted)',
+        dotStyle: active ? dot(s.color) : 'display:inline-block;width:9px;height:9px;border-radius:50%;flex:0 0 9px;box-shadow:inset 0 0 0 1.5px var(--muted)'
+      };
+    });
+
+    const segOn = 'background:var(--seg-on);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,0.12)';
+    const segOff = 'background:transparent;color:var(--ink2)';
+    const navOn = 'background:var(--surface2);color:var(--ink)';
+    const navOff = 'background:transparent;color:var(--muted)';
+    const go = (s) => () => this.setState({ screen: s });
+    const kindLabel = { text: 'Text', voice: 'Diktat', photo: 'Foto', link: 'Link' };
+    const THEMES = { auto: 'Auto', light: 'Hell', dark: 'Dunkel' };
+    const ORDER = ['auto', 'light', 'dark'];
+    const dis = 'opacity:0.35;cursor:default';
+
+    const inbox = st.inbox.map((i) => ({
+      text: i.text, meta: kindLabel[i.kind] + ' · ' + i.when,
+      isText: i.kind === 'text', isVoice: i.kind === 'voice', isPhoto: i.kind === 'photo', isLink: i.kind === 'link',
+      open: () => this.setState({ sortId: i.id, mode: null, due: 'Heute', ctx: 'Dienstlich' })
+    }));
+    const openC = (k) => () => this.setState({ composer: k, draft: '' });
+    const titles = { voice: 'Diktieren', photo: 'Foto' };
+    const placeholders = { voice: 'Diktierter Text erscheint hier …', photo: 'Notiz zum Foto (optional)' };
+    const sortItem = st.inbox.find((i) => i.id === st.sortId);
+    const pill = (v) => v ? 'background:var(--accent);border-color:var(--accent);color:var(--accent-fg)' : 'background:transparent;border-color:var(--border);color:var(--ink)';
+    const dues = ['Heute', 'Morgen', 'Diese Woche', 'Ohne Datum'].map((d) => ({ label: d, pressed: String(st.due === d), style: pill(st.due === d), pick: () => this.setState({ due: d }) }));
+    const ctxs = ['Dienstlich', 'Betriebsrat', 'Ehrenamt', 'Privat', 'Projekte'].map((c) => ({ label: c, pressed: String(st.ctx === c), style: pill(st.ctx === c), pick: () => this.setState({ ctx: c }) }));
+    const tasks = st.tasks.map((t) => ({
+      title: t.title, ctx: t.ctx, due: t.due, done: t.done,
+      toggle: () => this.setState({ tasks: this.state.tasks.map((x) => (x.id === t.id ? Object.assign({}, x, { done: !x.done }) : x)) }),
+      textStyle: t.done ? 'text-decoration:line-through;color:var(--muted)' : '',
+      dueStyle: t.overdue && !t.done ? 'color:var(--now-text);font-weight:500' : 'color:var(--muted)'
+    }));
+    const notes = st.notes.map((x) => ({ text: x.text, ctx: x.ctx, when: x.when, isPhoto: x.kind === 'photo' }));
+    const scr = st.screen;
+
+    return {
+      rootClass: dark ? 'ph dark' : 'ph',
+      menuOpen: st.menu,
+      openMenu: () => this.setState({ menu: true }),
+      closeMenu: () => this.setState({ menu: false }),
+      links: [
+        ['Outlook · AWO', 'awo', 'outlook.office.com/calendar'],
+        ['Outlook · Betriebsrat', 'br', 'outlook.office.com/mail'],
+        ['Outlook · sysTelios', 'sys', 'outlook.office.com/calendar'],
+        ['Google Kalender', 'priv', 'calendar.google.com'],
+        ['Rhizome', null, 'rhizome'],
+        ['All-Inkl KAS', null, 'kas.all-inkl.com'],
+        ['LinkedIn', null, 'linkedin.com']
+      ].map((l) => ({ label: l[0], url: 'https://' + l[2], initial: l[0].charAt(0), badge: 'background:' + (l[1] ? SRC[l[1]].color : (dark ? '#4B525D' : '#5B616E')) })),
+      themeLabel: THEMES[st.theme], themeAria: 'Darstellung: ' + THEMES[st.theme] + ', wechseln',
+      cycleTheme: () => this.setState({ theme: ORDER[(ORDER.indexOf(this.state.theme) + 1) % 3] }),
+      nextDot: dot(SRC.br.color),
+      isHome: scr === 'home', isInbox: scr === 'inbox', isTasks: scr === 'tasks', isNotes: scr === 'notes',
+      goHome: go('home'), goInbox: go('inbox'), goTasks: go('tasks'), goNotes: go('notes'),
+      navHome: scr === 'home' ? navOn : navOff, navInbox: scr === 'inbox' ? navOn : navOff,
+      navTasks: scr === 'tasks' ? navOn : navOff, navNotes: scr === 'notes' ? navOn : navOff,
+      homeCur: scr === 'home' ? 'page' : 'false', inboxCur: scr === 'inbox' ? 'page' : 'false',
+      tasksCur: scr === 'tasks' ? 'page' : 'false', notesCur: scr === 'notes' ? 'page' : 'false',
+      chips, timed, allDay, hasAllDay: allDay.length > 0, hours, days,
+      showNow: isToday && st.calView === 'day', nowPos: 'top:' + ((NOW - START * 60) / 60 * PX + 12) + 'px',
+      isDayView: st.calView === 'day', isListView: st.calView === 'list',
+      dayPressed: String(st.calView === 'day'), listPressed: String(st.calView === 'list'),
+      dayBtn: st.calView === 'day' ? segOn : segOff, listBtn: st.calView === 'list' ? segOn : segOff,
+      setDay: () => this.setState({ calView: 'day' }), setList: () => this.setState({ calView: 'list' }),
+      navLabel: isToday ? 'Heute' : WD[wdOf(d0)] + ', ' + d0 + '. Nov',
+      prev: () => { if (shift > -1) this.setState({ shift: shift - 1 }); },
+      next: () => { if (shift < 26) this.setState({ shift: shift + 1 }); },
+      goToday: () => this.setState({ shift: 0 }),
+      noPrev: shift <= -1, noNext: shift >= 26, prevStyle: shift <= -1 ? dis : '', nextStyle: shift >= 26 ? dis : '',
+      quick: st.quick,
+      onQuick: (e) => this.setState({ quick: e.target.value }),
+      quickSave: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        const v = (this.state.quick || '').trim();
+        if (!v) return;
+        const id = 'i' + Date.now();
+        this.setState({ inbox: [{ id, kind: /^https?:\/\//.test(v) ? 'link' : 'text', text: v, when: 'gerade eben' }].concat(this.state.inbox), quick: '' });
+        this.flash('In der Inbox gesichert', id);
+      },
+      inbox, inboxCount: st.inbox.length, hasInbox: st.inbox.length > 0, inboxEmpty: st.inbox.length === 0,
+      tasks, notes,
+      openVoice: openC('voice'), openPhoto: openC('photo'),
+      hasComposer: !!st.composer, isVoiceComposer: st.composer === 'voice', isPhotoComposer: st.composer === 'photo',
+      composerTitle: titles[st.composer] || '', placeholder: placeholders[st.composer] || '',
+      draft: st.draft,
+      onDraft: (e) => this.setState({ draft: e.target.value }),
+      dictate: () => this.setState({ draft: 'Morgen wegen Raumbuchung für die Kassenbuch-Schulung anrufen' }),
+      cancel: () => this.setState({ composer: null, draft: '' }),
+      save: () => {
+        const s = this.state;
+        const txt = s.draft.trim() || (s.composer === 'photo' ? 'Foto ohne Notiz' : '');
+        if (!txt) { this.setState({ composer: null }); return; }
+        const id = 'i' + Date.now();
+        this.setState({ inbox: [{ id, kind: s.composer === 'voice' ? 'voice' : 'photo', text: txt, when: 'gerade eben' }].concat(s.inbox), composer: null, draft: '' });
+        this.flash('In der Inbox gesichert', id);
+      },
+      hasToast: !!st.toast, toast: st.toast || '', canUndo: !!st.undoId,
+      undo: () => this.setState({ inbox: this.state.inbox.filter((i) => i.id !== this.state.undoId), toast: null, undoId: null }),
+      hasSort: !!sortItem, sortText: sortItem ? sortItem.text : '',
+      closeSort: () => this.setState({ sortId: null, mode: null }),
+      asTask: () => this.setState({ mode: 'task' }), asNote: () => this.setState({ mode: 'note' }),
+      taskPressed: String(st.mode === 'task'), notePressed: String(st.mode === 'note'),
+      taskBtn: pill(st.mode === 'task'), noteBtn: pill(st.mode === 'note'),
+      hasMode: !!st.mode, isTaskMode: st.mode === 'task',
+      dues, ctxs,
+      confirmLabel: st.mode === 'task' ? 'Als Aufgabe speichern' : 'Als Notiz speichern',
+      confirm: () => {
+        const s = this.state, it = s.inbox.find((i) => i.id === s.sortId);
+        if (!it) return;
+        const rest = s.inbox.filter((i) => i.id !== it.id);
+        if (s.mode === 'task') {
+          this.setState({ inbox: rest, sortId: null, mode: null, tasks: [{ id: 't' + Date.now(), title: it.text, ctx: s.ctx, due: s.due, done: false }].concat(s.tasks) });
+          this.flash('Als Aufgabe gespeichert');
+        } else {
+          this.setState({ inbox: rest, sortId: null, mode: null, notes: [{ id: 'n' + Date.now(), kind: it.kind === 'photo' ? 'photo' : 'text', text: it.text, ctx: s.ctx, when: 'gerade eben' }].concat(s.notes) });
+          this.flash('Als Notiz gespeichert');
+        }
+      },
+      del: () => {
+        const s = this.state;
+        this.setState({ inbox: s.inbox.filter((i) => i.id !== s.sortId), sortId: null, mode: null });
+        this.flash('Gelöscht');
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kalenderquellen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@200..800&amp;display=swap">
+<style>
+body{margin:0;background:#F4F5F7}
+a{color:#1D4ED8}a:hover{color:#1E3A8A}
+button,input,select{font:inherit;color:inherit}
+.hb:hover{background:#ECEEF2}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #2563EB;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; padding: 28px 24px 48px; font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; color: #16181D; background: #F4F5F7">
+  <div style="max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px">
+
+    <a href="Main.dc.html" style="align-self: flex-start; display: flex; align-items: center; gap: 6px; min-height: 36px; font-size: 14px; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>Zurück zum Leitstand</a>
+
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="flex: 1 1 360px">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.015em">Kalenderquellen</h1>
+        <p style="margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: #3F444D">Jede Quelle ist ein lesender ICS-Link aus einem deiner Konten. Wechselt ein Konto oder fällt es weg, ersetzt oder entfernst du hier nur die Quelle – der Rest bleibt.</p>
+      </div>
+      <button type="button" onClick="{{openForm}}" style="height: 44px; padding: 0 18px; border: 0; border-radius: 10px; background: #16181D; color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer">+ Quelle hinzufügen</button>
+    </header>
+
+    <sc-if value="{{formOpen}}" hint-placeholder-val="{{ false }}">
+      <section aria-label="Neue Quelle" style="padding: 22px; background: #FFFFFF; border: 1px solid #C9CED6; border-radius: 14px; display: flex; flex-direction: column; gap: 18px">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600">Neue Kalenderquelle</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="q-name" style="font-size: 13px; font-weight: 600">Bezeichnung</label>
+            <input id="q-name" type="text" value="{{fName}}" onChange="{{setName}}" placeholder="z. B. Neuer Arbeitgeber" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #D5D9E0; border-radius: 8px; font-size: 14px">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="q-ctx" style="font-size: 13px; font-weight: 600">Kontext</label>
+            <select id="q-ctx" value="{{fCtx}}" onChange="{{setCtx}}" style="height: 44px; box-sizing: border-box; padding: 0 10px; border: 1px solid #D5D9E0; border-radius: 8px; background: #FFFFFF; font-size: 14px">
+              <option value="Dienstlich">Dienstlich</option>
+              <option value="Betriebsrat">Betriebsrat</option>
+              <option value="Ehrenamt">Ehrenamt</option>
+              <option value="Privat">Privat</option>
+              <option value="Eigene Projekte">Eigene Projekte</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="q-url" style="font-size: 13px; font-weight: 600">ICS-Link</label>
+          <input id="q-url" type="password" value="{{fUrl}}" onChange="{{setUrl}}" placeholder="https://outlook.office365.com/owa/calendar/…/calendar.ics" autocomplete="off" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #D5D9E0; border-radius: 8px; font-variant-numeric: tabular-nums; font-size: 13px">
+          <p style="margin: 0; font-size: 12px; line-height: 1.45; color: #5B616E">Wird verschlüsselt gespeichert und danach nie wieder vollständig angezeigt. Für Betriebsrat und Dienstliches beim Veröffentlichen „Titel und Orte“ wählen.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px">
+          <fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 8px">
+            <legend style="padding: 0; margin-bottom: 8px; font-size: 13px; font-weight: 600">Farbe</legend>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <sc-for list="{{swatches}}" as="w" hint-placeholder-count="6">
+                <button type="button" onClick="{{w.pick}}" aria-label="{{w.label}}" aria-pressed="{{w.pressed}}" style="width: 44px; height: 44px; border-radius: 10px; border: 2px solid #FFFFFF; cursor: pointer; {{w.style}}"></button>
+              </sc-for>
+            </div>
+          </fieldset>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="q-int" style="font-size: 13px; font-weight: 600">Aktualisierung</label>
+            <select id="q-int" value="{{fInt}}" onChange="{{setInt}}" style="height: 44px; box-sizing: border-box; padding: 0 10px; border: 1px solid #D5D9E0; border-radius: 8px; background: #FFFFFF; font-size: 14px">
+              <option value="alle 15 Min">alle 15 Minuten</option>
+              <option value="alle 30 Min">alle 30 Minuten</option>
+              <option value="stündlich">stündlich</option>
+            </select>
+          </div>
+        </div>
+        <sc-if value="{{hasTest}}" hint-placeholder-val="{{ false }}">
+          <p role="status" style="margin: 0; padding: 10px 12px; border-radius: 8px; font-size: 13px; line-height: 1.45; {{testStyle}}">{{testText}}</p>
+        </sc-if>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end">
+          <button type="button" class="hb" onClick="{{closeForm}}" style="height: 44px; padding: 0 16px; border: 1px solid #D5D9E0; border-radius: 10px; background: #FFFFFF; font-size: 14px; cursor: pointer">Abbrechen</button>
+          <button type="button" class="hb" onClick="{{test}}" style="height: 44px; padding: 0 16px; border: 1px solid #D5D9E0; border-radius: 10px; background: #FFFFFF; font-size: 14px; font-weight: 500; cursor: pointer">Verbindung testen</button>
+          <button type="button" onClick="{{save}}" style="height: 44px; padding: 0 18px; border: 0; border-radius: 10px; background: #16181D; color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer">Speichern</button>
+        </div>
+      </section>
+    </sc-if>
+
+    <section aria-label="Eingerichtete Quellen" style="background: #FFFFFF; border: 1px solid #E2E5EA; border-radius: 14px; overflow: hidden">
+      <sc-for list="{{sources}}" as="s" hint-placeholder-count="4">
+        <div style="padding: 18px 20px; border-top: 1px solid #EEF0F3; display: flex; flex-direction: column; gap: 12px; {{s.rowStyle}}">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px">
+            <span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 4px; flex: 0 0 14px; {{s.swatch}}"></span>
+            <div style="flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+              <span style="font-size: 15px; font-weight: 600">{{s.name}}</span>
+              <span style="font-size: 12px; color: #5B616E">{{s.meta}}</span>
+            </div>
+            <span style="display: flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; {{s.badgeStyle}}"><span aria-hidden="true" style="{{s.badgeDot}}"></span>{{s.badge}}</span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <button type="button" class="hb" onClick="{{s.toggle}}" style="min-height: 36px; padding: 4px 12px; border: 1px solid #D5D9E0; border-radius: 8px; background: #FFFFFF; font-size: 13px; cursor: pointer">{{s.toggleLabel}}</button>
+              <button type="button" class="hb" onClick="{{s.askRemove}}" style="min-height: 36px; padding: 4px 12px; border: 1px solid #D5D9E0; border-radius: 8px; background: #FFFFFF; font-size: 13px; color: #B91C1C; cursor: pointer">Entfernen</button>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px 20px; padding-left: 30px; font-size: 13px">
+            <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #5B616E; text-transform: uppercase; letter-spacing: 0.04em">Link</span><span style="font-variant-numeric: tabular-nums; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{s.url}}</span></div>
+            <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #5B616E; text-transform: uppercase; letter-spacing: 0.04em">Detailstufe</span><span>{{s.detail}}</span></div>
+            <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #5B616E; text-transform: uppercase; letter-spacing: 0.04em">Abruf</span><span>{{s.interval}} · {{s.last}}</span></div>
+          </div>
+          <sc-if value="{{s.error}}" hint-placeholder-val="{{ false }}">
+            <div style="margin-left: 30px; padding: 10px 12px; border-radius: 8px; background: #FEF3C7; color: #78350F; font-size: 13px; line-height: 1.45; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between">
+              <span style="flex: 1 1 300px">Abruf fehlgeschlagen (HTTP 403). Der Link wurde vermutlich widerrufen. Bis zur Korrektur zeigt der Leitstand den Stand von gestern 18:10.</span>
+              <button type="button" onClick="{{openForm}}" style="min-height: 36px; padding: 4px 12px; border: 1px solid #B45309; border-radius: 8px; background: #FFFFFF; color: #78350F; font-size: 13px; font-weight: 500; cursor: pointer">Link ersetzen</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{s.confirming}}" hint-placeholder-val="{{ false }}">
+            <div role="alertdialog" aria-label="Quelle entfernen" style="margin-left: 30px; padding: 12px; border-radius: 8px; background: #FDECEC; color: #7F1D1D; font-size: 13px; line-height: 1.45; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between">
+              <span style="flex: 1 1 300px">Quelle und alle zwischengespeicherten Termine löschen? Im Ursprungskonto ändert sich nichts.</span>
+              <span style="display: flex; gap: 8px">
+                <button type="button" onClick="{{s.cancelRemove}}" style="min-height: 36px; padding: 4px 12px; border: 1px solid #D5D9E0; border-radius: 8px; background: #FFFFFF; font-size: 13px; cursor: pointer">Behalten</button>
+                <button type="button" onClick="{{s.remove}}" style="min-height: 36px; padding: 4px 12px; border: 0; border-radius: 8px; background: #B91C1C; color: #FFFFFF; font-size: 13px; font-weight: 600; cursor: pointer">Endgültig entfernen</button>
+              </span>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <sc-if value="{{noSources}}" hint-placeholder-val="{{ false }}">
+        <p style="margin: 0; padding: 28px 20px; font-size: 14px; color: #5B616E">Noch keine Quellen. Füge den ICS-Link eines Kalenders hinzu, um ihn im Leitstand zu sehen.</p>
+      </sc-if>
+    </section>
+
+    <section aria-label="Datenschutz" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px">
+      <div style="padding: 16px 18px; background: #FFFFFF; border: 1px solid #E2E5EA; border-radius: 12px; display: flex; flex-direction: column; gap: 6px">
+        <h2 style="margin: 0; font-size: 14px; font-weight: 600">Links sind Schlüssel</h2>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #3F444D">ICS-Links liegen verschlüsselt auf deinem Hosting. Angezeigt wird nur der Anfang, nie der vollständige Link.</p>
+      </div>
+      <div style="padding: 16px 18px; background: #FFFFFF; border: 1px solid #E2E5EA; border-radius: 12px; display: flex; flex-direction: column; gap: 6px">
+        <h2 style="margin: 0; font-size: 14px; font-weight: 600">Zwischenspeicher</h2>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #3F444D">Termine älter als 30 Tage werden automatisch gelöscht. Was nicht gespeichert ist, kann nicht abfließen.</p>
+      </div>
+      <div style="padding: 16px 18px; background: #FFFFFF; border: 1px solid #E2E5EA; border-radius: 12px; display: flex; flex-direction: column; gap: 6px">
+        <h2 style="margin: 0; font-size: 14px; font-weight: 600">Nur lesend</h2>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #3F444D">Personal Hub schreibt nie in fremde Kalender. Termine legst du weiter in den jeweiligen Konten an.</p>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1080}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      formOpen: false, confirm: null, test: null,
+      fName: '', fUrl: '', fCtx: 'Dienstlich', fInt: 'alle 15 Min', fColor: '#0E7490',
+      sources: [
+        { id: 'awo', name: 'AWO · dienstlich', kind: 'Microsoft 365', ctx: 'Dienstlich', color: '#2563EB', url: 'outlook.office365.com/owa/calendar/8f3c…/••••••.ics', detail: 'Titel und Orte', interval: 'alle 15 Min', last: 'vor 4 Min', active: true, error: false },
+        { id: 'br', name: 'Betriebsrat', kind: 'Microsoft 365', ctx: 'Betriebsrat', color: '#C2410C', url: 'outlook.office365.com/owa/calendar/1b9e…/••••••.ics', detail: 'Titel und Orte', interval: 'alle 15 Min', last: 'vor 4 Min', active: true, error: false },
+        { id: 'sys', name: 'sysTelios', kind: 'Microsoft 365', ctx: 'Ehrenamt', color: '#7C3AED', url: 'outlook.office365.com/owa/calendar/c47a…/••••••.ics', detail: 'Alle Details', interval: 'alle 30 Min', last: 'fehlgeschlagen vor 4 Min', active: true, error: true },
+        { id: 'priv', name: 'Privat · Google', kind: 'Google', ctx: 'Privat', color: '#15803D', url: 'calendar.google.com/calendar/ical/…/private-••••••/basic.ics', detail: 'Alle Details', interval: 'alle 30 Min', last: 'vor 4 Min', active: true, error: false }
+      ]
+    };
+  }
+  renderVals() {
+    const st = this.state;
+    const COLORS = [
+      { c: '#2563EB', l: 'Blau' }, { c: '#C2410C', l: 'Orange' }, { c: '#7C3AED', l: 'Violett' },
+      { c: '#15803D', l: 'Grün' }, { c: '#0E7490', l: 'Petrol' }, { c: '#BE185D', l: 'Magenta' }
+    ];
+    const upd = (id, patch) => this.setState({ sources: this.state.sources.map((s) => (s.id === id ? Object.assign({}, s, patch) : s)) });
+    const dotC = (c) => 'display:inline-block;width:7px;height:7px;border-radius:50%;background:' + c;
+    const sources = st.sources.map((s) => {
+      let badge = 'Aktuell', badgeStyle = 'background:#E2F2E7;color:#14532D', badgeDot = dotC('#15803D');
+      if (s.error) { badge = 'Fehler'; badgeStyle = 'background:#FEF3C7;color:#78350F'; badgeDot = dotC('#D97706'); }
+      if (!s.active) { badge = 'Pausiert'; badgeStyle = 'background:#EEF0F4;color:#3F444D'; badgeDot = dotC('#8A909B'); }
+      return {
+        name: s.name, url: s.url, detail: s.detail, interval: s.interval, last: s.last,
+        meta: s.kind + ' · ICS · Kontext ' + s.ctx,
+        swatch: 'background:' + s.color,
+        badge, badgeStyle, badgeDot,
+        error: s.error && s.active,
+        rowStyle: s.active ? '' : 'opacity:0.7',
+        toggleLabel: s.active ? 'Pausieren' : 'Aktivieren',
+        toggle: () => upd(s.id, { active: !s.active }),
+        confirming: st.confirm === s.id,
+        askRemove: () => this.setState({ confirm: s.id }),
+        cancelRemove: () => this.setState({ confirm: null }),
+        remove: () => this.setState({ sources: this.state.sources.filter((x) => x.id !== s.id), confirm: null })
+      };
+    });
+    const swatches = COLORS.map((x) => ({
+      label: x.l, pressed: String(st.fColor === x.c),
+      style: 'background:' + x.c + ';box-shadow:' + (st.fColor === x.c ? '0 0 0 2px #16181D' : '0 0 0 1px #D5D9E0'),
+      pick: () => this.setState({ fColor: x.c })
+    }));
+    const t = st.test;
+    return {
+      sources, noSources: sources.length === 0, swatches,
+      formOpen: st.formOpen,
+      openForm: () => this.setState({ formOpen: true, test: null }),
+      closeForm: () => this.setState({ formOpen: false, test: null, fName: '', fUrl: '' }),
+      fName: st.fName, fUrl: st.fUrl, fCtx: st.fCtx, fInt: st.fInt,
+      setName: (e) => this.setState({ fName: e.target.value }),
+      setUrl: (e) => this.setState({ fUrl: e.target.value, test: null }),
+      setCtx: (e) => this.setState({ fCtx: e.target.value }),
+      setInt: (e) => this.setState({ fInt: e.target.value }),
+      hasTest: !!t,
+      testText: t === 'ok' ? 'Verbindung erfolgreich: 23 Termine gefunden (letzte 30 und nächste 90 Tage).' : 'Das sieht nicht nach einem ICS-Link aus. Erwartet wird eine https-Adresse, meist auf .ics endend.',
+      testStyle: t === 'ok' ? 'background:#E2F2E7;color:#14532D' : 'background:#FDECEC;color:#7F1D1D',
+      test: () => this.setState({ test: /^https:\/\/\S+/.test(this.state.fUrl) ? 'ok' : 'bad' }),
+      save: () => {
+        const s = this.state;
+        if (!/^https:\/\/\S+/.test(s.fUrl) || !s.fName.trim()) { this.setState({ test: 'bad' }); return; }
+        let host = 'kalender';
+        try { host = new URL(s.fUrl).hostname; } catch (err) {}
+        const src = { id: 'n' + Date.now(), name: s.fName.trim(), kind: 'ICS', ctx: s.fCtx, color: s.fColor, url: host + '/…/••••••', detail: 'laut Quelle', interval: s.fInt, last: 'gerade eben', active: true, error: false };
+        this.setState({ sources: s.sources.concat([src]), formOpen: false, test: null, fName: '', fUrl: '' });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

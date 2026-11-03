@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Zeitfenster reservieren</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@200..800&amp;display=swap">
+<style>
+body{margin:0}
+.ph{--bg:#E9EBEF;--surface:#FFFFFF;--surface2:#F1F2F5;--line:#E2E5EA;--line2:#EEF0F3;--ink:#16181D;--ink2:#3F444D;--muted:#5B616E;--border:#D5D9E0;--accent:#16181D;--accent-fg:#FFFFFF;--seg:#E7E9EE;--seg-on:#FFFFFF;--ok-bg:#E2F2E7;--ok-fg:#14532D;--sel:#2563EB;--sel-bg:#EEF3FE}
+.ph.dark{--bg:#0B0C0F;--surface:#1A1D22;--surface2:#23272E;--line:#2C3138;--line2:#252A31;--ink:#ECEEF1;--ink2:#C3C8D0;--muted:#9AA1AC;--border:#3A404A;--accent:#ECEEF1;--accent-fg:#111317;--seg:#23272E;--seg-on:#3A414B;--ok-bg:#12301F;--ok-fg:#86EFAC;--sel:#6B9BF7;--sel-bg:#1C2741}
+.ph button,.ph input{font:inherit;color:inherit}
+.ph button:focus-visible,.ph input:focus-visible{outline:2px solid #3B82F6;outline-offset:2px}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="width: 760px; height: 860px; box-sizing: border-box; padding: 40px; background: var(--bg); font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif; color: var(--ink); display: flex; align-items: flex-start; justify-content: center">
+  <div role="dialog" aria-label="Zeit dafür reservieren" style="width: 100%; box-sizing: border-box; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,0.18); padding: 26px 28px; display: flex; flex-direction: column; gap: 20px">
+
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-variant-numeric: tabular-nums; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em">Zeit dafür reservieren</span>
+        <h1 style="margin: 0; font-size: 21px; font-weight: 600; line-height: 1.3">{{itemTitle}}</h1>
+      </div>
+      <button type="button" aria-label="Schließen" style="width: 36px; height: 36px; flex: 0 0 36px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 8px; background: var(--surface2); cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </div>
+
+    <sc-if value="{{notDone}}" hint-placeholder-val="{{ true }}">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; font-weight: 600">Kontext</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px">
+            <sc-for list="{{ctxs}}" as="c" hint-placeholder-count="4">
+              <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 32px; padding: 0 11px; border: 1px solid; border-radius: 999px; font-size: 13px; cursor: pointer; {{c.style}}">{{c.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; font-weight: 600">Dauer</span>
+          <div role="group" aria-label="Dauer" style="display: flex; padding: 3px; border-radius: 10px; background: var(--seg); align-self: flex-start">
+            <sc-for list="{{durs}}" as="d" hint-placeholder-count="3">
+              <button type="button" onClick="{{d.pick}}" aria-pressed="{{d.pressed}}" style="min-height: 32px; padding: 0 12px; border: 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; {{d.style}}">{{d.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; font-weight: 600">Zeitraum</span>
+          <div role="group" aria-label="Zeitraum" style="display: flex; padding: 3px; border-radius: 10px; background: var(--seg); align-self: flex-start">
+            <sc-for list="{{ranges}}" as="r" hint-placeholder-count="2">
+              <button type="button" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" style="min-height: 32px; padding: 0 12px; border: 0; border-radius: 8px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; {{r.style}}">{{r.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+          <span style="font-size: 13px; font-weight: 600">Freie Zeitfenster in allen Kalendern</span>
+          <span style="font-size: 12px; color: var(--muted)">{{rule}}</span>
+        </div>
+        <div role="radiogroup" aria-label="Zeitfenster" style="display: flex; flex-direction: column; gap: 6px">
+          <sc-for list="{{slots}}" as="s" hint-placeholder-count="5">
+            <button type="button" role="radio" aria-checked="{{s.checked}}" onClick="{{s.pick}}" style="display: flex; align-items: center; gap: 14px; min-height: 52px; padding: 8px 14px; border: 1.5px solid; border-radius: 12px; text-align: left; cursor: pointer; {{s.style}}">
+              <span aria-hidden="true" style="width: 18px; height: 18px; flex: 0 0 18px; border-radius: 50%; box-sizing: border-box; {{s.radio}}"></span>
+              <span style="width: 110px; flex: 0 0 110px; font-size: 14px; font-weight: 600">{{s.day}}</span>
+              <span style="width: 110px; flex: 0 0 110px; font-variant-numeric: tabular-nums; font-size: 14px">{{s.time}}</span>
+              <span style="font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{s.ctx}}</span>
+            </button>
+          </sc-for>
+          <sc-if value="{{noSlots}}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 0; padding: 14px; border: 1px dashed var(--border); border-radius: 12px; font-size: 14px; color: var(--muted)">In diesem Zeitraum ist kein Fenster dieser Länge frei. Kürzere Dauer oder nächste Woche probieren.</p>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="tt" style="font-size: 13px; font-weight: 600">Titel im Kalender</label>
+          <input id="tt" type="text" value="{{title}}" onChange="{{onTitle}}" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); font-size: 15px">
+          <span style="font-size: 12px; color: var(--muted)">Neutral halten. Die Idee selbst bleibt in Personal Hub.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 13px; font-weight: 600">Eintragen in</span>
+          <div style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; background: var(--surface2)">
+            <span aria-hidden="true" style="{{targetDot}}"></span>
+            <span style="font-size: 15px; font-weight: 500">{{targetName}}</span>
+          </div>
+          <span style="font-size: 12px; color: var(--muted)">{{targetHint}}</span>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 4px; border-top: 1px solid var(--line2)">
+        <button type="button" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; font-size: 14px; color: var(--muted); text-decoration: underline; cursor: pointer">Als .ics-Datei herunterladen</button>
+        <button type="button" onClick="{{create}}" disabled="{{noSlots}}" style="min-height: 48px; padding: 0 20px; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-fg); font-size: 15px; font-weight: 600; cursor: pointer; {{createStyle}}">{{createLabel}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <div role="status" style="padding: 14px 16px; border-radius: 12px; background: var(--ok-bg); color: var(--ok-fg); font-size: 14px; line-height: 1.5">
+          <strong>{{doneApp}} wurde mit dem vorausgefüllten Termin geöffnet.</strong> Dort nur noch speichern. Bis der Termin beim nächsten Abruf auftaucht, ist er im Leitstand vorgemerkt.
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-variant-numeric: tabular-nums; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em">So erscheint er im Leitstand</span>
+          <div style="padding: 10px 14px; border-radius: 10px; border: 1.5px dashed; display: flex; flex-direction: column; gap: 2px; {{previewStyle}}">
+            <span style="font-size: 14px; font-weight: 600">{{title}} · vorgemerkt</span>
+            <span style="font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ink2)">{{doneWhen}}</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end">
+          <button type="button" onClick="{{again}}" style="min-height: 44px; padding: 0 16px; border: 1px solid var(--border); border-radius: 10px; background: transparent; font-size: 14px; cursor: pointer">Anderes Fenster wählen</button>
+          <button type="button" onClick="{{again}}" style="min-height: 44px; padding: 0 18px; border: 0; border-radius: 10px; background: var(--accent); color: var(--accent-fg); font-size: 14px; font-weight: 600; cursor: pointer">Fertig</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <p style="margin: 0; font-size: 12px; color: var(--muted)">Arbeitszeit 08:00–17:00 · 15 Min Puffer um Termine · privat abends und am Wochenende · <span style="text-decoration: underline">Einstellungen</span></p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":760,"height":860}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { ctx: 'Dienstlich', dur: 60, range: 'this', sel: 0, title: 'Fokuszeit', done: false };
+  }
+  componentDidMount() {
+    try {
+      this._mq = window.matchMedia('(prefers-color-scheme: dark)');
+      this._mqh = () => this.forceUpdate();
+      if (this._mq.addEventListener) this._mq.addEventListener('change', this._mqh);
+    } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { if (this._mq && this._mq.removeEventListener) this._mq.removeEventListener('change', this._mqh); } catch (e) {}
+  }
+  renderVals() {
+    const st = this.state;
+    let dark = false;
+    try { dark = window.matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) {}
+    const COL = {
+      awo: dark ? '#6B9BF7' : '#2563EB', sys: dark ? '#A98BFA' : '#7C3AED', priv: dark ? '#4CC17E' : '#15803D'
+    };
+    const TINT = { awo: dark ? '#1C2741' : '#E6EEFD', sys: dark ? '#2A2140' : '#EFE7FD', priv: dark ? '#15301F' : '#E2F2E7' };
+    const TARGET = {
+      Dienstlich: { k: 'awo', name: 'AWO · dienstlich', app: 'Outlook im Web', hint: 'Öffnet einen neuen Termin in Outlook (AWO-Konto).' },
+      Betriebsrat: { k: 'awo', name: 'AWO · dienstlich', app: 'Outlook im Web', hint: 'Betriebsratszeit gehört in deinen AWO-Hauptkalender.' },
+      Ehrenamt: { k: 'sys', name: 'sysTelios', app: 'Outlook im Web', hint: 'Öffnet einen neuen Termin im sysTelios-Konto.' },
+      Privat: { k: 'priv', name: 'Privat · Google', app: 'Google Kalender', hint: 'Öffnet einen neuen Termin in Google Kalender.' }
+    };
+    const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    const wdOf = (d) => (d - 2) % 7;
+    const mins = (x) => { const p = x.split(':'); return Number(p[0]) * 60 + Number(p[1]); };
+    const fmt = (m) => (m < 600 ? '0' : '') + Math.floor(m / 60) + ':' + (m % 60 < 10 ? '0' : '') + (m % 60);
+
+    const EV = [];
+    const add = (d, s, e) => EV.push({ d, s: mins(s), e: mins(e) });
+    add(3, '08:30', '09:00'); add(3, '10:00', '11:00'); add(3, '13:00', '15:00'); add(3, '15:30', '16:15'); add(3, '18:30', '20:00');
+    add(4, '09:30', '10:30'); add(4, '16:00', '17:00');
+    add(5, '10:00', '12:00'); add(5, '13:30', '14:00'); add(5, '17:30', '18:00');
+    add(6, '09:00', '09:30'); add(6, '11:00', '12:30');
+    add(7, '10:00', '12:00');
+    [9].forEach((mo) => { add(mo, '09:00', '10:00'); add(mo, '19:00', '20:00'); add(mo + 1, '08:30', '09:00'); add(mo + 1, '13:00', '15:00'); add(mo + 4, '09:00', '09:30'); });
+    add(10, '15:30', '16:30'); add(11, '16:00', '17:00'); add(12, '10:00', '12:00'); add(13, '14:00', '15:00'); add(14, '20:00', '22:30');
+
+    const NOW = 12 * 60 + 35, TODAY = 3, BUF = 15;
+    const isPriv = st.ctx === 'Privat';
+    const days = st.range === 'this' ? [3, 4, 5, 6, 7, 8] : [9, 10, 11, 12, 13, 14, 15];
+    const slots = [];
+    days.forEach((d) => {
+      const wd = wdOf(d);
+      let win;
+      if (isPriv) win = wd >= 5 ? [9 * 60, 18 * 60] : [18 * 60, 21 * 60 + 30];
+      else { if (wd >= 5) return; win = [8 * 60, 17 * 60]; }
+      let from = win[0];
+      if (d === TODAY) from = Math.max(from, Math.ceil((NOW + BUF) / 15) * 15);
+      const busy = EV.filter((e) => e.d === d).map((e) => [e.s - BUF, e.e + BUF]).sort((a, b) => a[0] - b[0]);
+      let cur = from;
+      const gaps = [];
+      busy.forEach((b) => { if (b[0] > cur) gaps.push([cur, Math.min(b[0], win[1])]); cur = Math.max(cur, b[1]); });
+      if (cur < win[1]) gaps.push([cur, win[1]]);
+      gaps.forEach((g) => {
+        const s = Math.ceil(g[0] / 15) * 15;
+        if (g[1] - s >= st.dur) slots.push({ d, s, e: s + st.dur, gapEnd: g[1] });
+      });
+    });
+    const shown = slots.slice(0, 5);
+    const sel = Math.min(st.sel, Math.max(shown.length - 1, 0));
+    const T = TARGET[st.ctx];
+    const dot = (c) => 'display:inline-block;width:10px;height:10px;border-radius:50%;flex:0 0 10px;background:' + c;
+    const pillOn = 'background:var(--accent);border-color:var(--accent);color:var(--accent-fg)';
+    const pillOff = 'background:transparent;border-color:var(--border);color:var(--ink)';
+    const segOn = 'background:var(--seg-on);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,0.12)';
+    const segOff = 'background:transparent;color:var(--ink2)';
+    const dayName = (d) => (d === TODAY ? 'Heute' : d === TODAY + 1 ? 'Morgen' : WD[wdOf(d)] + ' ' + d + '.11.');
+    const chosen = shown[sel];
+
+    return {
+      rootClass: dark ? 'ph dark' : 'ph',
+      itemTitle: 'Idee: Leitstand als Vollbild für den zweiten Monitor',
+      ctxs: ['Dienstlich', 'Betriebsrat', 'Ehrenamt', 'Privat'].map((c) => ({
+        label: c, pressed: String(st.ctx === c), style: st.ctx === c ? pillOn : pillOff,
+        pick: () => this.setState({ ctx: c, sel: 0 })
+      })),
+      durs: [30, 60, 90].map((m) => ({
+        label: m + ' Min', pressed: String(st.dur === m), style: st.dur === m ? segOn : segOff,
+        pick: () => this.setState({ dur: m, sel: 0 })
+      })),
+      ranges: [['this', 'Diese Woche'], ['next', 'Nächste Woche']].map((r) => ({
+        label: r[1], pressed: String(st.range === r[0]), style: st.range === r[0] ? segOn : segOff,
+        pick: () => this.setState({ range: r[0], sel: 0 })
+      })),
+      rule: isPriv ? 'abends und am Wochenende' : 'innerhalb der Arbeitszeit',
+      slots: shown.map((s, i) => ({
+        day: dayName(s.d), time: fmt(s.s) + '–' + fmt(s.e),
+        ctx: s.gapEnd - s.e >= 60 ? 'danach noch frei' : 'bis zum nächsten Termin',
+        checked: String(i === sel),
+        pick: () => this.setState({ sel: i }),
+        style: i === sel ? 'border-color:var(--sel);background:var(--sel-bg)' : 'border-color:var(--line);background:var(--surface)',
+        radio: i === sel ? 'border:5px solid var(--sel)' : 'border:1.5px solid var(--border)'
+      })),
+      noSlots: shown.length === 0,
+      title: st.title,
+      onTitle: (e) => this.setState({ title: e.target.value }),
+      targetName: T.name, targetHint: T.hint, targetDot: dot(COL[T.k]),
+      createLabel: isPriv ? 'In Google Kalender anlegen' : 'In Outlook anlegen',
+      createStyle: shown.length === 0 ? 'opacity:0.4;cursor:default' : '',
+      create: () => { if (shown.length) this.setState({ done: true }); },
+      notDone: !st.done, isDone: st.done,
+      doneApp: T.app,
+      doneWhen: chosen ? dayName(chosen.d) + ' · ' + fmt(chosen.s) + '–' + fmt(chosen.e) + ' · ' + T.name : '',
+      previewStyle: 'border-color:' + COL[T.k] + ';background:' + TINT[T.k],
+      again: () => this.setState({ done: false })
+    };
+  }
+}
+</script>
+</body>
+</html>
