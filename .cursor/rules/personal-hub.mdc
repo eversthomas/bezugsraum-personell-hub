@@ -1,0 +1,42 @@
+---
+description: Grundregeln für Personal Hub
+alwaysApply: true
+---
+
+# Personal Hub – Regeln
+
+## Projekt
+Persönliches, selbst gehostetes Organisationstool für eine Person.
+Kern: nur lesende Kalender-Gesamtansicht (ICS), Inbox, Aufgaben, Notizen, Push-Erinnerungen.
+Gestaltung und Abläufe: siehe docs/prototyp/. Code daraus nicht übernehmen.
+
+## Technik
+- PHP 8.3, strict_types, PSR-4 unter src/, kein Framework, kein ORM.
+- Datenbank nur über Core\Db (PDO, Prepared Statements). Nie SQL mit Strings zusammenbauen.
+- Frontend: Server-HTML aus templates/ + Vanilla-JS-Module. Kein Build-Schritt, kein npm, keine CDNs.
+- CSS nur über Tokens aus public/assets/css/tokens.css.
+- Neue Composer-Pakete nur nach Rückfrage.
+
+## Architektur
+- Module (Auth, Calendar, Items, Media, Notify) greifen nicht direkt auf fremde Tabellen zu,
+  sondern über den Service des anderen Moduls.
+- Controller dünn, Logik in Services, Services ohne HTML, SQL nur in Repositories.
+- Jedes Modul meldet sich über Module.php an (ModuleInterface); keine globalen Funktionen außer e().
+- Externe Dienste nur über die Interfaces in src/Core/Contracts.
+- Jede Antwort trägt X-Robots-Tag: noindex, nofollow, noarchive.
+- Schemaänderungen nur als neue Datei in migrations/, nie bestehende ändern.
+- Zeiten in UTC speichern, in Europe/Berlin anzeigen.
+
+## Sicherheit (nicht verhandelbar)
+- Jede ändernde Anfrage prüft Login und CSRF.
+- Jede Ausgabe wird escaped (Helper e()).
+- ICS-URLs nur verschlüsselt speichern (Core\Crypto), nie ausgeben oder loggen.
+- Externe Abrufe nur über Calendar\IcsFetcher (SSRF-Schutz).
+- Keine Inhalte (Titel, Notizen, URLs) in Logs.
+
+## Arbeitsweise
+- Nur das umsetzen, was im aktuellen Arbeitspaket steht. Nichts „nebenbei“ verbessern.
+- Vor größeren Änderungen kurz den Plan nennen und auf Freigabe warten.
+- Zu jeder Logik in Services einen PHPUnit-Test schreiben.
+- Am Ende jedes Schritts: welche Dateien geändert wurden und wie man es testet.
+- Sprache in Oberfläche und Kommentaren: Deutsch. Bezeichner im Code: Englisch.

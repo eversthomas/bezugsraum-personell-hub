@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    name: PHP 8.3
+    runs-on: ubuntu-latest
+    steps:
+      - name: Quelltext holen
+        uses: actions/checkout@v4
+
+      - name: PHP 8.3 einrichten
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: none
+
+      - name: Abhängigkeiten installieren
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Tests
+        run: composer test
+
+      - name: Statische Analyse
+        run: |
+          if find src tests -name '*.php' -print -quit | grep -q .; then
+            composer stan
+          else
+            echo "Keine PHP-Dateien in src/ oder tests/, PHPStan übersprungen."
+          fi
