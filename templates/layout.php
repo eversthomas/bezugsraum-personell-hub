@@ -36,6 +36,7 @@ $nav = [
     ['key' => 'erfassen', 'label' => 'Erfassen', 'href' => '/erfassen', 'icon' => '+'],
     ['key' => 'inbox', 'label' => 'Inbox', 'href' => '/inbox', 'icon' => 'I'],
     ['key' => 'quellen', 'label' => 'Kalenderquellen', 'href' => '/einstellungen/quellen', 'icon' => 'K'],
+    ['key' => 'links', 'label' => 'Schnellzugriff pflegen', 'href' => '/einstellungen/links', 'icon' => 'S'],
 ];
 $active = $active ?? '';
 ?>
@@ -60,6 +61,21 @@ $active = $active ?? '';
             </a>
             <?php endforeach; ?>
         </nav>
+        <?php
+        $links = isset($quickLinks) ? $quickLinks() : [];
+        $colors = isset($contextColors) ? $contextColors() : [];
+        ?>
+        <?php if ($links !== []) : ?>
+        <nav class="sidebar__links" aria-label="Schnellzugriff">
+            <p class="sidebar__heading">Schnellzugriff</p>
+            <?php foreach ($links as $link) : ?>
+            <a class="nav__item" href="<?= e($link->url) ?>" target="_blank" rel="noopener noreferrer" title="<?= e($link->label) ?> (neuer Tab)">
+                <span class="nav__icon <?= e(\App\Calendar\Palette::classFor($colors[$link->context ?? ''] ?? '')) ?> nav__icon--source" aria-hidden="true"><?= e($link->symbol) ?></span>
+                <span class="nav__label"><?= e($link->label) ?></span>
+            </a>
+            <?php endforeach; ?>
+        </nav>
+        <?php endif; ?>
         <div class="sidebar__foot">
             <div class="segment" role="group" aria-label="Darstellung">
                 <button type="button" data-theme-set="auto" aria-pressed="false">Auto</button>

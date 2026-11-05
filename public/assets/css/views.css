@@ -811,7 +811,8 @@ body.nav-locked {
     html[data-nav="collapsed"] .nav__label,
     html[data-nav="collapsed"] .sidebar__brand,
     html[data-nav="collapsed"] .sidebar__foot .segment,
-    html[data-nav="collapsed"] .sidebar__foot form {
+    html[data-nav="collapsed"] .sidebar__foot form,
+    html[data-nav="collapsed"] .sidebar__heading {
         display: revert;
     }
 
@@ -1125,4 +1126,35 @@ a.chip.is-active {
 
 .taskcard__more {
     margin: var(--space-2) 0 0;
+}
+
+/* Schnellzugriff */
+
+.sidebar__heading {
+    margin: 0 0 var(--space-1);
+    padding: 0 var(--space-2);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+
+.sidebar__links {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.nav__icon--source {
+    color: var(--src);
+    background: var(--src-tint);
+}
+
+html[data-nav="collapsed"] .sidebar__heading {
+    display: none;
+}
+
+.linklist .task form {
+    display: flex;
+    gap: var(--space-1);
 }

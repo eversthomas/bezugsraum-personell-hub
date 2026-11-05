@@ -9,8 +9,17 @@ namespace App\Core;
  */
 final class View
 {
+    /** @var array<string, \Closure> */
+    private array $shared = [];
+
     public function __construct(private readonly string $templateDir)
     {
+    }
+
+    /** Stellt allen Templates einen lazy ausgewerteten Wert bereit (Aufruf im Template: $name()). */
+    public function share(string $name, \Closure $provider): void
+    {
+        $this->shared[$name] = $provider;
     }
 
     /** @param array<string, mixed> $data */
@@ -21,7 +30,7 @@ final class View
             return $content;
         }
 
-        return $this->include($layout, [...$data, 'content' => $content]);
+        return $this->include($layout, [...$this->shared, ...$data, 'content' => $content]);
     }
 
     /** @param array<string, mixed> $data */

@@ -10,4 +10,5 @@ return [
     App\Auth\Module::class,
     App\Calendar\Module::class,
     App\Items\Module::class,
+    App\Links\Module::class,
 ];
