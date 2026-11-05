@@ -50,6 +50,8 @@ final class SourceController
         $html = $this->view->render('sources/index', [
             'title' => 'Kalenderquellen',
             'bodyClass' => 'app',
+            'shell' => true,
+            'active' => 'quellen',
             'csrf' => $this->csrf->token(),
             'rows' => $rows,
             'contexts' => $this->sources->contexts(),

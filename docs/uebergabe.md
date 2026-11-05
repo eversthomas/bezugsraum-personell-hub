@@ -4,17 +4,33 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 
 ## Erledigt
 
-**AP 1 – Gerüst und Login** ist umgesetzt und getestet (39 PHPUnit-Tests grün gegen MariaDB 10.11, Code-Stil sauber, Login-Ablauf zusätzlich per echtem HTTP-Aufruf geprüft).
+**AP 1 – Gerüst und Login**
 
 - Kern: Router, Container, Db (PDO), View, Session, CSRF, Crypto (libsodium), Migrator, Logger, Modulvertrag (`ModuleInterface`), Security-Header auf jeder Antwort.
 - Anmeldung: Passwort, dann TOTP. Sperre nach 5 Fehlversuchen für 15 Minuten (je IP, zusätzlich 20 je Konto). TOTP-Code nur einmal verwendbar. „Gerät merken“ 30 Tage, nur als Hash gespeichert, einzeln widerrufbar (Repository vorhanden, Oberfläche fehlt noch). Session-ID und CSRF-Token werden nach Login erneuert.
 - Ohne Login: nur `/login`, `/login/code` und statische Dateien; alles andere 404. `/` leitet zur Anmeldung.
-- Oberfläche: Tokens-CSS mit Hell/Dunkel/Auto, Atkinson Hyperlegible Next (Tabellenziffern geprüft: `tnum` vorhanden, Inter als Ersatz nicht nötig), Login-Seiten, Platzhalter-Startseite mit Theme-Schalter und Abmelden.
+- Tokens-CSS mit Hell/Dunkel/Auto, Atkinson Hyperlegible Next (Tabellenziffern geprüft: `tnum` vorhanden).
 - CI mit MariaDB-Dienst, Tests, PHP-CS-Fixer und PHPStan.
+
+**AP 2 – Kalenderquellen und Abruf**
+
+- `IcsFetcher` mit SSRF-Schutz (`UrlGuard`, `IpPolicy`): nur https auf Port 443, keine Zugangsdaten in der URL, nur öffentliche IPs (v4, v6, eingebettetes v4), Verbindung an die geprüfte IP gebunden, höchstens 3 Weiterleitungen (jede neu geprüft), 10 s, 5 MB. Fehlermeldungen enthalten nie die URL.
+- `IcsParser` (sabre/vobject): Windows- und IANA-Zeitzonen, Serien, Ausnahmen (EXDATE, RECURRENCE-ID), Ganztagstermine, abgesagte Termine. Fixtures für Outlook und Google unter `tests/fixtures/ics/` (selbst geschrieben, nicht aus echten Konten).
+- `CalendarService`: anlegen, testen, ersetzen, pausieren, entfernen, Abruf mit ETag, Fehlerstatus pro Quelle, alte Termine bleiben bei Fehlern, Aufräumen nach 30 Tagen. URL nur verschlüsselt, in der Oberfläche nur der Servername.
+- `bin/cron.php` (Sperrdatei, ein Lauf zur Zeit). Cronjob alle 15 Minuten einrichten.
+- Seite „Kalenderquellen“ (`/einstellungen/quellen`) nach dem Prototyp, ohne Inline-Styles (CSP).
+
+**AP 3 – Leitstand**
+
+- Ansichten Tag, Woche, 2 und 4 Wochen. Zeitraster maßstabsgetreu, Ganztagszeile, überlappende Termine, Jetzt-Linie, große Uhr mit nächstem Termin und Countdown, Quellenfilter (wird gemerkt), Detailbereich, Aktualisierung alle 5 Minuten, Quellenfehler als Hinweis.
+- Navigation: ab 900 px Seitenleiste (einklappbar, pro Gerät gemerkt), darunter Hamburger-Menü mit Off-Canvas (Escape, Tipp daneben, Wischen, Fokus bleibt im Menü).
+- Per Playwright in Hell und Dunkel, Desktop und 390 px geprüft; keine Konsolenfehler.
 
 ## Noch nicht geprüft
 
 - **PHPStan (Level 6) lief lokal nicht.** In der Sandbox war das Paket nicht installierbar. Bitte lokal `composer stan` ausführen und die CI ansehen.
+- AP 2/3 sind nur mit selbst geschriebenen ICS-Dateien und Demo-Daten getestet, nicht mit echten M365-/Google-Links. Die Abnahme „alle vier Quellen aktuell“ steht aus.
+- Der Leitstand hat keine automatisierten Browser-Tests; geprüft wurde per Playwright-Screenshot.
 - Nicht auf All-Inkl getestet (AP 0 steht aus: PHP-Version, Erweiterungen, Subdomain, Datenbank).
 - Passkey ist bewusst nicht enthalten (später laut Konzept).
 - Fehlerseite für Anmeldungen zeigt kein Captcha o. Ä.; die Sperre ist die einzige Bremse.
@@ -28,7 +44,7 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 
 ## Nächster Schritt
 
-**AP 2 – Kalenderquellen und Abruf** (siehe `docs/umsetzungskonzept.md`): `IcsFetcher` mit SSRF-Schutz, `IcsParser` mit sabre/vobject, verschlüsselte Quell-URLs, Seite „Kalenderquellen“ nach `docs/prototyp/Quellen.dc.html`, Cronjob.
+**AP 4 – Erfassen und Inbox (PWA)** (siehe `docs/umsetzungskonzept.md`). Vorher sinnvoll: AP 0 (All-Inkl-Checks) und die Abnahme von AP 2/3 mit echten ICS-Links.
 
 ## Lokal ausprobieren
 

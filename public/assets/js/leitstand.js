@@ -1,5 +1,4 @@
 import { api } from './api.js';
-import { initThemeSwitch } from './theme-switch.js';
 import {
     addDays,
     dayKeyOf,
@@ -14,8 +13,6 @@ import {
     startOfWeek,
     weekdayOf,
 } from './time.js';
-
-initThemeSwitch();
 
 const root = document.querySelector('[data-leitstand]');
 const VIEWS = { day: 'Tag', week: 'Woche', w2: '2 Wochen', w4: '4 Wochen' };

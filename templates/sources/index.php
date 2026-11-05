@@ -13,7 +13,6 @@ $badge = [
 ];
 $intervals = [15 => 'alle 15 Minuten', 30 => 'alle 30 Minuten', 60 => 'stündlich'];
 
-require dirname(__DIR__) . '/partials/topbar.php';
 ?>
 <main class="page">
     <header class="page__head">

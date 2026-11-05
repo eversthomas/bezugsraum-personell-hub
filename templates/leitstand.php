@@ -1,6 +1,5 @@
 <?php
 /** @var string $csrf */
-require __DIR__ . '/partials/topbar.php';
 ?>
 <main class="leitstand" data-leitstand>
     <section class="hero" aria-label="Uhrzeit und nächster Termin">

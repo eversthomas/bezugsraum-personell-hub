@@ -22,6 +22,8 @@ final class CoreModule implements ModuleInterface
                 'title' => 'Leitstand',
                 'csrf' => $container->get(Csrf::class)->token(),
                 'bodyClass' => 'app',
+                'shell' => true,
+                'active' => 'leitstand',
             ]);
 
             return Response::html($html);

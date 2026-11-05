@@ -23,7 +23,55 @@
     <script src="/assets/js/theme.js"></script>
 </head>
 <body class="<?= e($bodyClass ?? '') ?>">
+<?php if (!empty($shell)) : ?>
+<?php
+$nav = [
+    ['key' => 'leitstand', 'label' => 'Leitstand', 'href' => '/', 'icon' => 'L'],
+    ['key' => 'quellen', 'label' => 'Kalenderquellen', 'href' => '/einstellungen/quellen', 'icon' => 'K'],
+];
+$active = $active ?? '';
+?>
+<div class="shell" data-shell>
+    <header class="mobilebar">
+        <button type="button" class="mobilebar__button" data-nav-open aria-controls="sidebar" aria-expanded="false" aria-label="Menü öffnen">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <strong><?= e($title) ?></strong>
+    </header>
+    <div class="scrim" data-nav-scrim hidden></div>
+    <aside class="sidebar" id="sidebar" data-sidebar aria-label="Hauptnavigation">
+        <div class="sidebar__head">
+            <span class="sidebar__brand">Personal Hub</span>
+            <button type="button" class="sidebar__close" data-nav-close aria-label="Menü schließen">✕</button>
+        </div>
+        <nav class="sidebar__nav">
+            <?php foreach ($nav as $item) : ?>
+            <a class="nav__item<?= $active === $item['key'] ? ' is-active' : '' ?>" href="<?= e($item['href']) ?>"<?= $active === $item['key'] ? ' aria-current="page"' : '' ?> title="<?= e($item['label']) ?>">
+                <span class="nav__icon" aria-hidden="true"><?= e($item['icon']) ?></span>
+                <span class="nav__label"><?= e($item['label']) ?></span>
+            </a>
+            <?php endforeach; ?>
+        </nav>
+        <div class="sidebar__foot">
+            <div class="segment" role="group" aria-label="Darstellung">
+                <button type="button" data-theme-set="auto" aria-pressed="false">Auto</button>
+                <button type="button" data-theme-set="light" aria-pressed="false">Hell</button>
+                <button type="button" data-theme-set="dark" aria-pressed="false">Dunkel</button>
+            </div>
+            <form method="post" action="/logout">
+                <input type="hidden" name="_csrf" value="<?= e($csrf ?? '') ?>">
+                <button class="btn btn--ghost btn--block" type="submit">Abmelden</button>
+            </form>
+            <button type="button" class="sidebar__collapse" data-nav-collapse aria-pressed="false">Menü einklappen</button>
+        </div>
+    </aside>
+    <div class="shell__main" data-shell-main>
 <?= $content ?>
+    </div>
+</div>
+<?php else : ?>
+<?= $content ?>
+<?php endif; ?>
 <script type="module" src="/assets/js/app.js"></script>
 </body>
 </html>
