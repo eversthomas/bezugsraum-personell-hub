@@ -71,7 +71,7 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 
 ## Noch nicht geprüft
 
-- **PHPStan (Level 6) lief lokal nicht.** In der Sandbox war das Paket nicht installierbar. Bitte lokal `composer stan` ausführen und die CI ansehen.
+- **PHPStan (Level 6)** lief in der Sandbox nicht, wurde aber über die CI geprüft und ist grün (Stand letzter Commit). In `phpstan.neon` sind für `tests/` Array-Typangaben bewusst nicht verlangt, und für `IcsParser` ist eine sabre-bedingte Meldung ausgenommen.
 - AP 2/3 sind nur mit selbst geschriebenen ICS-Dateien und Demo-Daten getestet, nicht mit echten M365-/Google-Links. Die Abnahme „alle vier Quellen aktuell“ steht aus.
 - Der Leitstand hat keine automatisierten Browser-Tests; geprüft wurde per Playwright-Screenshot.
 - Nicht auf All-Inkl getestet (AP 0 steht aus: PHP-Version, Erweiterungen, Subdomain, Datenbank).
