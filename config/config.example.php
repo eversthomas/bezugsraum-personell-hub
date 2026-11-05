@@ -23,9 +23,13 @@ return [
     'crypto' => [
         'key_path' => __DIR__ . '/keys/app.key',
     ],
+    'push' => [
+        // Zusätzlich erlaubte Push-Dienste (Host-Endungen). Standard: Google, Mozilla, Apple, Microsoft.
+        'allowed_hosts' => [],
+    ],
     'vapid' => [
         'subject' => 'mailto:admin@example.invalid',
-        'public_key' => 'replace-me',
+        'public_key' => 'replace-me', // erzeugen mit: php bin/create-vapid.php
         'private_key' => 'replace-me',
     ],
 ];

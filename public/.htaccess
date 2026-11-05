@@ -1,0 +1,28 @@
+# Apache (All-Inkl): alles, was keine Datei ist, läuft über den Front-Controller.
+DirectoryIndex index.php
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+AddType application/manifest+json .webmanifest
+
+# Versteckte Dateien nie ausliefern.
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    # Gilt auch für statische Dateien, die PHP nicht ausliefert (Bilder, Manifest, Schrift, Service Worker).
+    Header always set X-Robots-Tag "noindex, nofollow, noarchive"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "no-referrer"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    # Der Service Worker muss immer frisch geprüft werden.
+    <Files "sw.js">
+        Header always set Cache-Control "no-cache"
+    </Files>
+</IfModule>

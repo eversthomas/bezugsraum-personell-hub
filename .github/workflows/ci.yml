@@ -8,6 +8,23 @@ jobs:
   quality:
     name: PHP 8.3
     runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: personal_hub_test
+          MARIADB_USER: ph
+          MARIADB_PASSWORD: ph
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      PH_TEST_DB_HOST: 127.0.0.1
     steps:
       - name: Quelltext holen
         uses: actions/checkout@v4
@@ -17,9 +34,13 @@ jobs:
         with:
           php-version: "8.3"
           coverage: none
+          extensions: pdo_mysql, sodium, gd, intl, curl, mbstring, gmp
 
       - name: Abhängigkeiten installieren
         run: composer install --no-interaction --prefer-dist
+
+      - name: Code-Stil
+        run: composer cs
 
       - name: Tests
         run: composer test
