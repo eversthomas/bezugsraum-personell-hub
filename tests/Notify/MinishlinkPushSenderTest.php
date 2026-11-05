@@ -31,17 +31,17 @@ final class MinishlinkPushSenderTest extends TestCase
         return ['endpoint' => 'https://fcm.googleapis.com/fcm/send/abc', 'p256dh' => $b64($point), 'auth' => $b64(random_bytes(16))];
     }
 
-    private function sender(int $status, ?RequestInterface &$captured = null): MinishlinkPushSender
+    private function sender(int $status, ?\stdClass $spy = null): MinishlinkPushSender
     {
         $vapid = VAPID::createVapidKeys();
-        $client = new class ($status, $captured) implements ClientInterface {
-            public function __construct(private int $status, private ?RequestInterface &$captured)
+        $client = new class ($status, $spy ?? new \stdClass()) implements ClientInterface {
+            public function __construct(private int $status, private \stdClass $spy)
             {
             }
 
             public function sendRequest(RequestInterface $request): ResponseInterface
             {
-                $this->captured = $request;
+                $this->spy->request = $request;
 
                 return new Response($this->status);
             }
@@ -52,8 +52,9 @@ final class MinishlinkPushSenderTest extends TestCase
 
     public function testRequestIsEncryptedAndSigned(): void
     {
-        $captured = null;
-        $result = $this->sender(201, $captured)->send($this->subscription(), '{"title":"Geheimer Titel","body":"Text"}');
+        $spy = new \stdClass();
+        $result = $this->sender(201, $spy)->send($this->subscription(), '{"title":"Geheimer Titel","body":"Text"}');
+        $captured = $spy->request ?? null;
 
         self::assertSame(PushResult::Delivered, $result);
         self::assertNotNull($captured);

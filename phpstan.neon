@@ -1,5 +1,6 @@
 parameters:
     level: 6
+    reportUnmatchedIgnoredErrors: false
     paths:
         - src
         - tests
@@ -11,3 +12,7 @@ parameters:
         -
             identifier: missingType.generics
             path: tests/*
+        # sabre/vobject-Komponenten sind durchlaufbar, haben aber keine Typangabe für die Elemente.
+        -
+            identifier: missingType.iterableValue
+            path: src/Calendar/IcsParser.php

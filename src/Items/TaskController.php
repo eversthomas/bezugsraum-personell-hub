@@ -124,7 +124,11 @@ final class TaskController
         }, 'Aufgabe gelöscht.');
     }
 
-    /** JSON für die Aufgaben-Karte im Leitstand. @param array<string, string> $params */
+    /**
+     * JSON für die Aufgaben-Karte im Leitstand.
+     *
+     * @param array<string, string> $params
+     */
     public function dueSummary(Request $request, array $params = []): Response
     {
         $summary = $this->service->dueSummary();

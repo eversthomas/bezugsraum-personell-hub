@@ -138,6 +138,7 @@ final class SecurityPagesTest extends DbTestCase
             self::assertStringContainsString($message, $this->get('/einstellungen/sicherheit')->body);
         }
         $user = $this->kernel->container()->get(UserRepository::class)->findById($this->userId);
-        self::assertTrue(password_verify(self::PASSWORD, $user?->passwordHash ?? ''), 'Passwort blieb unverändert');
+        self::assertNotNull($user);
+        self::assertTrue(password_verify(self::PASSWORD, $user->passwordHash), 'Passwort blieb unverändert');
     }
 }

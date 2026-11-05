@@ -14,7 +14,10 @@ final class IcsFetcherTest extends TestCase
 {
     private const ICS = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR\r\n";
 
-    /** @param list<HttpResponse> $responses */
+    /**
+     * @param list<HttpResponse> $responses
+     * @param-out FakeTransport $transport
+     */
     private function fetcher(array $responses, ?FakeTransport &$transport = null): IcsFetcher
     {
         $transport = new FakeTransport($responses);

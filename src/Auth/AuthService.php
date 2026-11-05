@@ -60,6 +60,7 @@ final class AuthService implements AuthenticatorInterface
         return $this->current = $this->users->findById($id);
     }
 
+    /** @phpstan-impure */
     public function hasPendingTotp(): bool
     {
         $id = $this->session->get('pending_uid');
@@ -86,8 +87,9 @@ final class AuthService implements AuthenticatorInterface
         }
 
         $user = $username === '' ? null : $this->users->findByUsername($username);
-        $valid = password_verify($password, $user?->passwordHash ?? self::DUMMY_HASH) && $user !== null;
-        if (!$valid || $user === null) {
+        // Auch bei unbekanntem Namen wird gegen einen Hash geprüft (gleicher Zeitaufwand).
+        $valid = password_verify($password, $user !== null ? $user->passwordHash : self::DUMMY_HASH);
+        if ($user === null || !$valid) {
             $this->attempts->record($ipHash, $userHash, false, $this->time($this->now()));
 
             return new LoginResult(LoginStatus::Invalid);
