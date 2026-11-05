@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Leitstand – Feinschliff</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@200..800&amp;family=Instrument+Sans:wght@400..700&amp;display=swap">
+<style>
+body{margin:0}
+.fs{--bg:#F7F7F5;--ink:#1B1C1F;--ink2:#4A4D55;--muted:#71757E;--hair:rgba(20,22,28,0.09);--hair2:rgba(20,22,28,0.05);--accent:#2F5BD3;--free:#8A8E96;--warn:#B4590F;--now:#D33A2C;--hover:rgba(20,22,28,0.04)}
+.fs.dark{--bg:#131417;--ink:#E9EAEC;--ink2:#BFC2C8;--muted:#8D919A;--hair:rgba(255,255,255,0.09);--hair2:rgba(255,255,255,0.05);--accent:#7FA1F5;--free:#7C8089;--warn:#E8A15E;--now:#F06A5C;--hover:rgba(255,255,255,0.05)}
+.fs a{color:inherit}
+.fs button,.fs input{font:inherit;color:inherit}
+.fs .nv:hover{background:var(--hover)}
+.fs button:focus-visible,.fs a:focus-visible,.fs input:focus-visible{outline:1.5px solid var(--accent);outline-offset:3px}
+.fs input::placeholder{color:var(--muted)}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="min-height: 100vh; display: flex; flex-wrap: wrap; background: var(--bg); color: var(--ink); font-weight: 400; letter-spacing: 0.005em; {{fontStyle}}">
+
+  <nav aria-label="Hauptnavigation" style="flex: 1 1 200px; max-width: 240px; box-sizing: border-box; padding: 32px 20px 24px 28px; border-right: 1px solid var(--hair); display: flex; flex-direction: column; gap: 36px">
+    <span style="font-size: 15px; font-weight: 600; letter-spacing: -0.005em">Bezugsraum</span>
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <a href="#" aria-current="page" style="position: relative; display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: 0 10px; margin-left: -10px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500"><span aria-hidden="true" style="position: absolute; left: -10px; top: 9px; bottom: 9px; width: 2px; border-radius: 1px; background: var(--ink)"></span>Leitstand</a>
+      <a href="#" class="nv" style="display: flex; align-items: center; min-height: 36px; padding: 0 10px; margin-left: -10px; border-radius: 6px; text-decoration: none; font-size: 14px; color: var(--ink2)">Aufgaben</a>
+      <a href="#" class="nv" style="display: flex; align-items: center; min-height: 36px; padding: 0 10px; margin-left: -10px; border-radius: 6px; text-decoration: none; font-size: 14px; color: var(--ink2)">Notizen</a>
+      <a href="#" class="nv" style="display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: 0 10px; margin-left: -10px; border-radius: 6px; text-decoration: none; font-size: 14px; color: var(--ink2)">Inbox<span style="font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums">2</span></a>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="margin-bottom: 8px; font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em">Kalender</span>
+      <sc-for list="{{sources}}" as="s" hint-placeholder-count="4">
+        <label style="display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 13px; color: var(--ink2); cursor: pointer">
+          <input type="checkbox" checked="{{s.on}}" onChange="{{s.toggle}}" style="position: absolute; opacity: 0; width: 1px; height: 1px">
+          <span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; flex: 0 0 7px; box-sizing: border-box; {{s.dot}}"></span>{{s.name}}
+        </label>
+      </sc-for>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="margin-bottom: 8px; font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em">Schnellzugriff</span>
+      <a href="#" class="nv" style="display: flex; align-items: center; justify-content: space-between; min-height: 32px; padding: 0 10px; margin-left: -10px; border-radius: 6px; text-decoration: none; font-size: 13px; color: var(--ink2)">Outlook · Arbeit<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" style="color: var(--muted)"><path d="M8 16L16 8M9 8h7v7"></path></svg></a>
+      <a href="#" class="nv" style="display: flex; align-items: center; justify-content: space-between; min-height: 32px; padding: 0 10px; margin-left: -10px; border-radius: 6px; text-decoration: none; font-size: 13px; color: var(--ink2)">Google Kalender<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" style="color: var(--muted)"><path d="M8 16L16 8M9 8h7v7"></path></svg></a>
+    </div>
+    <span style="margin-top: auto; font-size: 12px; color: var(--muted)">Abruf vor 4 Min</span>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 32px">
+
+    <header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 24px 48px; padding-bottom: 28px; border-bottom: 1px solid var(--hair)">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <span style="font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em">Donnerstag · 5. November</span>
+        <span style="font-size: 76px; font-weight: 200; line-height: 0.9; letter-spacing: -0.035em; font-variant-numeric: tabular-nums">12:35</span>
+      </div>
+      <div style="flex: 1 1 320px; max-width: 520px; display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; align-items: baseline; gap: 12px; font-size: 14px">
+          <span style="color: var(--muted)">Als Nächstes</span>
+          <span style="width: 7px; height: 7px; border-radius: 50%; background: #C2531B; align-self: center" aria-hidden="true"></span>
+          <span style="font-weight: 500">13:00 Betriebsratssitzung</span>
+          <span style="color: var(--muted); font-variant-numeric: tabular-nums">in 25 Min</span>
+        </div>
+        <form style="display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--hair); padding-bottom: 8px">
+          <label for="cap" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Erfassen</label>
+          <input id="cap" type="text" placeholder="Was geht dir durch den Kopf?" autocomplete="off" style="flex: 1; min-width: 0; height: 32px; border: 0; background: transparent; font-size: 15px">
+          <button type="button" aria-label="Diktieren" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></button>
+          <span style="font-size: 12px; color: var(--muted)">↵ Sichern</span>
+        </form>
+      </div>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px 24px">
+      <div role="group" aria-label="Zeitraum" style="display: flex; gap: 22px; font-size: 14px">
+        <sc-for list="{{views}}" as="v" hint-placeholder-count="4">
+          <button type="button" onClick="{{v.set}}" aria-pressed="{{v.pressed}}" style="padding: 4px 0; border: 0; border-bottom: 1px solid; background: transparent; cursor: pointer; {{v.style}}">{{v.label}}</button>
+        </sc-for>
+      </div>
+      <div role="group" aria-label="Ergänzungen" style="display: flex; gap: 18px; font-size: 13px; color: var(--ink2)">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer"><input type="checkbox" checked="{{showFree}}" onChange="{{toggleFree}}" style="accent-color: var(--accent); margin: 0">Freie Zeit</label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer"><input type="checkbox" checked="{{showBuf}}" onChange="{{toggleBuf}}" style="accent-color: var(--accent); margin: 0">Übergänge</label>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start">
+      <section aria-label="Tagesverlauf" style="flex: 999 1 480px; min-width: 0; position: relative; height: 672px">
+        <sc-for list="{{hours}}" as="h" hint-placeholder-count="13">
+          <div aria-hidden="true" style="position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid var(--hair2); {{h.pos}}">
+            <span style="position: absolute; left: 0; top: -8px; padding-right: 10px; background: var(--bg); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums">{{h.label}}</span>
+          </div>
+        </sc-for>
+        <sc-if value="{{showFree}}" hint-placeholder-val="{{ true }}">
+          <sc-for list="{{gaps}}" as="g" hint-placeholder-count="3">
+            <div style="position: absolute; left: 56px; right: 0; box-sizing: border-box; display: flex; align-items: center; padding: 0 12px; border: 1px dashed var(--hair); border-radius: 4px; font-size: 12px; color: var(--free); {{g.pos}}"><span style="font-variant-numeric: tabular-nums">frei · {{g.label}}</span></div>
+          </sc-for>
+        </sc-if>
+        <sc-for list="{{events}}" as="e" hint-placeholder-count="5">
+          <div style="position: absolute; left: 56px; right: 0; box-sizing: border-box; display: flex; justify-content: space-between; gap: 16px; padding: 6px 12px 6px 14px; border-radius: 4px; overflow: hidden; {{e.pos}}">
+            <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <span style="font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{e.t}}</span>
+              <sc-if value="{{e.tall}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; color: var(--ink2)">{{e.loc}}</span></sc-if>
+            </span>
+            <span style="flex: 0 0 auto; font-size: 12px; color: var(--ink2); font-variant-numeric: tabular-nums">{{e.time}}</span>
+          </div>
+        </sc-for>
+        <sc-if value="{{showBuf}}" hint-placeholder-val="{{ true }}">
+          <sc-for list="{{seams}}" as="b" hint-placeholder-count="1">
+            <div style="position: absolute; left: 56px; right: 0; height: 0; {{b.pos}}">
+              <span style="position: absolute; right: 8px; top: -9px; padding: 1px 6px; border-radius: 3px; background: var(--bg); box-shadow: 0 0 0 1px var(--warn) inset; color: var(--warn); font-size: 11px">kein Puffer</span>
+            </div>
+          </sc-for>
+        </sc-if>
+        <div aria-hidden="true" style="position: absolute; left: 48px; right: 0; height: 0; border-top: 1px solid var(--now); {{nowPos}}">
+          <span style="position: absolute; left: -3px; top: -3.5px; width: 6px; height: 6px; border-radius: 50%; background: var(--now)"></span>
+        </div>
+      </section>
+
+      <aside style="flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 32px">
+        <section style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em">Jetzt</span>
+          <p style="margin: 0; font-size: 20px; font-weight: 300; line-height: 1.35">Frei bis 13:00.<br><span style="color: var(--muted)">Danach zwei Stunden Sitzung.</span></p>
+        </section>
+        <section style="display: flex; flex-direction: column">
+          <span style="margin-bottom: 6px; font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em">Heute zu tun</span>
+          <sc-for list="{{tasks}}" as="t" hint-placeholder-count="3">
+            <label style="display: flex; gap: 12px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--hair); font-size: 14px; cursor: pointer">
+              <input type="checkbox" style="margin: 0; accent-color: var(--accent); transform: translateY(1px)">
+              <span style="flex: 1">{{t.title}}</span>
+              <sc-if value="{{t.high}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: var(--warn)">hoch</span></sc-if>
+            </label>
+          </sc-for>
+        </section>
+        <section style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em">Diese Woche</span>
+          <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; align-items: end; height: 64px">
+            <sc-for list="{{load}}" as="l" hint-placeholder-count="5">
+              <div style="display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; height: 100%">
+                <div title="{{l.title}}" style="width: 100%; border-radius: 2px; {{l.bar}}"></div>
+                <span style="font-size: 11px; text-align: center; {{l.labelStyle}}">{{l.d}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"font":{"editor":"enum","options":["Atkinson Hyperlegible Next","Instrument Sans"],"default":"Atkinson Hyperlegible Next"},"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { view: 'day', free: true, buf: true, off: {} };
+  }
+  renderVals() {
+    const st = this.state;
+    const dark = this.props.dark ?? false;
+    const font = this.props.font ?? 'Atkinson Hyperlegible Next';
+    const SRC = {
+      awo: { name: 'Arbeit', c: dark ? '#7FA1F5' : '#2F5BD3', t: dark ? 'rgba(127,161,245,0.12)' : 'rgba(47,91,211,0.07)' },
+      br: { name: 'Betriebsrat', c: dark ? '#EE9A66' : '#C2531B', t: dark ? 'rgba(238,154,102,0.12)' : 'rgba(194,83,27,0.07)' },
+      sys: { name: 'Ehrenamt', c: dark ? '#B39BF7' : '#6F45D9', t: dark ? 'rgba(179,155,247,0.12)' : 'rgba(111,69,217,0.07)' },
+      priv: { name: 'Privat', c: dark ? '#62C48D' : '#267A4B', t: dark ? 'rgba(98,196,141,0.12)' : 'rgba(38,122,75,0.07)' }
+    };
+    const START = 7, END = 19, PX = 56, NOW = 12 * 60 + 35;
+    const m = (s) => { const p = s.split(':'); return +p[0] * 60 + +p[1]; };
+    const y = (min) => (min - START * 60) / 60 * PX;
+    const EV = [
+      ['08:30', '09:00', 'awo', 'Teamrunde', 'Teams'],
+      ['10:00', '11:00', 'awo', 'Bewerbungsgespräch', 'Raum 1.04'],
+      ['11:00', '11:30', 'sys', 'Abstimmung Website', 'Videocall'],
+      ['13:00', '15:00', 'br', 'Betriebsratssitzung', 'Sitzungsraum 2'],
+      ['15:30', '16:15', 'awo', 'Auswertung Pilot', 'Teams'],
+      ['18:00', '19:00', 'priv', 'Laufgruppe', 'Pappelsee']
+    ].map((e) => ({ s: m(e[0]), e: m(e[1]), src: e[2], t: e[3], loc: e[4], time: e[0] + '–' + e[1] }))
+      .filter((e) => !st.off[e.src]);
+
+    const events = EV.map((e) => {
+      const S = SRC[e.src], h = (e.e - e.s) / 60 * PX - 2;
+      return { t: e.t, loc: e.loc, time: e.time, tall: h >= 50,
+        pos: 'top:' + y(e.s) + 'px;height:' + h + 'px;background:' + S.t + ';box-shadow:inset 2px 0 0 ' + S.c + ';opacity:' + (e.e <= NOW ? 0.55 : 1) };
+    });
+
+    const gaps = [];
+    let cur = 8 * 60;
+    EV.forEach((e) => { if (e.s - cur >= 30) gaps.push([cur, e.s]); cur = Math.max(cur, e.e); });
+    if (17 * 60 - cur >= 30) gaps.push([cur, 17 * 60]);
+    const fmt = (d) => (d >= 60 ? Math.floor(d / 60) + ' Std' + (d % 60 ? ' ' + (d % 60) : '') : d + ' Min');
+    const gapList = gaps.map((g) => ({ label: fmt(g[1] - g[0]), pos: 'top:' + (y(g[0]) + 2) + 'px;height:' + ((g[1] - g[0]) / 60 * PX - 6) + 'px' }));
+
+    const seams = [];
+    for (let i = 1; i < EV.length; i++) if (EV[i].s === EV[i - 1].e) seams.push({ pos: 'top:' + y(EV[i].s) + 'px' });
+
+    const hours = [];
+    for (let h = START; h <= END; h++) hours.push({ label: (h < 10 ? '0' : '') + h + ':00', pos: 'top:' + (h - START) * PX + 'px' });
+
+    const views = [['day', 'Tag'], ['w1', 'Woche'], ['w2', '2 Wochen'], ['w4', '4 Wochen']].map((v) => ({
+      label: v[1], pressed: String(st.view === v[0]), set: () => this.setState({ view: v[0] }),
+      style: st.view === v[0] ? 'color:var(--ink);border-color:var(--ink);font-weight:500' : 'color:var(--muted);border-color:transparent'
+    }));
+    const sources = Object.keys(SRC).map((k) => ({
+      name: SRC[k].name, on: !st.off[k],
+      toggle: () => this.setState({ off: Object.assign({}, this.state.off, { [k]: !this.state.off[k] }) }),
+      dot: st.off[k] ? 'border:1px solid var(--muted)' : 'background:' + SRC[k].c
+    }));
+    const LOAD = [['Mo', 4.5], ['Di', 6], ['Mi', 2], ['Do', 5], ['Fr', 1.5]];
+    const load = LOAD.map((l) => ({
+      d: l[0], title: l[0] + ': ' + l[1] + ' Std gebucht',
+      bar: 'height:' + Math.round(l[1] / 8 * 44) + 'px;background:' + (l[0] === 'Do' ? 'var(--ink)' : 'var(--hair)'),
+      labelStyle: l[0] === 'Do' ? 'color:var(--ink);font-weight:500' : 'color:var(--muted)'
+    }));
+
+    return {
+      rootClass: dark ? 'fs dark' : 'fs',
+      fontStyle: "font-family:'" + font + "', system-ui, sans-serif",
+      views, sources, events, gaps: gapList, seams, hours,
+      showFree: st.free, showBuf: st.buf,
+      toggleFree: () => this.setState({ free: !this.state.free }),
+      toggleBuf: () => this.setState({ buf: !this.state.buf }),
+      nowPos: 'top:' + y(NOW) + 'px',
+      tasks: [
+        { title: 'Protokoll BR-Sitzung gegenlesen', high: true },
+        { title: 'Stellenanzeige Pflege überarbeiten', high: false },
+        { title: 'Rückmeldung Lernreise-Texte', high: false }
+      ],
+      load
+    };
+  }
+}
+</script>
+</body>
+</html>

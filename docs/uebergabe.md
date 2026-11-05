@@ -55,7 +55,7 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 - Aufgaben: Erinnerung am Fälligkeitstag um 8:00 Uhr (Berlin), genau einmal. Wiederkehrende Aufgaben erinnern beim nächsten Termin wieder. Erinnerungen, die mehr als 2 Tage zurückliegen (etwa nach einem Ausfall), werden still übersprungen. Scheitert der Versand an allen Geräten, wird die Erinnerung freigegeben und höchstens 3-mal versucht.
 - Termine: Hinweis „5 bis 60 Minuten vorher“, je Kalenderquelle einstellbar (Seite Kalenderquellen). Jeder Termin wird genau einmal gemeldet, auch wenn der Abruf die Terminzeilen ersetzt. Bei einem Cron-Takt von 15 Minuten kommt der Hinweis zwischen 0 und 15 Minuten nach Erreichen der Vorlaufzeit; für genauere Hinweise den Cron häufiger laufen lassen (All-Inkl: Mindestintervall prüfen).
 - Sicherheit: Push-Endpunkte werden vom Server aufgerufen, daher nur Endpunkte von Google, Mozilla, Apple und Microsoft (erweiterbar über `push.allowed_hosts`), nur https auf Port 443. Der private VAPID-Schlüssel wird nirgends ausgegeben.
-- **`minishlink/web-push` braucht einen PSR-18-Client, und im Projekt ist keiner installiert.** Statt ein neues Paket aufzunehmen (laut Regeldatei nur nach Rückfrage), liegt unter `src/Notify/Http/` ein kleiner eigener PSR-7/17/18-Client auf cURL. Wenn du lieber Guzzle oder `symfony/http-client` nutzen willst, ist das ein Austausch in `MinishlinkPushSender` (Konstruktor-Argument `$client`).
+- `minishlink/web-push` **braucht einen PSR-18-Client, und im Projekt ist keiner installiert.** Statt ein neues Paket aufzunehmen (laut Regeldatei nur nach Rückfrage), liegt unter `src/Notify/Http/` ein kleiner eigener PSR-7/17/18-Client auf cURL. Wenn du lieber Guzzle oder `symfony/http-client` nutzen willst, ist das ein Austausch in `MinishlinkPushSender` (Konstruktor-Argument `$client`).
 - Die PHP-Erweiterung `gmp` oder `bcmath` beschleunigt die Verschlüsselung und unterdrückt eine Hinweismeldung der Bibliothek; bei All-Inkl in AP 0 prüfen.
 - **Nicht geprüft:** der Zustellweg bis auf ein echtes Gerät. Getestet sind die Verschlüsselung und das Signieren (VAPID, aes128gcm) gegen einen Mitschnitt-Client sowie die gesamte Logik; Zustellung über FCM/Mozilla/Apple ist aus der Sandbox nicht möglich. Die Abnahme „Erinnerung kommt bei geschlossener App auf dem Pixel an“ steht aus.
 
@@ -128,6 +128,168 @@ Heute ist der Leitstand der Kalender. Zur Diskussion: Kalender als eigener Menü
 ### Gestaltung
 
 Das jetzige Design und das einklappbare Hauptmenü passen, auch die mobile Ansicht. Gewünscht ist eine insgesamt filigranere Gestaltung. Konkrete Vorbilder kommen noch.
+
+
+
+## Idee: Kalender-Ergänzungen „Freie Zeit“ und „Horizont“
+
+Grundsatz: Beides sind optionale Ebenen, keine neuen Pflichtansichten. Die
+
+bestehenden Ansichten (Tag, Woche, 2 Wochen, 4 Wochen) bleiben unverändert
+
+der Standard. Jede Ergänzung lässt sich einzeln ein- und ausschalten:
+
+- als Schalter direkt neben der Zeitraumwahl
+
+- Zustand pro Gerät gemerkt (wie Kalenderfilter und Darstellung)
+
+- Standard: aus
+
+Alles bleibt nur lesend und arbeitet nur mit den vorhandenen Termindaten
+
+(Titel, Zeit, Ort, Quelle).
+
+### 1. Freie Zeit und Übergänge
+
+Zweck: Lücken und enge Übergänge auf einen Blick erkennen.
+
+a) Freie Zeit (Schalter „Freie Zeit“)
+
+- Lücken zwischen Terminen aller eingeblendeten Quellen werden als eigene,
+
+  zurückhaltende Fläche dargestellt: gestrichelte Haarlinie, Text
+
+  „frei · 1 Std 30“, keine Füllfarbe.
+
+- Nur innerhalb der Arbeitszeit aus den Einstellungen (Standard 08:00–17:00),
+
+  am Wochenende nur, wenn die Arbeitszeit das vorsieht.
+
+- Mindestlänge einstellbar (Standard 30 Min); kürzere Lücken werden nicht
+
+  beschriftet.
+
+- Ausgeblendete Quellen zählen nicht als belegt.
+
+- Ganztägige Termine blockieren keine Zeit.
+
+- Antippen einer Lücke öffnet „Zeit reservieren“ (AP 8) mit
+
+  vorausgewähltem Zeitfenster.
+
+- Ansichten: Tag und Woche als Fläche im Zeitraster; in 2 und 4 Wochen
+
+  nur als Summe pro Tag („3 Std frei“) in der Tageszelle.
+
+b) Übergänge (Schalter „Übergänge“)
+
+- Stößt ein Termin ohne Pause an den nächsten, erscheint an der Kante eine
+
+  kleine Markierung „kein Puffer“.
+
+- Folgen drei oder mehr Termine ohne Pause aufeinander, zusätzlich ein
+
+  Hinweis am Tag („3 Termine am Stück“).
+
+- Puffergrenze einstellbar (Standard 10 Min).
+
+- Nur Tag und Woche.
+
+Logik: ein Service `Calendar\GapFinder`, abgestimmt mit dem vorhandenen
+
+`SlotFinder` aus AP 8 (gemeinsame Logik wiederverwenden, nicht doppeln).
+
+Eingabe: Termine eines Zeitraums, Arbeitszeit, Mindestlänge; Ausgabe:
+
+Lücken und Übergänge. Mit Tests für Überlappungen, ganztägige Termine,
+
+Termine über Mitternacht und ausgeblendete Quellen.
+
+### 2. Horizont
+
+Zweck: eine fortlaufende Ansicht, die nah liegende Zeit ausführlich und
+
+ferne Zeit verdichtet zeigt – statt zwischen Reitern zu wechseln.
+
+- Wählbar als zusätzlicher Eintrag in der Zeitraumwahl („Horizont“),
+
+  gleichrangig zu Tag, Woche usw. Kein Standard.
+
+- Möglicher fester Platz: im künftigen Leitstand als Überblick, wenn
+
+  Kalender und Leitstand getrennt werden.
+
+- Aufbau von oben nach unten (Desktop und mobil gleich, vertikal scrollend):
+
+  1. Heute: alle Termine mit Uhrzeit, Ort und Quelle, Jetzt-Markierung,
+
+     vergangene Termine blasser
+
+  2. Morgen: Termine als kompakte Zeilen (Uhrzeit, Titel, Quellpunkt)
+
+  3. Rest der Woche: pro Tag eine Zeile mit Lastbalken (gebuchte Stunden,
+
+     nach Quellfarben unterteilt) und den ersten zwei Titeln, Rest als „+3“
+
+  4. Nächste drei Wochen: pro Woche eine Zeile mit Lastbalken je Tag und
+
+     ganztägigen Einträgen (z. B. Urlaub) als Text
+
+- Jede verdichtete Zeile lässt sich aufklappen und zeigt dann die Termine
+
+  wie unter „Morgen“.
+
+- Lastbalken: Höhe oder Länge proportional zu gebuchten Stunden innerhalb
+
+  der Arbeitszeit, mit Textwert für Screenreader und beim Überfahren
+
+  („5 Std gebucht, 3 Std frei“). Farbe nie als einzige Information.
+
+- Mit „Freie Zeit“ kombinierbar: dann zeigen die Zeilen zusätzlich die
+
+  freien Stunden.
+
+Nicht Teil dieser Idee: Bewertungen der Auslastung („zu viel“), Statistiken
+
+über Rollen, Bearbeiten von Terminen.
+
+## Idee: Filigranere Gestaltung
+
+Referenz: docs/prototyp/Feinschliff.dc.html (Gestaltung, nicht Code).
+
+- Haarlinien statt Kästen: Trennlinien 1 px mit geringem Kontrast statt
+
+  Karten mit Rahmen und Schatten.
+
+- Hierarchie über Typografie: kleine Labels in Versalien mit Sperrung,
+
+  große Werte in leichtem Schnitt (Uhr 200–300), Fließtext 400,
+
+  Fett sparsam.
+
+- Weniger Farbe: Quellfarben nur als feine Kante und zarte Tönung, eine
+
+  Akzentfarbe für Interaktion, keine schwarzen Primärknöpfe.
+
+- Kleinere Radien (4–6 px), striktes 4-px-Raster, mehr Weißraum.
+
+- Zurückhaltende Bedienelemente: Zeitraumwahl als Textreiter mit feiner
+
+  Unterstreichung, Erfassen als Linie statt Textbox, dünne Icons statt
+
+  Buchstaben-Badges in der Navigation.
+
+- Mindestgrößen bleiben verbindlich: Text nie unter 13 px, Touch-Ziele
+
+  44 px. Die Referenz unterschreitet das bei Labels (11–12 px); die
+
+  feinere Wirkung entsteht über Gewicht, Sperrung, Farbe und Abstand,
+
+  nicht über kleinere Schrift.
+
+- Umsetzung zentral über Tokens und Komponenten; vorher die doppelten
+
+  dunklen Tokens zusammenführen.
 
 ## Lokal ausprobieren
 

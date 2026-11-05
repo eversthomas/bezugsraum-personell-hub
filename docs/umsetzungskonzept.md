@@ -187,7 +187,6 @@ Regeln für das Modell:
 - Beim Abruf einer Quelle werden ihre Termine im Zeitfenster vollständig ersetzt (in einer Transaktion). Schlägt der Abruf fehl, bleibt der alte Stand stehen.
 - Termine älter als 30 Tage löscht der Cronjob.
 - Kontext ist Einordnung, keine Zugriffsgrenze.
-- Beim Parsen werden nur Titel, Ort, Zeiten und UID übernommen. `DESCRIPTION`, `ATTENDEE` und `ORGANIZER` werden verworfen und nie gespeichert oder geloggt, auch wenn die Quelle „alle Details“ liefert.
 
 ## Sicherheit
 
@@ -262,7 +261,7 @@ Der Kalender kommt vor den Aufgaben, weil er der eigentliche Schmerzpunkt ist. N
 
 ### AP 0 – Vorab-Checks (ohne Code)
 
-- [x] ICS-Veröffentlichung in allen drei M365-Konten getestet (AWO bestätigt, die beiden anderen laut Anwender analog). Detailstufe: „Titel und Orte“ genügt; „Alle Details“ gibt dem Link mehr preis als nötig
+- [ ] ICS-Veröffentlichung in allen drei M365-Konten testen, Detailstufe „Titel und Orte“
 - [ ] Google: geheime iCal-Adresse kopieren
 - [ ] All-Inkl: PHP 8.3, Erweiterungen `sodium`, `gd` oder `imagick`, `intl`, `curl`; Cron-Intervall; Upload-Limit
 - [ ] Subdomain mit HTTPS anlegen, Domainziel auf `public/`
