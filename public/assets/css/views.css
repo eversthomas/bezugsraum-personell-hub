@@ -1158,3 +1158,11 @@ html[data-nav="collapsed"] .sidebar__heading {
     display: flex;
     gap: var(--space-1);
 }
+
+.photo {
+    display: block;
+    max-width: 100%;
+    max-height: 22rem;
+    margin: var(--space-2) 0;
+    border-radius: var(--radius-sm);
+}

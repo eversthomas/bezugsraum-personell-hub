@@ -23,6 +23,9 @@ $origins = ['text' => 'Text', 'voice' => 'Sprache', 'photo' => 'Foto', 'link' =>
             <h2><?= e($row['title']) ?></h2>
             <p class="small muted"><?= e($row['created']) ?> · <?= e($origins[$row['origin']] ?? 'Text') ?></p>
         </header>
+        <?php foreach ($row['photos'] as $photoId) : ?>
+        <a href="/media/<?= e($photoId) ?>" target="_blank" rel="noopener"><img class="photo" src="/media/<?= e($photoId) ?>" alt="Foto zum Eintrag" loading="lazy"></a>
+        <?php endforeach; ?>
         <?php if ($row['body'] !== '') : ?>
         <p class="inbox-item__body"><?= nl2br(e($row['body'])) ?></p>
         <?php endif; ?>

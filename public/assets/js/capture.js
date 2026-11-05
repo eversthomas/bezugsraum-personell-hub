@@ -36,6 +36,65 @@ function say(text) {
     });
 }
 
+async function sendText(item) {
+    return fetch('/api/v1/items', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-Token': csrf() },
+        body: JSON.stringify({ text: item.text, origin: item.origin, client_uuid: item.uuid }),
+    });
+}
+
+/** data:-URL zu Blob, ohne fetch (die Content-Security-Policy erlaubt kein connect-src data:). */
+function dataUrlToBlob(dataUrl) {
+    const [head, payload] = dataUrl.split(',');
+    const mime = /data:([^;]+)/.exec(head)?.[1] ?? 'image/jpeg';
+    const binary = atob(payload);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: mime });
+}
+
+async function sendPhoto(item) {
+    const blob = dataUrlToBlob(item.photo);
+    const form = new FormData();
+    form.append('photo', blob, 'foto.jpg');
+    form.append('text', item.text);
+    form.append('client_uuid', item.uuid);
+    return fetch('/api/v1/photos', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json', 'X-CSRF-Token': csrf() },
+        body: form,
+    });
+}
+
+/** Verkleinert ein Foto im Browser (längste Seite 1600 px, JPEG) und berücksichtigt die Ausrichtung. */
+async function shrinkPhoto(file) {
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext('2d');
+    context.fillStyle = '#fff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close?.();
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+    if (!blob) {
+        throw new Error('Foto konnte nicht umgewandelt werden');
+    }
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+    });
+}
+
 let flushing = false;
 
 /** Sendet wartende Einträge der Reihe nach. Gibt die Anzahl noch wartender zurück. */
@@ -50,12 +109,7 @@ export async function flush() {
             const item = items[0];
             let response;
             try {
-                response = await fetch('/api/v1/items', {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-Token': csrf() },
-                    body: JSON.stringify({ text: item.text, origin: item.origin, client_uuid: item.uuid }),
-                });
+                response = item.photo ? await sendPhoto(item) : await sendText(item);
             } catch {
                 break; // kein Netz: später erneut
             }
@@ -88,6 +142,32 @@ document.querySelectorAll('form[data-capture]').forEach((form) => {
     const text = form.querySelector('[data-capture-text]');
     const origin = form.querySelector('[data-capture-origin]');
     const voice = form.querySelector('[data-capture-voice]');
+
+    const photoButton = form.querySelector('[data-capture-photo]');
+    const fileInput = form.querySelector('[data-capture-file]');
+    photoButton?.addEventListener('click', () => fileInput.click());
+    fileInput?.addEventListener('change', async () => {
+        const file = fileInput.files?.[0];
+        fileInput.value = '';
+        if (!file) {
+            return;
+        }
+        say('Foto wird vorbereitet …');
+        try {
+            const photo = await shrinkPhoto(file);
+            const entry = { uuid: uuid(), text: text.value.trim() || 'Foto', origin: 'photo', photo, at: Date.now() };
+            const items = queue.read();
+            items.push(entry);
+            if (!queue.write(items)) {
+                say('Das Foto konnte nicht vorgemerkt werden (Speicher voll).');
+                return;
+            }
+            text.value = '';
+            report(await flush());
+        } catch {
+            say('Das Foto konnte nicht verarbeitet werden.');
+        }
+    });
 
     voice?.addEventListener('click', () => {
         origin.value = 'voice';

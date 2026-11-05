@@ -13,3 +13,4 @@
 - AP 4: PWA (Manifest, Service Worker, Shortcuts, Share-Target), Erfassen mit Offline-Warteschlange (`client_uuid`, genau einmal), Inbox mit Einsortieren als Aufgabe oder Notiz, Erfassungsfeld im Leitstand, mobil nur Tagesansicht.
 - AP 5: Aufgaben (Heute, Demnächst, Überfällig, nach Kontext, abhaken, wiederkehrend täglich/wöchentlich/monatlich), Notizen mit Markdown und Suche, Aufgaben-Karte im Leitstand, JSON-Export unter `/export.json`.
 - AP 5: Schnellzugriff (`/einstellungen/links`) mit Anzeige in Seitenleiste und mobilem Menü; nur https, Symbol als Anfangsbuchstabe in Kontextfarbe, Öffnen in neuem Tab mit `noopener noreferrer`.
+- AP 6: Fotos (Kamera per `<input capture>`, Verkleinern im Browser, serverseitig neu codiert als JPEG ohne EXIF und Standort, max. 1600 px, Auslieferung nur nach Login unter `/media/{id}`).

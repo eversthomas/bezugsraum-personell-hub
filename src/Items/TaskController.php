@@ -11,6 +11,7 @@ use App\Core\Response;
 use App\Core\Session;
 use App\Core\Time;
 use App\Core\View;
+use App\Media\MediaService;
 
 final class TaskController
 {
@@ -21,6 +22,7 @@ final class TaskController
         private readonly View $view,
         private readonly Csrf $csrf,
         private readonly Session $session,
+        private readonly MediaService $media,
     ) {
     }
 
@@ -116,7 +118,10 @@ final class TaskController
     /** @param array<string, string> $params */
     public function deleteTask(Request $request, array $params): Response
     {
-        return $this->guarded('/aufgaben', fn () => $this->service->delete((int) $params['id']), 'Aufgabe gelöscht.');
+        return $this->guarded('/aufgaben', function () use ($params): void {
+            $this->media->purgeFilesForItem((int) $params['id']);
+            $this->service->delete((int) $params['id']);
+        }, 'Aufgabe gelöscht.');
     }
 
     /** JSON für die Aufgaben-Karte im Leitstand. @param array<string, string> $params */
@@ -167,6 +172,7 @@ final class TaskController
     public function newNote(Request $request, array $params = []): Response
     {
         return $this->page('notes/edit', 'Neue Notiz', 'notizen', [
+            'photos' => [],
             'note' => null,
             'html' => '',
             'contexts' => $this->contexts->all(),
@@ -194,6 +200,7 @@ final class TaskController
         }
 
         return $this->page('notes/edit', $note->title, 'notizen', [
+            'photos' => array_column($this->media->forItem($note->id), 'id'),
             'note' => $note,
             'html' => $this->markdown->render($note->body),
             'contexts' => $this->contexts->all(),
@@ -216,7 +223,10 @@ final class TaskController
     /** @param array<string, string> $params */
     public function deleteNote(Request $request, array $params): Response
     {
-        return $this->guarded('/notizen', fn () => $this->service->delete((int) $params['id']), 'Notiz gelöscht.');
+        return $this->guarded('/notizen', function () use ($params): void {
+            $this->media->purgeFilesForItem((int) $params['id']);
+            $this->service->delete((int) $params['id']);
+        }, 'Notiz gelöscht.');
     }
 
     // ---------- Export ----------

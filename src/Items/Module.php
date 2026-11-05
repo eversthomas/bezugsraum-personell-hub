@@ -12,6 +12,7 @@ use App\Core\Db;
 use App\Core\Router;
 use App\Core\Session;
 use App\Core\View;
+use App\Media\MediaService;
 
 final class Module implements ModuleInterface
 {
@@ -35,6 +36,7 @@ final class Module implements ModuleInterface
             $c->get(View::class),
             $c->get(Csrf::class),
             $c->get(Session::class),
+            $c->get(MediaService::class),
         ));
         $container->set(ItemController::class, fn (Container $c): ItemController => new ItemController(
             $c->get(ItemService::class),
@@ -42,6 +44,7 @@ final class Module implements ModuleInterface
             $c->get(View::class),
             $c->get(Csrf::class),
             $c->get(Session::class),
+            $c->get(MediaService::class),
         ));
     }
 

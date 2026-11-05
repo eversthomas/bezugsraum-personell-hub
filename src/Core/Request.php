@@ -22,6 +22,8 @@ final class Request
         public readonly array $cookies = [],
         public readonly array $server = [],
         public readonly string $body = '',
+        /** @var array<string, array{tmp_name: string, size: int, error: int}> */
+        public readonly array $files = [],
     ) {
     }
 
@@ -51,6 +53,18 @@ final class Request
         $cookies = array_filter($_COOKIE, 'is_string');
         $body = (string) file_get_contents('php://input');
 
+        // Nur tatsächlich hochgeladene Dateien übernehmen (kein Verweis auf fremde Pfade).
+        $files = [];
+        foreach ($_FILES as $name => $file) {
+            if (is_array($file) && is_string($file['tmp_name'] ?? null) && is_uploaded_file($file['tmp_name'])) {
+                $files[(string) $name] = [
+                    'tmp_name' => $file['tmp_name'],
+                    'size' => (int) ($file['size'] ?? 0),
+                    'error' => (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE),
+                ];
+            }
+        }
+
         return new self(
             strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')),
             $path,
@@ -60,7 +74,16 @@ final class Request
             $cookies,
             $_SERVER,
             $body,
+            $files,
         );
+    }
+
+    /** @return array{tmp_name: string, size: int, error: int}|null */
+    public function file(string $name): ?array
+    {
+        $file = $this->files[$name] ?? null;
+
+        return $file !== null && $file['error'] === UPLOAD_ERR_OK ? $file : null;
     }
 
     public function header(string $name): ?string

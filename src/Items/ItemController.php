@@ -11,6 +11,7 @@ use App\Core\Response;
 use App\Core\Session;
 use App\Core\Time;
 use App\Core\View;
+use App\Media\MediaService;
 
 final class ItemController
 {
@@ -20,6 +21,7 @@ final class ItemController
         private readonly View $view,
         private readonly Csrf $csrf,
         private readonly Session $session,
+        private readonly MediaService $media,
     ) {
     }
 
@@ -76,8 +78,11 @@ final class ItemController
     public function inbox(Request $request, array $params = []): Response
     {
         $rows = [];
-        foreach ($this->service->inbox() as $item) {
+        $inbox = $this->service->inbox();
+        $photos = $this->media->idsForItems(array_map(static fn (Item $i): int => $i->id, $inbox));
+        foreach ($inbox as $item) {
             $rows[] = [
+                'photos' => $photos[$item->id] ?? [],
                 'id' => $item->id,
                 'title' => $item->title,
                 'body' => $item->body,
@@ -114,6 +119,7 @@ final class ItemController
     public function delete(Request $request, array $params): Response
     {
         try {
+            $this->media->purgeFilesForItem((int) $params['id']);
             $this->service->delete((int) $params['id']);
         } catch (\InvalidArgumentException $e) {
             return $this->back('/inbox', 'error', $e->getMessage());

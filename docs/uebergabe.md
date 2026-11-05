@@ -34,6 +34,21 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 - Service Worker: statische Dateien, Offline-Seite `/offline.html`; authentifizierte Seiten und API werden nie zwischengespeichert.
 - „Sprechen“ ist Tastatur-Diktat (Fokus ins Textfeld, Herkunft `voice`). Foto kommt mit AP 6.
 
+**AP 5 – Aufgaben und Notizen**
+
+- Aufgaben: gruppiert (Überfällig, Heute, Demnächst, Später, Ohne Datum), nach Kontext filterbar, abhaken, wiederkehrend (täglich, wöchentlich mit Wochentag, monatlich mit Tag; ein Abhaken rückt auf den nächsten Termin). „Heute“ gilt in Europe/Berlin. Aufgaben-Karte im Leitstand (abhakbar).
+- Notizen: Markdown (league/commonmark, HTML verworfen, `javascript:`-Links entfernt, externe Links mit `noopener noreferrer`), Kontext, Suche über Titel und Text (Wildcards werden wörtlich genommen).
+- Schnellzugriff unter `/einstellungen/links` (Tabelle `quick_links`), Anzeige in Seitenleiste und mobilem Menü. Nur https, Symbol = Anfangsbuchstabe in Kontextfarbe.
+- JSON-Export der Einträge unter `/export.json` (enthält keine Kalenderquellen und keine Links).
+- **Nicht umgesetzt:** „In Outlook öffnen“ im Termindetail und die Verknüpfung eines Schnellzugriff-Links mit einer Kalenderquelle. Beides braucht Tests gegen den echten M365-Tenant (`login_hint`).
+
+**AP 6 – Fotos**
+
+- Foto-Taste in der Erfassung (`<input capture>`), Verkleinern im Browser (1600 px, JPEG), Vormerken in der Offline-Warteschlange (als Data-URL in `localStorage`; bei vollem Speicher gibt es eine Meldung).
+- Server (`ImageProcessor`): Typ per Inhalt (JPEG, PNG, WebP, GIF), Pixelgrenze vor dem Dekodieren (40 MP), Ausrichtung wird angewendet, danach Neucodierung als JPEG (entfernt EXIF, Standort, angehängten Code), max. 1600 px, Transparenz wird weiß. Ablage in `storage/uploads/` mit Zufallsnamen, Rechte 0600. Auslieferung nur eingeloggt über `/media/{id}`.
+- Im Browser geprüft: Foto mit eingebetteten GPS-Daten (2400×1800) wird 1600×1200 ohne GPS/EXIF gespeichert.
+- Fotos hängen am Eintrag (Inbox, Notiz); beim Löschen werden die Dateien mitgelöscht.
+
 ## Noch nicht geprüft
 
 - **PHPStan (Level 6) lief lokal nicht.** In der Sandbox war das Paket nicht installierbar. Bitte lokal `composer stan` ausführen und die CI ansehen.
@@ -54,7 +69,7 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 
 ## Nächster Schritt
 
-**AP 5 – Aufgaben und Notizen** (siehe `docs/umsetzungskonzept.md`). Vorher sinnvoll: AP 0 (All-Inkl-Checks) und die Abnahme von AP 2/3 mit echten ICS-Links.
+**AP 7 – Push-Erinnerungen** (siehe `docs/umsetzungskonzept.md`). Vorher sinnvoll: AP 0 (All-Inkl-Checks) und die Abnahme von AP 2/3 mit echten ICS-Links.
 
 ## Lokal ausprobieren
 

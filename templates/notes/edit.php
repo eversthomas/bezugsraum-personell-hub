@@ -2,6 +2,7 @@
 /** @var string $csrf */
 /** @var \App\Items\Item|null $note */
 /** @var string $html  bereits sicher gerendertes Markdown */
+/** @var list<int> $photos */
 /** @var list<array{key: string, label: string, color: string}> $contexts */
 /** @var array{type: string, message: string}|null $flash */
 $action = $note === null ? '/notizen' : '/notizen/' . $note->id;
@@ -40,6 +41,9 @@ $action = $note === null ? '/notizen' : '/notizen/' . $note->id;
         <section class="card note-preview" aria-label="Vorschau">
             <h2><?= e($note->title) ?></h2>
             <div class="markdown"><?= $html ?></div>
+            <?php foreach ($photos as $photoId) : ?>
+            <a href="/media/<?= e($photoId) ?>" target="_blank" rel="noopener"><img class="photo" src="/media/<?= e($photoId) ?>" alt="Foto zur Notiz" loading="lazy"></a>
+            <?php endforeach; ?>
         </section>
         <?php endif; ?>
     </div>
