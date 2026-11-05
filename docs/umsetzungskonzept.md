@@ -8,7 +8,8 @@ Personal Hub wird als schlankes, eigenes PHP-Projekt mit Cursor gebaut, in siebe
 
 **Das MVP enthält:**
 
-- **Leitstand (Desktop):** nur lesende Gesamtansicht aller Kalender per ICS, Ansichten Tag, Woche, 2 Wochen, 4 Wochen, Jetzt-Linie, nächster Termin, Quellen ein- und ausblendbar
+- **Leitstand (Desktop):** Dauer-Tab und Überblick: Uhr, nächster Termin, heutiger Tag, Aufgaben, Erfassen. Der Kalender ist eine eigene Seite
+- **Kalender (Desktop):** nur lesende Gesamtansicht aller Kalender per ICS, Ansichten Tag, Woche, 2 Wochen, 4 Wochen, volle Fläche, Jetzt-Linie, Quellen ein- und ausblendbar
 - **Kalenderquellen:** ICS-Links anlegen, testen, pausieren, ersetzen, entfernen
 - **Erfassen (Mobil-PWA):** Schreiben, Sprechen (Tastatur-Diktat), Foto; alles landet in der Inbox
 - **Inbox:** Einträge als Aufgabe oder Notiz einsortieren oder löschen
@@ -25,8 +26,8 @@ Die Entscheidung fällt für ein eigenes PHP-Projekt ohne Framework und ohne CMS
 
 | Bereich | Festlegung |
 | --- | --- |
-| PHP | Code ab 8.3 (Composer, CI und PHPStan prüfen gegen 8.3); Server und lokal laufen mit 8.5, bei All-Inkl verfügbar |
-| Datenbank | MariaDB auf dem Server, MySQL lokal; Zugriff über PDO mit Prepared Statements; jede Tabelle ausdrücklich mit utf8mb4 und utf8mb4\_unicode\_ci, keine MySQL-Sonderfunktionen |
+| PHP | Code ab 8.3. CI prüft 8.3 und 8.5 (Umsetzung im Paket Härtung). Server und lokal laufen mit 8.5 |
+| Datenbank | Festgelegt: MariaDB auf dem Server, MySQL lokal (ADR 0007). SQLite entfällt. PDO mit Prepared Statements, jede Tabelle utf8mb4 und utf8mb4\_unicode\_ci, keine MySQL-Sonderfunktionen |
 | Frontend | Server-HTML + Vanilla JS, eigenes CSS mit Tokens, kein Build-Schritt |
 | Kalender-UI | eigene Ansichten nach Prototyp (kein FullCalendar), Daten per JSON |
 | ICS | `sabre/vobject` (Parsen, Wiederholungen auflösen) |
@@ -34,8 +35,8 @@ Die Entscheidung fällt für ein eigenes PHP-Projekt ohne Framework und ohne CMS
 | Push | `minishlink/web-push` |
 | 2FA / Passkey | `spomky-labs/otphp` (TOTP), später `web-auth/webauthn-lib` |
 | Bilder | GD oder Imagick serverseitig, Verkleinern zusätzlich im Browser |
-| Hintergrund | All-Inkl-Cronjob ruft minütlich per HTTPS einen geschützten Endpunkt auf (HTTP-Benutzer und -Passwort aus dem KAS plus geheimes Token, sonst 404); der Endpunkt startet dieselbe Logik wie `bin/cron.php` (lokal per Kommandozeile) |
-| Deployment | `vendor/` wird mit hochgeladen, kein Composer auf dem Server nötig |
+| Hintergrund | All-Inkl-Cronjob ruft minütlich per HTTPS einen geschützten Endpunkt auf (HTTP-Benutzer und -Passwort aus dem KAS plus geheimes Token, sonst 404). Dieselbe Logik startet lokal `bin/cron.php`. Der Pfad des Endpunkts wird im Paket Härtung festgelegt (ADR 0006) |
+| Deployment | Release-ZIP mit `vendor/`, Einrichtung im Browser. Kein Composer auf dem Server (ADR 0009) |
 | Lizenz | MIT, Abhängigkeiten in `THIRD-PARTY-NOTICES.md` |
 
 Warum keine Kalender-Bibliothek: Die Ansichten aus dem Prototyp sind einfacher als FullCalendar und passen genau zum Bedarf. Nur lesend, ohne Drag-and-drop, sind sie mit wenig Code gut beherrschbar.
@@ -46,7 +47,7 @@ Die gesamte Oberfläche nutzt eine einzige Schrift: **Atkinson Hyperlegible Next
 
 | Punkt | Festlegung |
 | --- | --- |
-| Datei | eine variable WOFF2-Datei (Gewichtsachse), nur aufrecht, Teilmenge Latin + Latin Extended |
+| Datei | zwei WOFF2-Dateien (Latin und Latin Extended, getrennt per `unicode-range`), variable Gewichtsachse, nur aufrecht |
 | Ablage | `public/assets/fonts/`, Einbindung per `@font-face` mit `font-display: swap` und `preload` |
 | Gewichte | 400 Text, 500 Hervorhebung, 600 Überschriften und Buttons, 300 nur für die große Uhr |
 | Größen | Grundtext 16 px, nie unter 13 px, Zeilenhöhe 1,5 |
@@ -55,7 +56,24 @@ Die gesamte Oberfläche nutzt eine einzige Schrift: **Atkinson Hyperlegible Next
 | Sicherheit | CSP `font-src 'self'`, keine Anfrage an Google |
 | Lizenz | OFL-Text in `THIRD-PARTY-NOTICES.md` |
 
-In AP 1 prüfen: Unterstützt die Datei Tabellenziffern? Falls nicht und die Uhr springt sichtbar, ist **Inter** der erprobte Ersatz mit denselben Regeln.
+Die Dateien enthalten Tabellenziffern (`tnum`). Springt die Uhr trotzdem sichtbar, bleibt **Inter** der Ersatz mit denselben Regeln.
+
+### Installer und Release
+
+Personal Hub bleibt ein persönliches Werkzeug: eine Person pro Installation. Die Einrichtung auf dem Webhosting läuft im Browser, vor dem ersten Deployment. Composer bleibt auf dem Entwicklungsrechner. Ein GitHub-Workflow baut ein Release-ZIP, in dem `vendor/` schon enthalten ist (ADR 0009).
+
+- Der Installer ist nur erreichbar, solange `config/config.php` fehlt. Der erste Aufruf schreibt einen Zufallscode nach `storage/install-code.txt`, außerhalb des Webroots. Ohne diesen Code im Formular entsteht keine Installation.
+- Den Code liest man im Dateimanager des KAS oder per FTP.
+- Das Formular prüft den Datenbankzugang, schreibt `config.php`, legt den Schlüssel an, spielt die Migrationen ein, erzeugt die VAPID-Schlüssel und den ersten Benutzer mit Passwort und TOTP. Der QR-Code kommt aus einem kleinen etablierten Paket. Welches, wird im Installer-Paket nach Rückfrage gewählt. Das TOTP-Geheimnis steht zusätzlich als Text zum Abtippen auf der Seite.
+- Angezeigt wird die fertige Cron-Adresse samt Token. Den Pfad legt das Paket Härtung fest.
+- Danach legt der Installer eine Sperrdatei an und löscht den Einrichtungscode. Die Installer-Route antwortet dauerhaft mit 404, auch bei erneutem Aufruf und nach Löschen der Sperrdatei, solange `config/config.php` existiert.
+
+### Spätere Optionen
+
+Noch nicht im Plan zur Umsetzung. Jede Option braucht vor dem Bau ihre eigene Entscheidung.
+
+- **Schreibender Kalenderzugriff.** ADR 0003 bleibt: Kalender werden nur gelesen, Anlegen läuft über vorausgefüllte Links. Ein schreibender Zugriff setzt einen neuen ADR mit Sicherheitsbewertung voraus. Das Risiko sind zusätzliche Geheimnisse und ein Zugriff, der Termine in fremden Konten verändert.
+- **Jahresübersicht.** Sie braucht einen längeren Datenzeitraum als −30 bis +90 Tage. Das Risiko ist ein größerer Termin-Cache. Die Regel, Termine älter als 30 Tage zu löschen, müsste dafür weichen.
 
 ## Projektstruktur
 
@@ -66,7 +84,7 @@ personal-hub/
 ├─ public/                 ← einziges Webroot (Domain zeigt hierhin)
 │  ├─ index.php            Front-Controller, alle Anfragen laufen hier durch
 │  ├─ manifest.webmanifest PWA, inkl. Shortcuts und Share-Target
-│  ├─ sw.js                Service Worker (Push, Erfassungs-Warteschlange)
+│  ├─ sw.js                Service Worker (Push, Offline-Seite; Warteschlange im Seitenskript)
 │  └─ assets/
 │     ├─ css/              tokens.css, base.css, components.css
 │     └─ js/               ein Modul pro Ansicht, kein Bundler
@@ -224,7 +242,7 @@ Kern: nur lesende Kalender-Gesamtansicht (ICS), Inbox, Aufgaben, Notizen, Push-E
 Gestaltung und Abläufe: siehe docs/prototyp/. Code daraus nicht übernehmen.
 
 ## Technik
-- PHP 8.3, strict_types, PSR-4 unter src/, kein Framework, kein ORM.
+- PHP: Code ab 8.3, CI prüft 8.3 und 8.5, Laufzeit 8.5. strict_types, PSR-4 unter src/, kein Framework, kein ORM.
 - Datenbank nur über Core\Db (PDO, Prepared Statements). Nie SQL mit Strings zusammenbauen.
 - Frontend: Server-HTML aus templates/ + Vanilla-JS-Module. Kein Build-Schritt, kein npm, keine CDNs.
 - CSS nur über Tokens aus public/assets/css/tokens.css.
@@ -257,13 +275,13 @@ Gestaltung und Abläufe: siehe docs/prototyp/. Code daraus nicht übernehmen.
 
 ## Arbeitspakete
 
-Der Kalender kommt vor den Aufgaben, weil er der eigentliche Schmerzpunkt ist. Nach Paket 3 ist der Leitstand im Alltag nutzbar. Jedes Paket endet mit einem Stopp: testen, committen, erst dann weiter.
+Der Kalender kommt vor den Aufgaben, weil er der eigentliche Schmerzpunkt ist. Nach der Trennung ist der Leitstand der Dauer-Tab, die Kalenderseite öffnet man bei Bedarf. Jedes Paket endet mit einem Stopp: testen, committen, erst dann weiter.
 
 ### AP 0 – Vorab-Checks (ohne Code)
 
 - [ ] ICS-Veröffentlichung in allen drei M365-Konten testen, Detailstufe „Titel und Orte“
 - [ ] Google: geheime iCal-Adresse kopieren
-- [ ] All-Inkl: PHP 8.3, Erweiterungen `sodium`, `gd` oder `imagick`, `intl`, `curl`; Cron-Intervall; Upload-Limit
+- [ ] All-Inkl: PHP 8.5, Erweiterungen `sodium`, `gd` oder `imagick`, `intl`, `curl`; Cron minütlich per HTTPS (Pfad im Paket Härtung); Upload-Limit
 - [ ] Subdomain mit HTTPS anlegen, Domainziel auf `public/`
 - [ ] Datenbank anlegen
 
@@ -284,29 +302,30 @@ Ziel: echte Termine liegen in der Datenbank.
 - [ ] Seite Kalenderquellen wie im Prototyp (anlegen, testen, pausieren, ersetzen, entfernen)
 - [ ] Verschlüsselung der Links, `IcsFetcher` mit SSRF-Schutz
 - [ ] `IcsParser` mit sabre/vobject: Zeitzonen, Ganztags-, Serien- und Ausnahmetermine
-- [ ] Cronjob ruft fällige Quellen ab, Fehlerstatus pro Quelle
+- [ ] Cron (lokal `bin/cron.php`, auf dem Server der HTTPS-Endpunkt) ruft fällige Quellen ab, Fehlerstatus pro Quelle
 - [ ] Tests mit echten (anonymisierten) ICS-Dateien aus Outlook und Google
 - [ ] Abnahme: alle vier Quellen aktuell; ein kaputter Link zeigt Fehler, alte Termine bleiben
 
-### AP 3 – Leitstand
+### AP 3 – Leitstand und Kalender
 
-Ziel: der Dauer-Tab im Büro.
+Ziel: der Leitstand ist der Dauer-Tab, der Kalender die Seite mit der Fläche (ADR 0008).
 
-- [ ] Ansichten Tag, Woche, 2 Wochen, 4 Wochen nach Prototyp
-- [ ] Große Uhrzeit mit Countdown zum nächsten Termin, Jetzt-Linie, Detailbereich, Quellen-Filter (Auswahl wird gemerkt); Zeitachse immer maßstabsgetreu, Farbe immer aus der Quelle; Quellen-Fehler nur als Hinweis, wenn einer vorliegt
-- [ ] Blättern vor/zurück und „Heute“
+- [ ] Leitstand: Uhr, nächster Termin, heutiger Tag, Aufgaben, Erfassen. Kein Wochenraster
+- [ ] Kalender als eigene Seite mit voller Fläche: Tag, Woche, 2 Wochen, 4 Wochen. Jetzt-Linie, Detailbereich, Quellenfilter (Auswahl wird gemerkt). Zeitachse immer maßstabsgetreu, Farbe immer aus der Quelle. Quellenfehler nur als Hinweis, wenn einer vorliegt
+- [ ] Blättern vor/zurück und „Heute“. Die Tagesansicht zeigt den heutigen Tag
 - [ ] Aktualisierung im Hintergrund alle 5 Minuten, ohne Neuladen
-- [ ] Abnahme: ein Arbeitstag mit dem Leitstand als Dauer-Tab ohne Kontowechsel
-
-* [ ] Navigation responsiv: ab ca. 900 px Breite feste Seitenleiste (optional auf eine Symbolleiste einklappbar, Zustand pro Gerät gemerkt); darunter Hamburger-Menü mit Off-Canvas, gleicher Inhalt wie mobil (Hauptbereiche, Schnellzugriff, Kalenderquellen, Darstellung, Abmelden). Off-Canvas schließt per Escape, Tipp daneben und Wischen, Fokus bleibt im Menü, solange es offen ist.
+- [ ] „Horizont“ ist ein Kandidat für den Leitstand, keine Pflichtansicht
+- [ ] Abnahme: ein Arbeitstag mit dem Leitstand als Dauer-Tab, Kalenderseite nur bei Bedarf
+- [ ] Mobil: der Startbildschirm bleibt kombiniert (Erfassen und heutiger Tag) und ist der mobile Leitstand. Der Kalender ist ein eigener Punkt in der unteren Navigation
+- [ ] Navigation ab ca. 900 px: feste Seitenleiste, optional zur Symbolleiste einklappbar, Zustand pro Gerät gemerkt. Darunter Hamburger-Menü mit Off-Canvas, gleicher Inhalt wie mobil (Hauptbereiche, Schnellzugriff, Kalenderquellen, Darstellung, Abmelden). Off-Canvas schließt per Escape, Tipp daneben und Wischen, Fokus bleibt im Menü, solange es offen ist
 
 ### AP 4 – Erfassen und Inbox (PWA)
 
 Ziel: Gedanken in zwei Schritten festhalten.
 
 - [ ] Manifest, Service Worker, installierbar auf dem Pixel
-- [ ] Mobiler Startbildschirm: oben Uhrzeit, Countdown und Erfassen (Textfeld, Sprechen per Tastatur-Diktat, Foto), darunter Kalender als Tag oder Liste mit Blättern; keine 2-/4-Wochen-Ansicht auf dem Handy
-- [ ] Offline-Warteschlange für neue Einträge (mit `client_uuid`)
+- [ ] Mobiler Leitstand: oben Uhrzeit, Countdown und Erfassen (Textfeld, Sprechen per Tastatur-Diktat, Foto), darunter der heutige Tag oder eine Liste. Keine 2-/4-Wochen-Ansicht auf dem Handy. Der Kalender ist ein eigener Punkt in der unteren Navigation
+- [ ] Offline-Warteschlange in `localStorage`, nicht im Service Worker, weil das CSRF-Token der Sitzung gebraucht wird (`client_uuid`, ADR 0005). Der Service Worker hält nur statische Dateien und die Offline-Seite
 - [ ] App-Shortcuts und Share-Target für Links und Text
 - [ ] Inbox mit Einsortieren als Aufgabe oder Notiz, Erfassungsfeld auch im Leitstand
 - [ ] Abnahme: Notiz im Funkloch erfasst, kommt später genau einmal an
@@ -343,7 +362,7 @@ Ziel: Aus einer Idee oder Aufgabe wird mit wenigen Klicks ein Zeitblock im richt
 - [ ] `SlotFinder`: freie Fenster aus dem Termin-Cache aller aktiven Quellen, mit Tests für Randfälle
 - [ ] Dialog „Zeit dafür reservieren“ an Aufgaben und Notizen (Dauer, Vorschläge, Zielkalender, neutraler Titel)
 - [ ] Vorausgefüllte Links für Outlook im Web und Google Calendar, zusätzlich `.ics`-Datei als Rückfallweg; vorab im AWO-Tenant und auf dem Pixel testen
-- [ ] Vorgemerkte Blöcke gestrichelt im Leitstand; nach dem nächsten Abruf automatisch als bestätigt erkannt
+- [ ] Vorgemerkte Blöcke gestrichelt auf der Kalenderseite; nach dem nächsten Abruf automatisch als bestätigt erkannt
 - [ ] Abnahme: Idee am Pixel einplanen, Termin erscheint nach dem Abruf bestätigt im Leitstand
 
 ### AP 9 – Projekte, leichtgewichtig (nach dem MVP)
@@ -389,8 +408,8 @@ Diese Punkte sollten vor dem jeweiligen Arbeitspaket entschieden sein. Alles and
 | Repository öffentlich? | privat bis zur ersten stabilen Version | 1 |
 | Was passiert, wenn ein M365-Konto kein ICS erlaubt? | Quelle fehlt; wichtige Termine notfalls als Aufgabe mit Datum | 2 |
 | Wie weit zurück und voraus werden Termine gespeichert? | −30 bis +90 Tage | 2 |
-| Standardansicht im Leitstand | Tag; Auswahl wird pro Gerät gemerkt | 3 |
+| Standardansicht im Kalender | Tag; Auswahl wird pro Gerät gemerkt | 3 |
 | Wiederkehrende Aufgaben: welche Muster? | täglich, wöchentlich (Wochentag), monatlich (Tag) | 5 |
 | Push auch vor Terminen? | nur für ausgewählte Quellen, 15 Minuten vorher | 7 |
 
-**Vor AP 1 zu entscheiden:** SQLite statt MariaDB. Eine einzige Datei unter `storage/`, kein Datenbankserver lokal oder bei All-Inkl, Backup durch Kopieren, Volltextsuche eingebaut (FTS5), WAL-Modus für gleichzeitigen Zugriff von Cronjob und Browser. Für eine Person ausreichend; ein späterer Wechsel zu MariaDB bleibt über PDO möglich. Voraussetzung: `pdo_sqlite` lokal und bei All-Inkl (Systemcheck).
+Entschieden, siehe ADRs: MariaDB statt SQLite (0007), Cron per HTTPS (0006), Trennung von Kalender und Leitstand (0008), Installer im Browser (0009). Die CI prüft künftig PHP 8.3 und 8.5.

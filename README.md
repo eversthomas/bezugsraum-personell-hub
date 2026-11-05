@@ -16,7 +16,7 @@ Das MVP (AP 1 bis 7) und der Kern von AP 8 sind umgesetzt. Details und offene Pu
 - **Sicherheit:** Passwort plus TOTP, Sperre nach Fehlversuchen, gemerkte Geräte, CSRF, strenge Security-Header
 
 Ohne Anmeldung liefert die Anwendung nur Login-Seite und Assets, alles andere antwortet mit 404.
-Einrichtung auf einem Webspace: [docs/deployment.md](docs/deployment.md).
+Auf dem Webhosting richtet der Browser die Anwendung ein, aus einem Release-ZIP ohne Composer auf dem Server. Ablauf: [docs/deployment.md](docs/deployment.md).
 
 ## Anforderungen
 
@@ -47,5 +47,6 @@ Tests brauchen eine leere MariaDB-Datenbank (`personal_hub_test`, Zugang über `
 ## Dokumentation
 
 - [Umsetzungskonzept](docs/umsetzungskonzept.md) ist die verbindliche Grundlage.
-- [Architekturentscheidungen](docs/adr/)
+- [Projektplan](docs/projektplan.md) ist die Reihenfolge der nächsten Pakete.
+- [Architekturentscheidungen](docs/adr/), darunter [Cron per HTTPS](docs/adr/0006-cron-per-https-endpunkt.md), [MariaDB](docs/adr/0007-mariadb-statt-sqlite.md), [Kalender und Leitstand](docs/adr/0008-trennung-kalender-leitstand.md), [Installer](docs/adr/0009-installer-im-browser.md).
 - [Prototypen](docs/prototyp/) sind die Referenz für Layout, Farben und Abläufe. Ihr Code wird nicht übernommen.

@@ -1,13 +1,13 @@
 # Übergabe: Stand der Entwicklung
 
-Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht in `master` gemergt).
+Stand: 5. November 2026. Der Entwicklungsbranch ist in `master` gemergt. Der weitere Ablauf steht in [projektplan.md](projektplan.md).
 
 ## Erledigt
 
 **AP 1 – Gerüst und Login**
 
 - Kern: Router, Container, Db (PDO), View, Session, CSRF, Crypto (libsodium), Migrator, Logger, Modulvertrag (`ModuleInterface`), Security-Header auf jeder Antwort.
-- Anmeldung: Passwort, dann TOTP. Sperre nach 5 Fehlversuchen für 15 Minuten (je IP, zusätzlich 20 je Konto). TOTP-Code nur einmal verwendbar. „Gerät merken“ 30 Tage, nur als Hash gespeichert, einzeln widerrufbar (Repository vorhanden, Oberfläche fehlt noch). Session-ID und CSRF-Token werden nach Login erneuert.
+- Anmeldung: Passwort, dann TOTP. Sperre nach 5 Fehlversuchen für 15 Minuten (je IP, zusätzlich 20 je Konto). TOTP-Code nur einmal verwendbar. „Gerät merken“ 30 Tage, nur als Hash gespeichert. Einzelne Geräte und alle Geräte lassen sich unter den Sicherheitseinstellungen entfernen. Session-ID und CSRF-Token werden nach Login erneuert.
 - Ohne Login: nur `/login`, `/login/code` und statische Dateien; alles andere 404. `/` leitet zur Anmeldung.
 - Tokens-CSS mit Hell/Dunkel/Auto, Atkinson Hyperlegible Next (Tabellenziffern geprüft: `tnum` vorhanden).
 - CI mit MariaDB-Dienst, Tests, PHP-CS-Fixer und PHPStan.
@@ -17,7 +17,7 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 - `IcsFetcher` mit SSRF-Schutz (`UrlGuard`, `IpPolicy`): nur https auf Port 443, keine Zugangsdaten in der URL, nur öffentliche IPs (v4, v6, eingebettetes v4), Verbindung an die geprüfte IP gebunden, höchstens 3 Weiterleitungen (jede neu geprüft), 10 s, 5 MB. Fehlermeldungen enthalten nie die URL.
 - `IcsParser` (sabre/vobject): Windows- und IANA-Zeitzonen, Serien, Ausnahmen (EXDATE, RECURRENCE-ID), Ganztagstermine, abgesagte Termine. Fixtures für Outlook und Google unter `tests/fixtures/ics/` (selbst geschrieben, nicht aus echten Konten).
 - `CalendarService`: anlegen, testen, ersetzen, pausieren, entfernen, Abruf mit ETag, Fehlerstatus pro Quelle, alte Termine bleiben bei Fehlern, Aufräumen nach 30 Tagen. URL nur verschlüsselt, in der Oberfläche nur der Servername.
-- `bin/cron.php` (Sperrdatei, ein Lauf zur Zeit). Cronjob alle 15 Minuten einrichten.
+- `bin/cron.php` (Sperrdatei, ein Lauf zur Zeit). Auf All-Inkl minütlich per HTTPS, lokal dasselbe Skript (ADR 0006). Den Pfad legt das Paket Härtung fest.
 - Seite „Kalenderquellen“ (`/einstellungen/quellen`) nach dem Prototyp, ohne Inline-Styles (CSP).
 
 **AP 3 – Leitstand**
@@ -51,9 +51,9 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 
 **AP 7 – Push-Erinnerungen**
 
-- Einrichten: `php bin/create-vapid.php`, Schlüssel in `config/config.php` (`vapid`) eintragen, dann unter „Benachrichtigungen“ je Gerät aktivieren und Testnachricht senden. Cronjob `php bin/cron.php` (alle 15 Minuten) verschickt die Erinnerungen.
+- Einrichten: `php bin/create-vapid.php`, Schlüssel in `config/config.php` (`vapid`) eintragen, dann unter „Benachrichtigungen“ je Gerät aktivieren und Testnachricht senden. Verschickt werden die Erinnerungen von `bin/cron.php` und, sobald er steht, vom minütlichen HTTPS-Endpunkt.
 - Aufgaben: Erinnerung am Fälligkeitstag um 8:00 Uhr (Berlin), genau einmal. Wiederkehrende Aufgaben erinnern beim nächsten Termin wieder. Erinnerungen, die mehr als 2 Tage zurückliegen (etwa nach einem Ausfall), werden still übersprungen. Scheitert der Versand an allen Geräten, wird die Erinnerung freigegeben und höchstens 3-mal versucht.
-- Termine: Hinweis „5 bis 60 Minuten vorher“, je Kalenderquelle einstellbar (Seite Kalenderquellen). Jeder Termin wird genau einmal gemeldet, auch wenn der Abruf die Terminzeilen ersetzt. Bei einem Cron-Takt von 15 Minuten kommt der Hinweis zwischen 0 und 15 Minuten nach Erreichen der Vorlaufzeit; für genauere Hinweise den Cron häufiger laufen lassen (All-Inkl: Mindestintervall prüfen).
+- Termine: Hinweis „5 bis 60 Minuten vorher“, je Kalenderquelle einstellbar (Seite Kalenderquellen). Jeder Termin wird genau einmal gemeldet, auch wenn der Abruf die Terminzeilen ersetzt. Beim minütlichen Takt liegt der Hinweis näher am Zeitpunkt. Heute läuft nur `bin/cron.php`. Der HTTPS-Endpunkt folgt im Paket Härtung.
 - Sicherheit: Push-Endpunkte werden vom Server aufgerufen, daher nur Endpunkte von Google, Mozilla, Apple und Microsoft (erweiterbar über `push.allowed_hosts`), nur https auf Port 443. Der private VAPID-Schlüssel wird nirgends ausgegeben.
 - `minishlink/web-push` **braucht einen PSR-18-Client, und im Projekt ist keiner installiert.** Statt ein neues Paket aufzunehmen (laut Regeldatei nur nach Rückfrage), liegt unter `src/Notify/Http/` ein kleiner eigener PSR-7/17/18-Client auf cURL. Wenn du lieber Guzzle oder `symfony/http-client` nutzen willst, ist das ein Austausch in `MinishlinkPushSender` (Konstruktor-Argument `$client`).
 - Die PHP-Erweiterung `gmp` oder `bcmath` beschleunigt die Verschlüsselung und unterdrückt eine Hinweismeldung der Bibliothek; bei All-Inkl in AP 0 prüfen.
@@ -72,7 +72,7 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 ## Noch nicht geprüft
 
 - **PHPStan (Level 6)** lief in der Sandbox nicht, wurde aber über die CI geprüft und ist grün (Stand letzter Commit). In `phpstan.neon` sind für `tests/` Array-Typangaben bewusst nicht verlangt, und für `IcsParser` ist eine sabre-bedingte Meldung ausgenommen.
-- AP 2/3 sind nur mit selbst geschriebenen ICS-Dateien und Demo-Daten getestet, nicht mit echten M365-/Google-Links. Die Abnahme „alle vier Quellen aktuell“ steht aus.
+- Im lokalen Probebetrieb haben echte ICS-Links von Google und Microsoft 365 Termine gezeigt. Die Abnahme „alle Quellen aktuell“ auf All-Inkl steht aus.
 - Der Leitstand hat keine automatisierten Browser-Tests; geprüft wurde per Playwright-Screenshot.
 - Nicht auf All-Inkl getestet (AP 0 steht aus: PHP-Version, Erweiterungen, Subdomain, Datenbank).
 - Installation als PWA, Share-Target und App-Shortcuts sind nur im Playwright-Chromium geprüft, nicht auf dem Pixel. Share-Target braucht eine installierte PWA.
@@ -89,11 +89,11 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 
 ## Nächster Schritt
 
-**AP 0 nachholen** (All-Inkl-Checks, siehe `docs/umsetzungskonzept.md`), dann Abnahme am Pixel, danach **AP 8 – Zeitfenster reservieren** (nach dem MVP). Vorher sinnvoll: AP 0 (All-Inkl-Checks) und die Abnahme von AP 2/3 mit echten ICS-Links.
+Die Reihenfolge steht in [projektplan.md](projektplan.md). Als Nächstes die Phase 2: Härtung und Cron-Endpunkt, danach Installer und Release-ZIP.
 
 ## Weiterer Entwicklungsplan
 
-Aufgenommen am 5. November 2026 aus dem lokalen Probebetrieb. Noch keine festgelegte Umsetzung.
+Aufgenommen am 5. November 2026. Die Punkte 1 und 2 sind entschieden und stehen im [Projektplan](projektplan.md), Phase 2. Die Sammlung darunter bleibt unverändert.
 
 1. **Installation auf einem Webhosting, ohne Terminal und ohne Composer dort.** Der Ablauf soll so schlicht werden wie bei WordPress oder ProcessWire: Dateien hochladen, im Browser einrichten. Composer bleibt das Werkzeug auf dem Entwicklungsrechner. Über GitHub entsteht ein installierbares Release, in dem `vendor/` schon enthalten ist. Auf dem Server wird nichts mit Composer nachinstalliert.
 2. **Authenticator bleibt Pflicht.** Der erste Benutzer samt TOTP-Schlüssel entsteht heute nur über `php bin/create-user.php`. Auf einem Webhosting ohne Shell braucht es dafür einen Schritt im Browser, im selben Installationsgang wie Punkt 1. Der Code kommt weiterhin aus einer Authenticator-App, nicht aus einem abgeschwächten Login.
