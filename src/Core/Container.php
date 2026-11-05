@@ -14,17 +14,24 @@ final class Container
     private array $factories = [];
     /** @var array<string, mixed> */
     private array $instances = [];
+    /** @var array<string, true> */
+    private array $pinned = [];
 
     /** @param callable(self): mixed $factory */
     public function set(string $id, callable $factory): void
     {
+        if (isset($this->pinned[$id])) {
+            return; // ausdrücklich gesetzte Instanzen (z. B. in Tests) haben Vorrang
+        }
         $this->factories[$id] = $factory;
         unset($this->instances[$id]);
     }
 
+    /** Setzt eine fertige Instanz, die spätere set()-Aufrufe nicht überschreiben. */
     public function instance(string $id, mixed $value): void
     {
         $this->instances[$id] = $value;
+        $this->pinned[$id] = true;
     }
 
     public function has(string $id): bool

@@ -8,9 +8,12 @@ use App\Core\Container;
 use App\Core\Contracts\ModuleInterface;
 use App\Core\Crypto;
 use App\Core\CronJob;
+use App\Core\Csrf;
 use App\Core\Db;
 use App\Core\Logger;
 use App\Core\Router;
+use App\Core\Session;
+use App\Core\View;
 
 final class Module implements ModuleInterface
 {
@@ -32,10 +35,29 @@ final class Module implements ModuleInterface
             $c->get(Crypto::class),
             $c->get(Logger::class),
         ));
+        $container->set(SourceController::class, fn (Container $c): SourceController => new SourceController(
+            $c->get(CalendarService::class),
+            $c->get(SourceRepository::class),
+            $c->get(View::class),
+            $c->get(Csrf::class),
+            $c->get(Session::class),
+        ));
     }
 
     public function routes(Router $router, Container $container): void
     {
+        $c = static fn (): SourceController => $container->get(SourceController::class);
+        $base = '/einstellungen/quellen';
+
+        $router->get($base, fn ($r, $p) => $c()->index($r, $p));
+        $router->post($base, fn ($r, $p) => $c()->create($r, $p));
+        $router->post($base . '/{id}', fn ($r, $p) => $c()->update($r, $p));
+        $router->post($base . '/{id}/pausieren', fn ($r, $p) => $c()->pause($r, $p));
+        $router->post($base . '/{id}/fortsetzen', fn ($r, $p) => $c()->resume($r, $p));
+        $router->post($base . '/{id}/entfernen', fn ($r, $p) => $c()->remove($r, $p));
+        $router->post($base . '/{id}/link', fn ($r, $p) => $c()->replaceUrl($r, $p));
+        $router->post($base . '/{id}/abrufen', fn ($r, $p) => $c()->refresh($r, $p));
+        $router->post('/api/v1/calendar/test', fn ($r, $p) => $c()->test($r, $p));
     }
 
     public function cronJobs(): array
@@ -49,6 +71,6 @@ final class Module implements ModuleInterface
 
     public function navItems(): array
     {
-        return [];
+        return [new \App\Core\NavItem('Kalenderquellen', '/einstellungen/quellen', 900)];
     }
 }

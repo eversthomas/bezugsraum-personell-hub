@@ -121,3 +121,65 @@
     --focus: #7aa2f7;
     --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 4px 16px rgb(0 0 0 / 30%);
 }
+
+/* Quellfarben (helle Werte aus dem Prototyp, dunkle Varianten darunter). */
+:root {
+    --src-blue: #2563eb;
+    --src-blue-tint: #e6eefd;
+    --src-orange: #c2410c;
+    --src-orange-tint: #fcebdf;
+    --src-violet: #7c3aed;
+    --src-violet-tint: #efe7fd;
+    --src-green: #15803d;
+    --src-green-tint: #e2f2e7;
+    --src-teal: #0f766e;
+    --src-teal-tint: #dcf1ee;
+    --src-rose: #be185d;
+    --src-rose-tint: #fbe4ee;
+    --src-neutral: #5b616e;
+    --src-neutral-tint: #eef0f3;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --src-blue: #6b9bf7;
+        --src-blue-tint: #1c2741;
+        --src-orange: #f0915a;
+        --src-orange-tint: #3a2418;
+        --src-violet: #a98bfa;
+        --src-violet-tint: #2a2140;
+        --src-green: #4cc17e;
+        --src-green-tint: #15301f;
+        --src-teal: #5ec4b6;
+        --src-teal-tint: #14302c;
+        --src-rose: #f58bb4;
+        --src-rose-tint: #3a1a29;
+        --src-neutral: #9aa1ac;
+        --src-neutral-tint: #252a31;
+    }
+}
+
+:root[data-theme="dark"] {
+    --src-blue: #6b9bf7;
+    --src-blue-tint: #1c2741;
+    --src-orange: #f0915a;
+    --src-orange-tint: #3a2418;
+    --src-violet: #a98bfa;
+    --src-violet-tint: #2a2140;
+    --src-green: #4cc17e;
+    --src-green-tint: #15301f;
+    --src-teal: #5ec4b6;
+    --src-teal-tint: #14302c;
+    --src-rose: #f58bb4;
+    --src-rose-tint: #3a1a29;
+    --src-neutral: #9aa1ac;
+    --src-neutral-tint: #252a31;
+}
+
+.src-blue { --src: var(--src-blue); --src-tint: var(--src-blue-tint); }
+.src-orange { --src: var(--src-orange); --src-tint: var(--src-orange-tint); }
+.src-violet { --src: var(--src-violet); --src-tint: var(--src-violet-tint); }
+.src-green { --src: var(--src-green); --src-tint: var(--src-green-tint); }
+.src-teal { --src: var(--src-teal); --src-tint: var(--src-teal-tint); }
+.src-rose { --src: var(--src-rose); --src-tint: var(--src-rose-tint); }
+.src-neutral { --src: var(--src-neutral); --src-tint: var(--src-neutral-tint); }

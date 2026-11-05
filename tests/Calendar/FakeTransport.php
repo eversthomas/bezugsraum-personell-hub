@@ -20,6 +20,11 @@ final class FakeTransport implements HttpTransport
     {
     }
 
+    public function push(HttpResponse ...$responses): void
+    {
+        array_push($this->responses, ...$responses);
+    }
+
     public function get(Target $target, array $headers, int $timeoutSeconds, int $maxBytes): HttpResponse
     {
         $this->targets[] = $target;

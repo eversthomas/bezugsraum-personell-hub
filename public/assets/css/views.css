@@ -50,3 +50,187 @@ body.auth {
 .auth-card__back {
     margin: var(--space-4) 0 0;
 }
+
+.topbar__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.topbar__nav a {
+    color: var(--ink2);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.topbar__nav a:hover {
+    color: var(--ink);
+    text-decoration: underline;
+}
+
+.topbar__brand {
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.page__head {
+    margin-bottom: var(--space-4);
+}
+
+.source-new {
+    margin-bottom: var(--space-5);
+}
+
+.source-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+}
+
+.swatches {
+    border: 0;
+    padding: 0;
+    margin: 0 0 var(--space-4);
+}
+
+.swatches legend {
+    padding: 0;
+    margin-bottom: var(--space-2);
+    font-weight: 500;
+    color: var(--ink2);
+}
+
+.swatches__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.swatch {
+    position: relative;
+    display: block;
+}
+
+.swatch input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.swatch__chip {
+    display: block;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius);
+    background: var(--src);
+    border: 3px solid var(--surface);
+    box-shadow: 0 0 0 1px var(--border);
+}
+
+.swatch input:checked + .swatch__chip {
+    box-shadow: 0 0 0 3px var(--ink);
+}
+
+.swatch input:focus-visible + .swatch__chip {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+}
+
+.source-list {
+    padding: 0;
+    overflow: hidden;
+}
+
+.source-list > p {
+    padding: var(--space-5);
+    margin: 0;
+}
+
+.source {
+    padding: var(--space-4) var(--space-5);
+    border-top: 1px solid var(--line2);
+}
+
+.source:first-child {
+    border-top: 0;
+}
+
+.source--paused {
+    background: var(--surface2);
+}
+
+.source__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+}
+
+.source__dot {
+    flex: 0 0 14px;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--src);
+}
+
+.source__title {
+    display: flex;
+    flex: 1 1 14rem;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.source__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.source__actions form {
+    margin: 0;
+}
+
+.source__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin: var(--space-3) 0 0 30px;
+}
+
+.source__facts dt {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+
+.source__facts dd {
+    margin: 0;
+}
+
+.source .notice {
+    margin: var(--space-3) 0 0 30px;
+}
+
+.source__more {
+    margin: var(--space-3) 0 0 30px;
+}
+
+.source__more summary {
+    cursor: pointer;
+    color: var(--link);
+}
+
+.source__replace {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+}
+
+.source__replace .input {
+    flex: 1 1 16rem;
+}

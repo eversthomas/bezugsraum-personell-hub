@@ -37,12 +37,10 @@ final class Kernel
         $c->set(Logger::class, fn (): Logger => new Logger($this->root . '/storage/logs/app.log'));
         $c->set(Db::class, fn (): Db => Db::connect($this->config));
         $c->set(Crypto::class, fn (): Crypto => Crypto::fromFile($this->config->string('crypto.key_path')));
-        if (!$c->has(Session::class)) {
-            $c->set(Session::class, fn (): Session => new Session(
-                $this->root . '/storage/sessions',
-                str_starts_with($this->config->string('app.url'), 'https://'),
-            ));
-        }
+        $c->set(Session::class, fn (): Session => new Session(
+            $this->root . '/storage/sessions',
+            str_starts_with($this->config->string('app.url'), 'https://'),
+        ));
         $c->set(Csrf::class, fn (Container $c): Csrf => new Csrf($c->get(Session::class)));
         $c->set(View::class, fn (): View => new View($this->root . '/templates'));
 
