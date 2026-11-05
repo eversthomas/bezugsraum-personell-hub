@@ -8,4 +8,5 @@ declare(strict_types=1);
 return [
     App\Core\CoreModule::class,
     App\Auth\Module::class,
+    App\Calendar\Module::class,
 ];
