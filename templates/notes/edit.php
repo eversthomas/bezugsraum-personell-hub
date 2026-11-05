@@ -48,6 +48,7 @@ $action = $note === null ? '/notizen' : '/notizen/' . $note->id;
         <?php endif; ?>
     </div>
     <?php if ($note !== null) : ?>
+    <p><a class="btn btn--small btn--ghost" href="/reservieren?item=<?= e($note->id) ?>">Zeit dafür reservieren</a></p>
     <form method="post" action="/notizen/<?= e($note->id) ?>/loeschen" data-confirm="Notiz wirklich löschen?">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <button class="btn btn--small btn--ghost btn--danger" type="submit">Notiz löschen</button>

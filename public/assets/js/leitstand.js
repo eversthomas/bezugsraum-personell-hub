@@ -48,6 +48,7 @@ const state = {
     sources: [],
     events: [],
     upcoming: [],
+    planned: [],
     selected: null,
     loadedAt: null,
     failed: false,
@@ -89,6 +90,7 @@ async function load() {
         ]);
         state.sources = main.sources;
         state.events = main.events.map(normalize);
+        state.planned = (main.planned ?? []).map((p) => ({ ...normalize({ ...p, allDay: false, source: 0, location: '' }), planned: true }));
         state.upcoming = soon.events.map(normalize);
         state.loadedAt = Date.now();
         state.failed = false;
@@ -237,7 +239,7 @@ function layoutLanes(segments) {
 
 function eventButton(e, className) {
     const src = sourceById(e.source);
-    const b = el('button', `ev ${src ? src.class : 'src-neutral'} ${className}`);
+    const b = el('button', `ev ${src ? src.class : 'src-neutral'} ${e.planned ? 'ev--planned' : ''} ${className}`);
     b.type = 'button';
     b.addEventListener('click', () => select(e));
     return b;
@@ -248,7 +250,7 @@ function renderGrid(container) {
     const dayCount = DAYS[state.view];
     const keys = Array.from({ length: dayCount }, (_, i) => addDays(from, i));
     const events = visible(state.events);
-    const timed = events.filter((e) => !e.allDay);
+    const timed = [...events.filter((e) => !e.allDay), ...state.planned];
 
     // sichtbarer Stundenbereich: 7–19 Uhr als Standard, erweitert bei Terminen außerhalb
     let startHour = 7;
@@ -331,7 +333,7 @@ function renderGrid(container) {
             b.style.height = `${Math.max(((s.end - s.start) / 60) * HOUR_PX - 2, 20)}px`;
             b.style.left = `${(s.lane / s.lanes) * 100}%`;
             b.style.width = `calc(${100 / s.lanes}% - 2px)`;
-            b.append(el('span', 'ev__time tnum', formatTime(s.e.startMs)), el('span', 'ev__title', s.e.title));
+            b.append(el('span', 'ev__time tnum', formatTime(s.e.startMs)), el('span', 'ev__title', s.e.planned ? `${s.e.title} (vorgemerkt)` : s.e.title));
             col.append(b);
         }
         if (key === today) {

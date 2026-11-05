@@ -49,6 +49,7 @@
             <button class="btn" type="submit">Speichern</button>
         </div>
     </form>
+    <p><a class="btn btn--small btn--ghost" href="/reservieren?item=<?= e($task->id) ?>">Zeit dafür reservieren</a></p>
     <form method="post" action="/aufgaben/<?= e($task->id) ?>/loeschen" data-confirm="Aufgabe wirklich löschen?">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <button class="btn btn--small btn--ghost btn--danger" type="submit">Aufgabe löschen</button>

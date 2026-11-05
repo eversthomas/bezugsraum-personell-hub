@@ -849,6 +849,7 @@ body.nav-locked {
 
 .quick .capture__text {
     flex: 1;
+    height: 4rem;
     min-height: 3.5rem;
 }
 
@@ -1178,4 +1179,58 @@ html[data-nav="collapsed"] .sidebar__heading {
 .source__remind .input {
     width: auto;
     min-height: 36px;
+}
+
+/* ---------- Zeit reservieren ---------- */
+
+.slotday h2 {
+    margin: var(--space-5) 0 var(--space-2);
+    font-size: 1rem;
+}
+
+.slots {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.slot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    margin-bottom: var(--space-2);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.slot__time {
+    flex: 0 0 7.5rem;
+    font-weight: 600;
+}
+
+.slot__title {
+    flex: 1 1 8rem;
+    width: auto;
+    min-height: 36px;
+}
+
+.slot__target {
+    flex: 0 1 9.5rem;
+    width: auto;
+    min-height: 36px;
+}
+
+.task .small {
+    white-space: nowrap;
+}
+
+/* Vorgemerkte Blöcke im Leitstand: gestrichelt, bis sie im Kalender bestätigt sind */
+.ev--planned {
+    color: var(--ink2);
+    background: transparent;
+    border: 2px dashed var(--muted);
+    border-left-width: 4px;
 }

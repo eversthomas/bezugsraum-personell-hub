@@ -80,6 +80,7 @@ $total = array_sum(array_map('count', $groups));
                     <button class="task__check" type="submit" aria-label="Erledigt: <?= e($task->title) ?>"></button>
                 </form>
                 <a class="task__title" href="/aufgaben/<?= e($task->id) ?>"><?= e($task->title) ?></a>
+                <a class="small" href="/reservieren?item=<?= e($task->id) ?>">Zeit reservieren</a>
                 <span class="task__meta small muted">
                     <?php if ($task->dueDate !== null) : ?><span class="tnum"><?= e($dueText($task->dueDate)) ?></span><?php endif; ?>
                     <?php if ($task->recurrence !== null) : ?> · <?= e($recurrences[$task->recurrence] ?? 'wiederkehrend') ?><?php endif; ?>

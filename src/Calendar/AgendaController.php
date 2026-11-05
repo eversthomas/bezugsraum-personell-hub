@@ -19,6 +19,7 @@ final class AgendaController
         private readonly SourceRepository $sources,
         private readonly EventRepository $events,
         private readonly \Closure $clock,
+        private readonly ?PlanningService $planning = null,
     ) {
     }
 
@@ -64,8 +65,19 @@ final class AgendaController
             ];
         }
 
+        $planned = [];
+        foreach ($this->planning?->pendingBetween($from->setTimezone($utc), $to->setTimezone($utc)) ?? [] as $block) {
+            $planned[] = [
+                'id' => $block->id,
+                'title' => $block->title,
+                'start' => $block->startsAt->format('Y-m-d\TH:i:s\Z'),
+                'end' => $block->endsAt->format('Y-m-d\TH:i:s\Z'),
+            ];
+        }
+
         return Response::json([
             'now' => gmdate('Y-m-d\TH:i:s\Z', ($this->clock)()),
+            'planned' => $planned,
             'sources' => $sources,
             'events' => $events,
         ]);

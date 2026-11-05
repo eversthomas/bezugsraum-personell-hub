@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calendar;
 
+use App\Core\ContextRepository;
 use App\Core\Container;
 use App\Core\Contracts\ModuleInterface;
 use App\Core\Crypto;
@@ -12,8 +13,10 @@ use App\Core\Csrf;
 use App\Core\Db;
 use App\Core\Logger;
 use App\Core\Router;
+use App\Core\SettingsRepository;
 use App\Core\Session;
 use App\Core\View;
+use App\Items\TaskService;
 
 final class Module implements ModuleInterface
 {
@@ -35,10 +38,28 @@ final class Module implements ModuleInterface
             $c->get(Crypto::class),
             $c->get(Logger::class),
         ));
+        $container->set(PlanningSettings::class, fn (Container $c): PlanningSettings => new PlanningSettings(new SettingsRepository($c->get(Db::class))));
+        $container->set(PlannedBlockRepository::class, fn (Container $c): PlannedBlockRepository => new PlannedBlockRepository($c->get(Db::class)));
+        $container->set(PlanningService::class, fn (Container $c): PlanningService => new PlanningService(
+            $c->get(PlanningSettings::class),
+            $c->get(EventRepository::class),
+            $c->get(PlannedBlockRepository::class),
+            ['outlook' => new OutlookWebLinkBuilder(), 'google' => new GoogleCalendarLinkBuilder()],
+        ));
+        $container->set(PlanningController::class, fn (Container $c): PlanningController => new PlanningController(
+            $c->get(PlanningService::class),
+            $c->get(PlanningSettings::class),
+            $c->get(TaskService::class),
+            $c->get(ContextRepository::class),
+            $c->get(View::class),
+            $c->get(Csrf::class),
+            $c->get(Session::class),
+        ));
         $container->set(AgendaController::class, fn (Container $c): AgendaController => new AgendaController(
             $c->get(SourceRepository::class),
             $c->get(EventRepository::class),
             static fn (): int => time(),
+            $c->get(PlanningService::class),
         ));
         $container->set(SourceController::class, fn (Container $c): SourceController => new SourceController(
             $c->get(CalendarService::class),
@@ -63,6 +84,15 @@ final class Module implements ModuleInterface
         $router->post($base . '/{id}/link', fn ($r, $p) => $c()->replaceUrl($r, $p));
         $router->post($base . '/{id}/erinnerung', fn ($r, $p) => $c()->reminder($r, $p));
         $router->post($base . '/{id}/abrufen', fn ($r, $p) => $c()->refresh($r, $p));
+        $p = static fn (): PlanningController => $container->get(PlanningController::class);
+        $router->get('/reservieren', fn ($r, $q) => $p()->index($r, $q));
+        $router->post('/reservieren', fn ($r, $q) => $p()->reserve($r, $q));
+        $router->get('/reservieren/{id}', fn ($r, $q) => $p()->done($r, $q));
+        $router->get('/reservieren/{id}/termin.ics', fn ($r, $q) => $p()->ics($r, $q));
+        $router->post('/reservieren/{id}/verwerfen', fn ($r, $q) => $p()->discard($r, $q));
+        $router->get('/einstellungen/planung', fn ($r, $q) => $p()->settings($r, $q));
+        $router->post('/einstellungen/planung', fn ($r, $q) => $p()->saveSettings($r, $q));
+
         $router->get('/api/v1/calendar/events', fn ($r, $p) => $container->get(AgendaController::class)->events($r, $p));
         $router->post('/api/v1/calendar/test', fn ($r, $p) => $c()->test($r, $p));
     }
@@ -72,6 +102,7 @@ final class Module implements ModuleInterface
         return [
             new CronJob('calendar.refresh', 15, static function (Container $c): void {
                 $c->get(CalendarService::class)->refreshDue();
+                $c->get(PlanningService::class)->reconcile();
             }),
         ];
     }

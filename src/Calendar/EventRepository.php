@@ -129,6 +129,18 @@ final class EventRepository
         $this->db->execute('DELETE FROM event_reminders_sent WHERE starts_at < ?', [$before->format(self::FORMAT)]);
     }
 
+    /** Gibt es in einer aktiven Quelle einen Termin genau in diesem Zeitraum? (Bestätigung vorgemerkter Blöcke) */
+    public function existsExactly(\DateTimeImmutable $start, \DateTimeImmutable $end): bool
+    {
+        $utc = new \DateTimeZone('UTC');
+
+        return $this->db->fetchOne(
+            'SELECT e.id FROM calendar_events e JOIN calendar_sources s ON s.id = e.source_id '
+            . 'WHERE s.active = 1 AND e.all_day = 0 AND e.starts_at = ? AND e.ends_at = ? LIMIT 1',
+            [$start->setTimezone($utc)->format(self::FORMAT), $end->setTimezone($utc)->format(self::FORMAT)],
+        ) !== null;
+    }
+
     public function purgeEndedBefore(\DateTimeImmutable $cutoff): int
     {
         return $this->db->execute('DELETE FROM calendar_events WHERE ends_at < ?', [$cutoff->format(self::FORMAT)]);

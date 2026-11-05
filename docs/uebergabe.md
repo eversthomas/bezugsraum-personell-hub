@@ -59,6 +59,16 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 - Die PHP-Erweiterung `gmp` oder `bcmath` beschleunigt die Verschlüsselung und unterdrückt eine Hinweismeldung der Bibliothek; bei All-Inkl in AP 0 prüfen.
 - **Nicht geprüft:** der Zustellweg bis auf ein echtes Gerät. Getestet sind die Verschlüsselung und das Signieren (VAPID, aes128gcm) gegen einen Mitschnitt-Client sowie die gesamte Logik; Zustellung über FCM/Mozilla/Apple ist aus der Sandbox nicht möglich. Die Abnahme „Erinnerung kommt bei geschlossener App auf dem Pixel an“ steht aus.
 
+**AP 8 – Zeitfenster reservieren (nach dem MVP, Kern umgesetzt)**
+
+- `SlotFinder` (reine Rechenlogik, 13 Tests inkl. Zeitumstellung, Mitternacht, Puffer, Wochenenden): freie Fenster innerhalb der Arbeitszeiten über die Termine **aller aktiven Quellen**, dazu bereits vorgemerkte Blöcke. Ganztägige Termine sperren den Tag nicht.
+- Einstellungen unter „Planung“: Arbeitstage, Beginn, Ende, Puffer, neutraler Standardtitel, Zielkalender je Kontext (Standard: Dienstlich, Betriebsrat, Ehrenamt → Outlook, Privat → Google).
+- Dialog „Zeit reservieren“ an Aufgaben und Notizen (`/reservieren?item=ID`): Dauer wählen (30 bis 180 Min.), Vorschläge der nächsten 7 Tage, Titel und Zielkalender je Vorschlag anpassbar.
+- Vorausgefüllte Links für Outlook im Web (`outlook.office.com/calendar/0/deeplink/compose`) und Google Kalender (Vorlage-Link) sowie `.ics`-Datei als Rückfallweg. Personal Hub schreibt in keinen Kalender; der Termin wird im geöffneten Formular vom Zielkonto gespeichert.
+- Vorgemerkte Blöcke erscheinen gestrichelt im Leitstand (Tag- und Wochenansicht). Nach dem nächsten Abruf gilt ein Block als bestätigt, wenn ein Termin mit **derselben Start- und Endzeit** auftaucht (der Titel muss nicht passen, weil Outlook ihn je nach Detailstufe ausblendet). Nach einem Tag ohne Treffer verfällt er.
+- **Offen (braucht dich):** Die Outlook- und Google-Links sind nur auf ihren Aufbau getestet, nicht gegen den AWO-Tenant oder das Handy. Vorab zu klären: öffnet der Link im richtigen M365-Konto (`login_hint` ist nicht eingebaut), und erscheint das ausgefüllte Formular auf dem Pixel? Der Host lässt sich über `new OutlookWebLinkBuilder('outlook.office365.com')` in `Calendar\Module` ändern.
+- In der 2- und 4-Wochen-Ansicht werden vorgemerkte Blöcke noch nicht angezeigt.
+
 ## Noch nicht geprüft
 
 - **PHPStan (Level 6) lief lokal nicht.** In der Sandbox war das Paket nicht installierbar. Bitte lokal `composer stan` ausführen und die CI ansehen.
