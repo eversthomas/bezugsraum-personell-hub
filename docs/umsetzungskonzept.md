@@ -2,7 +2,7 @@
 
 Nov 3, 2026 · @Thomas Evers
 
-Personal Hub wird als schlankes, eigenes PHP-Projekt mit Cursor gebaut, in sieben Arbeitspaketen bis zum MVP und einem achten danach, jeweils mit klaren Stopp-Punkten. Grundlage sind die drei Prototypen auf der Design-Fläche (Leitstand, Kalenderquellen, Mobil). Das große Konzeptpapier dient nur noch als Hintergrund.
+Personal Hub wird als schlankes, eigenes PHP-Projekt mit Cursor gebaut, in sieben Arbeitspaketen bis zum MVP und zwei weiteren danach (AP 8 und 9), jeweils mit klaren Stopp-Punkten. Grundlage sind die drei Prototypen auf der Design-Fläche (Leitstand, Kalenderquellen, Mobil). Das große Konzeptpapier dient nur noch als Hintergrund.
 
 ## Ziel und Umfang
 
@@ -25,8 +25,8 @@ Die Entscheidung fällt für ein eigenes PHP-Projekt ohne Framework und ohne CMS
 
 | Bereich | Festlegung |
 | --- | --- |
-| PHP | 8.3 (vorab bei All-Inkl prüfen, Minimum 8.2) |
-| Datenbank | MariaDB, Zugriff über PDO mit Prepared Statements |
+| PHP | Code ab 8.3 (Composer, CI und PHPStan prüfen gegen 8.3); Server und lokal laufen mit 8.5, bei All-Inkl verfügbar |
+| Datenbank | MariaDB auf dem Server, MySQL lokal; Zugriff über PDO mit Prepared Statements; jede Tabelle ausdrücklich mit utf8mb4 und utf8mb4\_unicode\_ci, keine MySQL-Sonderfunktionen |
 | Frontend | Server-HTML + Vanilla JS, eigenes CSS mit Tokens, kein Build-Schritt |
 | Kalender-UI | eigene Ansichten nach Prototyp (kein FullCalendar), Daten per JSON |
 | ICS | `sabre/vobject` (Parsen, Wiederholungen auflösen) |
@@ -34,7 +34,7 @@ Die Entscheidung fällt für ein eigenes PHP-Projekt ohne Framework und ohne CMS
 | Push | `minishlink/web-push` |
 | 2FA / Passkey | `spomky-labs/otphp` (TOTP), später `web-auth/webauthn-lib` |
 | Bilder | GD oder Imagick serverseitig, Verkleinern zusätzlich im Browser |
-| Hintergrund | Cronjob alle 15 Minuten ruft `bin/cron.php` auf |
+| Hintergrund | All-Inkl-Cronjob ruft minütlich per HTTPS einen geschützten Endpunkt auf (HTTP-Benutzer und -Passwort aus dem KAS plus geheimes Token, sonst 404); der Endpunkt startet dieselbe Logik wie `bin/cron.php` (lokal per Kommandozeile) |
 | Deployment | `vendor/` wird mit hochgeladen, kein Composer auf dem Server nötig |
 | Lizenz | MIT, Abhängigkeiten in `THIRD-PARTY-NOTICES.md` |
 
@@ -169,7 +169,7 @@ Aufgaben, Notizen und Inbox teilen sich eine Tabelle `items`. Ein Eintrag beginn
 
 | Tabelle | Zweck | Wichtige Felder |
 | --- | --- | --- |
-| `items` | Inbox, Aufgaben, Notizen | `id`, `type` (inbox/task/note), `origin` (text/voice/photo/link/share), `title`, `body` (Markdown), `context`, `due_date`, `recurrence` (z. B. `weekly:mon`), `done_at`, `archived_at`, `created_at`, `updated_at`, `client_uuid` |
+| `items` | Inbox, Aufgaben, Notizen | `id`, `type` (inbox/task/note), `origin` (text/voice/photo/link/share), `title`, `body` (Markdown), `context`, `due_date`, priority (1 hoch, 2 normal, 3 niedrig; Standard 2), project\_id (ab AP 9), `recurrence` (z. B. `weekly:mon`), `done_at`, `archived_at`, `created_at`, `updated_at`, `client_uuid` |
 | `item_media` | Fotos zu Einträgen | `item_id`, `file_name`, `mime`, `width`, `height`, `bytes` |
 | `contexts` | Dienstlich, Betriebsrat, Ehrenamt, Privat, Projekte | `key`, `label`, `color`, `sort` |
 | `calendar_sources` | ICS-Quellen | `name`, `context`, `color`, `url_encrypted`, `url_hint`, `interval_min`, `active`, `last_ok_at`, `last_error`, `etag` |
@@ -321,6 +321,8 @@ Ziel: Gedanken in zwei Schritten festhalten.
 - [ ] „In Outlook öffnen“ im Termindetail über den Link der Kalenderquelle; `login_hint` für das richtige M365-Konto vorab testen
 - [ ] Datenexport als JSON
 
+* [ ] Priorität für Aufgaben und Notizen: drei Stufen (hoch, normal, niedrig), setzbar beim Einsortieren aus der Inbox und in der Detailansicht; Listen standardmäßig nach Priorität, dann Fälligkeit sortiert; Filter „nur hoch“; im Leitstand erscheinen hohe Prioritäten oben in „Aufgaben heute“; Kennzeichnung durch kleines Symbol plus Text, nie nur durch Farbe
+
 ### AP 6 – Fotos
 
 - [ ] Kamera-Aufnahme per `<input capture>`, Verkleinern im Browser
@@ -344,6 +346,16 @@ Ziel: Aus einer Idee oder Aufgabe wird mit wenigen Klicks ein Zeitblock im richt
 - [ ] Vorausgefüllte Links für Outlook im Web und Google Calendar, zusätzlich `.ics`-Datei als Rückfallweg; vorab im AWO-Tenant und auf dem Pixel testen
 - [ ] Vorgemerkte Blöcke gestrichelt im Leitstand; nach dem nächsten Abruf automatisch als bestätigt erkannt
 - [ ] Abnahme: Idee am Pixel einplanen, Termin erscheint nach dem Abruf bestätigt im Leitstand
+
+### AP 9 – Projekte, leichtgewichtig (nach dem MVP)
+
+Ziel: Zusammengehörige Aufgaben und Notizen bündeln und nach Wichtigkeit ordnen, ohne Projektmanagement-Software nachzubauen.
+
+- [ ] Tabelle `projects`: Titel, Ziel in einem Satz, Kontext, Status (aktiv, wartet, abgeschlossen, archiviert), Priorität (gleiche drei Stufen wie Einträge), optional Zieldatum
+- [ ] Einträge einem Projekt zuordnen (`items.project_id`, höchstens ein Projekt pro Eintrag)
+- [ ] Projektübersicht nach Priorität und Status, Projektseite mit offenen Aufgaben, Notizen und nächstem Schritt
+- [ ] Keine Meilensteine, kein Kanban, kein Gantt; Fortschritt nur als „X von Y Aufgaben erledigt“
+- [ ] Abnahme: drei echte Vorhaben angelegt, im Leitstand ist sichtbar, welches gerade Vorrang hat
 
 ## Arbeitsweise mit Cursor
 
@@ -381,3 +393,5 @@ Diese Punkte sollten vor dem jeweiligen Arbeitspaket entschieden sein. Alles and
 | Standardansicht im Leitstand | Tag; Auswahl wird pro Gerät gemerkt | 3 |
 | Wiederkehrende Aufgaben: welche Muster? | täglich, wöchentlich (Wochentag), monatlich (Tag) | 5 |
 | Push auch vor Terminen? | nur für ausgewählte Quellen, 15 Minuten vorher | 7 |
+
+**Vor AP 1 zu entscheiden:** SQLite statt MariaDB. Eine einzige Datei unter `storage/`, kein Datenbankserver lokal oder bei All-Inkl, Backup durch Kopieren, Volltextsuche eingebaut (FTS5), WAL-Modus für gleichzeitigen Zugriff von Cronjob und Browser. Für eine Person ausreichend; ein späterer Wechsel zu MariaDB bleibt über PDO möglich. Voraussetzung: `pdo_sqlite` lokal und bei All-Inkl (Systemcheck).
