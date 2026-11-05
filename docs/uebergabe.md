@@ -98,6 +98,37 @@ Aufgenommen am 5. November 2026 aus dem lokalen Probebetrieb. Noch keine festgel
 1. **Installation auf einem Webhosting, ohne Terminal und ohne Composer dort.** Der Ablauf soll so schlicht werden wie bei WordPress oder ProcessWire: Dateien hochladen, im Browser einrichten. Composer bleibt das Werkzeug auf dem Entwicklungsrechner. Über GitHub entsteht ein installierbares Release, in dem `vendor/` schon enthalten ist. Auf dem Server wird nichts mit Composer nachinstalliert.
 2. **Authenticator bleibt Pflicht.** Der erste Benutzer samt TOTP-Schlüssel entsteht heute nur über `php bin/create-user.php`. Auf einem Webhosting ohne Shell braucht es dafür einen Schritt im Browser, im selben Installationsgang wie Punkt 1. Der Code kommt weiterhin aus einer Authenticator-App, nicht aus einem abgeschwächten Login.
 
+## Rückmeldungen aus dem Probebetrieb
+
+Gesammelt am 5. November 2026. Noch keine Entscheidung und keine Umsetzung. Weitere Designvergleiche folgen.
+
+### Kalender
+
+- Termindetails erscheinen oben rechts. Liegt der Termin weiter unten, muss man nach oben scrollen, um sie zu lesen. Das soll ohne diesen Sprung gehen.
+- In halbstündigen Terminen wird der Text abgeschnitten.
+- Zusätzlich eine Agenda-Ansicht.
+- Die Tagesansicht zeigt offenbar immer den Montag. Sie soll den heutigen Tag zeigen.
+- Die Zwei-Wochen-Ansicht ist dieselbe Fläche wie vier Wochen, nur mit zwei statt vier Reihen. Der Platz soll in der Zwei-Wochen-Ansicht besser genutzt werden.
+- Ein Jahresüberblick.
+- Eine kurze Monatsübersicht zum Blättern durch die Monate. Eine weitere feste Spalte neben dem Hauptmenü wird vom Platz her eng. Idee: nur in der Kalenderansicht das eingeklappte Hauptmenü um diese Monatsübersicht ergänzen, und auch die wieder ausblenden können. Das trifft sich mit dem Wunsch, dem Kalender möglichst die ganze Fläche zu geben: die Monatsleiste darf den Kalender nicht dauerhaft verengen.
+- Termine nicht nur lesen, sondern auch schreiben. Zunächst nur eine Idee. Das Ausmaß ist offen: ein eigener Termin in Personal Hub, Schreiben in den Ursprungskalender, oder etwas dazwischen. Heute ist der Kalender nur lesend. Anlegen läuft über vorausgefüllte Links in den Ursprungskonto (AP 8). Die Idee stellt das zur Diskussion, ohne es schon zu entscheiden.
+
+### Kopfzeile
+
+Uhrzeit und Datum als fester Kopf auf allen Seiten, nicht nur im Leitstand.
+
+### Aufgaben, Notizen, Erfassen, Inbox
+
+Die vier Punkte sind in der Benutzung schwer voneinander zu trennen. Offen, ob sie klarer abgegrenzt, knapper erklärt oder zu weniger Einstiegen zusammengelegt werden. Das Datenmodell mit einem gemeinsamen Eintragstyp bleibt davon zunächst unberührt. Diskussion, bevor etwas umgebaut wird.
+
+### Leitstand und Kalender
+
+Heute ist der Leitstand der Kalender. Zur Diskussion: Kalender als eigener Menüpunkt mit möglichst viel Fläche für viele Quellen. Der Leitstand wird ein Überblick (Dashboard). „Was geht dir durch den Kopf“ nur dort, nicht auf der Kalenderseite.
+
+### Gestaltung
+
+Das jetzige Design und das einklappbare Hauptmenü passen, auch die mobile Ansicht. Gewünscht ist eine insgesamt filigranere Gestaltung. Konkrete Vorbilder kommen noch.
+
 ## Lokal ausprobieren
 
 ```bash
