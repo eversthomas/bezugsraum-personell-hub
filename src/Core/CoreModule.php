@@ -18,8 +18,8 @@ final class CoreModule implements ModuleInterface
     public function routes(Router $router, Container $container): void
     {
         $router->get('/', function (Request $request) use ($container): Response {
-            $html = $container->get(View::class)->render('home', [
-                'title' => 'Übersicht',
+            $html = $container->get(View::class)->render('leitstand', [
+                'title' => 'Leitstand',
                 'csrf' => $container->get(Csrf::class)->token(),
                 'bodyClass' => 'app',
             ]);

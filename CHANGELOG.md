@@ -9,3 +9,4 @@
 - AP 1: Anmeldung mit Passwort und TOTP, Sperre nach 5 Fehlversuchen für 15 Minuten, „Gerät merken“ (30 Tage, nur als Hash), Logout.
 - `bin/migrate.php`, `bin/create-user.php`, `bin/create-key.php`.
 - AP 2: `IcsFetcher` mit SSRF-Schutz, `IcsParser` (Zeitzonen, Serien, Ausnahmen, Ganztag), Kalenderquellen mit verschlüsselten Links, Abruf-Cronjob (`bin/cron.php`) und Seite „Kalenderquellen“.
+- AP 3: Leitstand mit Tag-, Wochen-, 2- und 4-Wochen-Ansicht, Uhr mit nächstem Termin und Countdown, Jetzt-Linie, Quellenfilter (wird gemerkt), Detailbereich, Aktualisierung alle 5 Minuten. JSON-Endpunkt `/api/v1/calendar/events`.

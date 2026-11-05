@@ -116,7 +116,7 @@ final class KernelTest extends DbTestCase
 
         $home = $this->call('GET', '/');
         self::assertSame(200, $home->status);
-        self::assertStringContainsString('Angemeldet', $home->body);
+        self::assertStringContainsString('data-leitstand', $home->body);
 
         // Nach dem Login ist das CSRF-Token erneuert: das alte gilt nicht mehr.
         self::assertSame(403, $this->call('POST', '/logout', ['_csrf' => $token])->status);

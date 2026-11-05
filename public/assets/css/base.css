@@ -73,3 +73,7 @@ a {
         transition-duration: 0.01ms !important;
     }
 }
+
+button {
+    -webkit-tap-highlight-color: transparent;
+}

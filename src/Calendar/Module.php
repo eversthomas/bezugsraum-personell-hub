@@ -35,6 +35,11 @@ final class Module implements ModuleInterface
             $c->get(Crypto::class),
             $c->get(Logger::class),
         ));
+        $container->set(AgendaController::class, fn (Container $c): AgendaController => new AgendaController(
+            $c->get(SourceRepository::class),
+            $c->get(EventRepository::class),
+            static fn (): int => time(),
+        ));
         $container->set(SourceController::class, fn (Container $c): SourceController => new SourceController(
             $c->get(CalendarService::class),
             $c->get(SourceRepository::class),
@@ -57,6 +62,7 @@ final class Module implements ModuleInterface
         $router->post($base . '/{id}/entfernen', fn ($r, $p) => $c()->remove($r, $p));
         $router->post($base . '/{id}/link', fn ($r, $p) => $c()->replaceUrl($r, $p));
         $router->post($base . '/{id}/abrufen', fn ($r, $p) => $c()->refresh($r, $p));
+        $router->get('/api/v1/calendar/events', fn ($r, $p) => $container->get(AgendaController::class)->events($r, $p));
         $router->post('/api/v1/calendar/test', fn ($r, $p) => $c()->test($r, $p));
     }
 

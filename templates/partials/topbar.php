@@ -4,7 +4,7 @@
 ?>
 <header class="topbar">
     <nav class="topbar__nav" aria-label="Hauptnavigation">
-        <a class="topbar__brand" href="/">Übersicht</a>
+        <a class="topbar__brand" href="/">Leitstand</a>
         <a href="/einstellungen/quellen">Kalenderquellen</a>
     </nav>
     <div class="topbar__actions">

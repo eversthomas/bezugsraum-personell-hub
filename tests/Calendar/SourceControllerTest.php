@@ -185,4 +185,56 @@ final class SourceControllerTest extends DbTestCase
         self::assertFalse($bad['ok']);
         self::assertNotEmpty($bad['error']);
     }
+
+    /** @param array<string, string> $query */
+    private function get(string $path, array $query): Response
+    {
+        return $this->kernel->handle(new Request('GET', $path, query: $query, server: ['HTTPS' => 'on']));
+    }
+
+    public function testAgendaApi(): void
+    {
+        $this->login();
+        $this->transport->push($this->ics());
+        $this->call('POST', '/einstellungen/quellen', ['name' => 'A', 'context' => 'privat', 'color' => 'green', 'url' => self::URL]);
+
+        $response = $this->get('/api/v1/calendar/events', ['from' => '2026-11-09', 'to' => '2026-11-16']);
+        self::assertSame(200, $response->status);
+        $data = json_decode($response->body, true);
+
+        self::assertCount(1, $data['sources']);
+        self::assertSame('src-green', $data['sources'][0]['class']);
+        $titles = array_column($data['events'], 'title');
+        self::assertContains('Teamsitzung (verschoben)', $titles);
+        self::assertContains('Klausurtagung', $titles);
+        $allDay = array_values(array_filter($data['events'], static fn (array $e): bool => $e['title'] === 'Klausurtagung'))[0];
+        self::assertTrue($allDay['allDay']);
+        self::assertSame(['2026-11-12', '2026-11-14'], [$allDay['start'], $allDay['end']]);
+        $moved = array_values(array_filter($data['events'], static fn (array $e): bool => $e['title'] === 'Teamsitzung (verschoben)'))[0];
+        self::assertSame('2026-11-10T13:00:00Z', $moved['start']);
+        self::assertStringNotContainsString('SECRET123', $response->body);
+    }
+
+    public function testAgendaApiValidatesInputAndRequiresLogin(): void
+    {
+        self::assertSame(404, $this->get('/api/v1/calendar/events', ['from' => '2026-11-09', 'to' => '2026-11-16'])->status);
+
+        $this->login();
+        foreach ([[], ['from' => 'x', 'to' => 'y'], ['from' => '2026-11-16', 'to' => '2026-11-09'], ['from' => '2026-02-31', 'to' => '2026-03-05'], ['from' => '2026-01-01', 'to' => '2026-12-31']] as $query) {
+            self::assertSame(422, $this->get('/api/v1/calendar/events', $query)->status, json_encode($query));
+        }
+    }
+
+    public function testPausedSourceEventsAreNotReturned(): void
+    {
+        $this->login();
+        $this->transport->push($this->ics());
+        $this->call('POST', '/einstellungen/quellen', ['name' => 'A', 'context' => 'privat', 'color' => 'green', 'url' => self::URL]);
+        $id = (int) $this->db->fetchValue('SELECT id FROM calendar_sources');
+        $this->call('POST', "/einstellungen/quellen/$id/pausieren");
+
+        $data = json_decode($this->get('/api/v1/calendar/events', ['from' => '2026-11-09', 'to' => '2026-11-16'])->body, true);
+        self::assertSame([], $data['events']);
+        self::assertFalse($data['sources'][0]['active']);
+    }
 }

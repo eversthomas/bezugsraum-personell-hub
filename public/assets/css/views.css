@@ -234,3 +234,386 @@ body.auth {
 .source__replace .input {
     flex: 1 1 16rem;
 }
+
+/* ---------- Leitstand ---------- */
+
+.leitstand {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: 90rem;
+    margin: 0 auto;
+    padding: var(--space-4);
+}
+
+.hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4) var(--space-6);
+}
+
+.hero__time {
+    display: flex;
+    flex-direction: column;
+}
+
+.hero__clock {
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.hero__date {
+    font-size: 1.0625rem;
+}
+
+.next {
+    display: flex;
+    flex: 1 1 18rem;
+    flex-direction: column;
+    gap: 2px;
+    max-width: 34rem;
+    padding: var(--space-3) var(--space-4);
+    background: var(--src-tint, var(--surface));
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--src, var(--border));
+    border-radius: var(--radius);
+}
+
+.next__label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--ink2);
+}
+
+.next__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+}
+
+.toolbar__nav {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.toolbar__title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 36px;
+    padding: 0 var(--space-3);
+    font: inherit;
+    font-size: 0.875rem;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.chip[aria-pressed="false"] {
+    color: var(--muted);
+    background: transparent;
+    text-decoration: line-through;
+}
+
+.chip__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    background: var(--src);
+}
+
+.chip[aria-pressed="false"] .chip__dot {
+    opacity: 0.4;
+}
+
+.chip__warn {
+    display: inline-grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: var(--warn-bg);
+    color: var(--warn-fg);
+}
+
+.stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: start;
+}
+
+@media (min-width: 1100px) {
+    .stage:has(aside:not([hidden])) {
+        grid-template-columns: minmax(0, 1fr) 20rem;
+    }
+}
+
+.detail h2 {
+    font-size: 1.125rem;
+}
+
+.detail {
+    border-left: 5px solid var(--src, var(--border));
+}
+
+/* Zeitraster */
+
+.calendar {
+    overflow-x: auto;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.cal {
+    display: grid;
+    grid-template-columns: 3.5rem repeat(var(--days), minmax(0, 1fr));
+    min-width: 0;
+}
+
+.cal--week {
+    min-width: 46rem;
+}
+
+.cal__corner,
+.cal__dayhead,
+.cal__allday {
+    border-bottom: 1px solid var(--line);
+}
+
+.cal__corner--allday {
+    padding: var(--space-1);
+    font-size: 0.6875rem;
+    color: var(--muted);
+    text-align: right;
+}
+
+.cal__dayhead {
+    padding: var(--space-2) var(--space-3);
+    font-weight: 600;
+    text-align: center;
+    border-left: 1px solid var(--line2);
+}
+
+.cal__dayhead.is-today {
+    color: var(--accent-fg);
+    background: var(--accent);
+}
+
+.cal__allday {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 2rem;
+    padding: 2px;
+    border-left: 1px solid var(--line2);
+}
+
+.cal__body {
+    position: relative;
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: 3.5rem repeat(var(--days), minmax(0, 1fr));
+}
+
+.cal__hours {
+    position: relative;
+    grid-column: 1;
+}
+
+.cal__hour {
+    position: absolute;
+    right: var(--space-2);
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.cal__col {
+    position: relative;
+    border-left: 1px solid var(--line2);
+}
+
+.cal__col.is-weekend,
+.mday.is-weekend {
+    background: var(--surface2);
+}
+
+.cal__col.is-today {
+    background: var(--src-blue-tint);
+    background: color-mix(in srgb, var(--src-blue-tint) 35%, transparent);
+}
+
+.cal__line {
+    position: absolute;
+    right: 0;
+    left: 0;
+    border-top: 1px solid var(--line2);
+}
+
+.cal__now {
+    position: absolute;
+    right: 0;
+    left: 0;
+    z-index: 3;
+    height: 2px;
+    background: var(--now);
+    pointer-events: none;
+}
+
+.cal__now::before {
+    position: absolute;
+    top: -4px;
+    left: -5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--now);
+    content: "";
+}
+
+/* Termine */
+
+.ev {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 2px var(--space-2);
+    overflow: hidden;
+    font: inherit;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    text-align: left;
+    color: var(--ink);
+    background: var(--src-tint);
+    border: 0;
+    border-left: 4px solid var(--src);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.cal__col .ev {
+    position: absolute;
+    z-index: 2;
+}
+
+.ev:hover {
+    filter: brightness(0.96);
+}
+
+.ev.is-selected {
+    outline: 2px solid var(--ink);
+}
+
+.ev__time {
+    margin-right: var(--space-1);
+    font-weight: 600;
+    color: var(--ink2);
+}
+
+.ev__title {
+    font-weight: 500;
+}
+
+.ev--allday {
+    padding: 1px var(--space-2);
+}
+
+.ev--line {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 1px var(--space-1);
+    white-space: nowrap;
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+}
+
+.ev--line:hover {
+    background: var(--src-tint);
+}
+
+.ev--line .ev__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ev__dot {
+    flex: 0 0 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--src);
+}
+
+/* Mehrwochen-Raster */
+
+.mgrid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    min-width: 42rem;
+}
+
+.mgrid__head {
+    padding: var(--space-2);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--muted);
+    border-bottom: 1px solid var(--line);
+}
+
+.mday {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 7.5rem;
+    padding: var(--space-1);
+    border-right: 1px solid var(--line2);
+    border-bottom: 1px solid var(--line2);
+}
+
+.mday.is-past {
+    opacity: 0.7;
+}
+
+.mday__num {
+    align-self: flex-start;
+    min-width: 1.75rem;
+    padding: 0 var(--space-1);
+    font-weight: 600;
+    text-align: center;
+    border-radius: 999px;
+}
+
+.mday.is-today .mday__num {
+    color: var(--accent-fg);
+    background: var(--accent);
+}
