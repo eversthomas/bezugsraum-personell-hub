@@ -11,3 +11,4 @@
 - AP 2: `IcsFetcher` mit SSRF-Schutz, `IcsParser` (Zeitzonen, Serien, Ausnahmen, Ganztag), Kalenderquellen mit verschlüsselten Links, Abruf-Cronjob (`bin/cron.php`) und Seite „Kalenderquellen“.
 - AP 3: Leitstand mit Tag-, Wochen-, 2- und 4-Wochen-Ansicht, Uhr mit nächstem Termin und Countdown, Jetzt-Linie, Quellenfilter (wird gemerkt), Detailbereich, Aktualisierung alle 5 Minuten. JSON-Endpunkt `/api/v1/calendar/events`.
 - AP 4: PWA (Manifest, Service Worker, Shortcuts, Share-Target), Erfassen mit Offline-Warteschlange (`client_uuid`, genau einmal), Inbox mit Einsortieren als Aufgabe oder Notiz, Erfassungsfeld im Leitstand, mobil nur Tagesansicht.
+- AP 5: Aufgaben (Heute, Demnächst, Überfällig, nach Kontext, abhaken, wiederkehrend täglich/wöchentlich/monatlich), Notizen mit Markdown und Suche, Aufgaben-Karte im Leitstand, JSON-Export unter `/export.json`.

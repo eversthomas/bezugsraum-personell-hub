@@ -32,10 +32,13 @@
     <div class="chips" role="group" aria-label="Quellen ein- oder ausblenden" data-sources></div>
     <div class="notice notice--warn" role="status" data-status hidden></div>
 
+    <section class="card taskcard" data-taskcard aria-label="Aufgaben" hidden></section>
+
     <div class="stage">
         <div class="calendar" data-calendar></div>
         <aside data-detail hidden></aside>
     </div>
 </main>
 <script type="module" src="/assets/js/capture.js"></script>
+<script type="module" src="/assets/js/taskcard.js"></script>
 <script type="module" src="/assets/js/leitstand.js"></script>

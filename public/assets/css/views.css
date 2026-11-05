@@ -915,3 +915,214 @@ body.nav-locked {
         flex: 1;
     }
 }
+
+/* ---------- Aufgaben und Notizen ---------- */
+
+.page__head--row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.task-new {
+    display: grid;
+    grid-template-columns: minmax(12rem, 3fr) repeat(3, minmax(8rem, 1fr)) auto;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+}
+
+@media (max-width: 899px) {
+    .task-new {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .task-new__title {
+        grid-column: 1 / -1;
+    }
+}
+
+a.chip {
+    text-decoration: none;
+    line-height: 36px;
+}
+
+a.chip.is-active {
+    color: var(--accent-fg);
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.chips {
+    margin-bottom: var(--space-4);
+}
+
+.task-group h2 {
+    margin: var(--space-5) 0 var(--space-2);
+    font-size: 1rem;
+}
+
+.task-group--overdue h2 {
+    color: var(--now-text);
+}
+
+.tasks {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.task {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-top: 1px solid var(--line2);
+}
+
+.task:first-child {
+    border-top: 0;
+}
+
+.task form {
+    margin: 0;
+}
+
+.task__check {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    font: inherit;
+    font-size: 0.875rem;
+    color: var(--accent-fg);
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.task__check:hover {
+    border-color: var(--ink);
+}
+
+.task__check.is-done {
+    background: var(--ok-fg);
+    border-color: var(--ok-fg);
+}
+
+.task__title {
+    flex: 1 1 12rem;
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.task--done .task__title {
+    color: var(--muted);
+    text-decoration: line-through;
+}
+
+.task-done {
+    margin: var(--space-5) 0;
+}
+
+.task-done summary {
+    margin-bottom: var(--space-2);
+    cursor: pointer;
+    color: var(--ink2);
+}
+
+.note-search {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+}
+
+.notes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.note__title {
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.note__excerpt {
+    margin: var(--space-2) 0;
+    color: var(--ink2);
+}
+
+.note .small {
+    margin: 0;
+}
+
+.note-edit {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+@media (min-width: 1000px) {
+    .note-edit:has(.note-preview) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.note-edit__body {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.9375rem;
+}
+
+.markdown {
+    overflow-wrap: anywhere;
+}
+
+.markdown pre {
+    padding: var(--space-3);
+    overflow-x: auto;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+}
+
+.markdown code {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+.markdown blockquote {
+    margin-left: 0;
+    padding-left: var(--space-3);
+    color: var(--ink2);
+    border-left: 3px solid var(--border);
+}
+
+/* Aufgaben-Karte im Leitstand */
+
+.taskcard h2 {
+    margin-bottom: var(--space-2);
+    font-size: 1rem;
+}
+
+.taskcard .tasks {
+    border: 0;
+}
+
+.taskcard .task {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.taskcard__more {
+    margin: var(--space-2) 0 0;
+}
