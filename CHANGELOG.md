@@ -15,3 +15,4 @@
 - AP 5: Schnellzugriff (`/einstellungen/links`) mit Anzeige in Seitenleiste und mobilem Menü; nur https, Symbol als Anfangsbuchstabe in Kontextfarbe, Öffnen in neuem Tab mit `noopener noreferrer`.
 - AP 6: Fotos (Kamera per `<input capture>`, Verkleinern im Browser, serverseitig neu codiert als JPEG ohne EXIF und Standort, max. 1600 px, Auslieferung nur nach Login unter `/media/{id}`).
 - AP 7: Push-Erinnerungen (Web Push mit VAPID): Geräte pro Gerät aktivieren, Testnachricht, Erinnerung für fällige Aufgaben (8:00 Uhr Berlin, genau einmal), optionaler Hinweis vor Terminen je Kalenderquelle, Cronjob. Eigener kleiner PSR-7/18-Client auf cURL, Push-Endpunkte nur von bekannten Diensten.
+- Sicherheit: Seite mit gemerkten Geräten (einzeln oder alle entfernen) und Passwortänderung; `docs/deployment.md`.

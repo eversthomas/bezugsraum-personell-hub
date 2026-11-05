@@ -31,7 +31,7 @@ if ($password === '') {
         echo "\n";
     }
 }
-if (mb_strlen($password) < 12) {
+if (mb_strlen($password) < App\Auth\AuthService::MIN_PASSWORD_LENGTH) {
     fwrite(STDERR, "Passwort zu kurz (mindestens 12 Zeichen).\n");
     exit(1);
 }

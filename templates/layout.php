@@ -37,6 +37,7 @@ $nav = [
     ['key' => 'inbox', 'label' => 'Inbox', 'href' => '/inbox', 'icon' => 'I'],
     ['key' => 'quellen', 'label' => 'Kalenderquellen', 'href' => '/einstellungen/quellen', 'icon' => 'K'],
     ['key' => 'push', 'label' => 'Benachrichtigungen', 'href' => '/einstellungen/benachrichtigungen', 'icon' => 'B'],
+    ['key' => 'sicherheit', 'label' => 'Sicherheit', 'href' => '/einstellungen/sicherheit', 'icon' => '⚿'],
     ['key' => 'links', 'label' => 'Schnellzugriff pflegen', 'href' => '/einstellungen/links', 'icon' => 'S'],
 ];
 $active = $active ?? '';

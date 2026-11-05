@@ -20,6 +20,7 @@ final class AuthService implements AuthenticatorInterface
     public const LOCK_SECONDS = 900;
     public const PENDING_SECONDS = 300;
     public const DEVICE_DAYS = 30;
+    public const MIN_PASSWORD_LENGTH = 12;
 
     /** Hash eines zufälligen Textes: gleicher Aufwand, auch wenn der Nutzername nicht existiert. */
     private const DUMMY_HASH = '$2y$12$Lus4ZDmUArdHQJT.b/v21O1UwKaXtWzf7eumiNneen8XOBFXXWWZC';
@@ -162,6 +163,52 @@ final class AuthService implements AuthenticatorInterface
         }
 
         return new LoginResult(LoginStatus::LoggedIn, $token);
+    }
+
+    /**
+     * Ändert das Passwort. Alle gemerkten Geräte werden danach widerrufen.
+     *
+     * @throws \InvalidArgumentException bei falschem aktuellem Passwort oder zu kurzem neuem
+     */
+    public function changePassword(string $current, string $new): void
+    {
+        $user = $this->currentUser() ?? throw new \InvalidArgumentException('Nicht angemeldet.');
+        if (!password_verify($current, $user->passwordHash)) {
+            throw new \InvalidArgumentException('Das aktuelle Passwort stimmt nicht.');
+        }
+        if (mb_strlen($new) < self::MIN_PASSWORD_LENGTH) {
+            throw new \InvalidArgumentException('Das neue Passwort braucht mindestens ' . self::MIN_PASSWORD_LENGTH . ' Zeichen.');
+        }
+        if ($new === $current) {
+            throw new \InvalidArgumentException('Das neue Passwort muss sich vom alten unterscheiden.');
+        }
+        $this->users->updatePasswordHash($user->id, password_hash($new, PASSWORD_DEFAULT));
+        $this->devices->revokeAll($user->id);
+        $this->current = null;
+        $this->session->regenerate();
+    }
+
+    /** @return list<array<string, mixed>> */
+    public function trustedDevices(): array
+    {
+        $user = $this->currentUser();
+
+        return $user === null ? [] : $this->devices->listForUser($user->id);
+    }
+
+    public function revokeDevice(int $id): bool
+    {
+        $user = $this->currentUser();
+
+        return $user !== null && $this->devices->revoke($user->id, $id);
+    }
+
+    public function revokeAllDevices(): void
+    {
+        $user = $this->currentUser();
+        if ($user !== null) {
+            $this->devices->revokeAll($user->id);
+        }
     }
 
     public function logout(): void
