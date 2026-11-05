@@ -91,6 +91,13 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 
 **AP 0 nachholen** (All-Inkl-Checks, siehe `docs/umsetzungskonzept.md`), dann Abnahme am Pixel, danach **AP 8 – Zeitfenster reservieren** (nach dem MVP). Vorher sinnvoll: AP 0 (All-Inkl-Checks) und die Abnahme von AP 2/3 mit echten ICS-Links.
 
+## Weiterer Entwicklungsplan
+
+Aufgenommen am 5. November 2026 aus dem lokalen Probebetrieb. Noch keine festgelegte Umsetzung.
+
+1. **Installation auf einem Webhosting, ohne Terminal und ohne Composer dort.** Der Ablauf soll so schlicht werden wie bei WordPress oder ProcessWire: Dateien hochladen, im Browser einrichten. Composer bleibt das Werkzeug auf dem Entwicklungsrechner. Über GitHub entsteht ein installierbares Release, in dem `vendor/` schon enthalten ist. Auf dem Server wird nichts mit Composer nachinstalliert.
+2. **Authenticator bleibt Pflicht.** Der erste Benutzer samt TOTP-Schlüssel entsteht heute nur über `php bin/create-user.php`. Auf einem Webhosting ohne Shell braucht es dafür einen Schritt im Browser, im selben Installationsgang wie Punkt 1. Der Code kommt weiterhin aus einer Authenticator-App, nicht aus einem abgeschwächten Login.
+
 ## Lokal ausprobieren
 
 ```bash
