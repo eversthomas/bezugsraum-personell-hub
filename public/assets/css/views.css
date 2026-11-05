@@ -1,0 +1,52 @@
+body.auth {
+    display: grid;
+    place-items: center;
+    padding: var(--space-4);
+}
+
+.auth-card {
+    width: min(100%, 24rem);
+}
+
+.auth-card h1 {
+    margin-bottom: var(--space-2);
+}
+
+.auth-card .lead {
+    color: var(--muted);
+    margin-bottom: var(--space-5);
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+}
+
+.topbar form {
+    margin: 0;
+}
+
+.page {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: var(--space-5) var(--space-4);
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.topbar__actions {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+}
+
+.auth-card__back {
+    margin: var(--space-4) 0 0;
+}

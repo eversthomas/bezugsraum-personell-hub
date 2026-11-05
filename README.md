@@ -5,25 +5,32 @@ Kern: nur lesende Kalender-Gesamtansicht über ICS, Inbox, Aufgaben, Notizen und
 
 ## Status
 
-Das Fundament steht: Verzeichnisstruktur, Konfiguration, Werkzeuge und Dokumentation.
-Eine Anwendung gibt es noch nicht. `public/index.php` ist ein Platzhalter und antwortet mit HTTP 404.
+AP 1 (Gerüst und Login) ist umgesetzt: Front-Controller, Router, Module, Migrationen, Anmeldung mit Passwort und TOTP,
+Sperre nach Fehlversuchen, „Gerät merken“, CSRF-Schutz und Security-Header. Danach folgen die Kalenderquellen (AP 2).
+Ohne Anmeldung liefert die Anwendung nur Login-Seite und Assets, alles andere antwortet mit 404.
 
 ## Anforderungen
 
 - PHP 8.3 oder neuer
 - Composer 2
 
-MariaDB sowie die PHP-Erweiterungen `sodium`, `gd` oder `imagick`, `intl` und `curl` stehen in den Vorab-Checks des Umsetzungskonzepts. Dieser Platzhalter braucht sie noch nicht.
+- MariaDB (10.6 oder neuer) sowie die PHP-Erweiterungen `pdo_mysql`, `sodium`, `mbstring`; später `gd` oder `imagick`, `intl` und `curl`
 
 ## Lokaler Start
 
 ```bash
-cp config/config.example.php config/config.php
+cp config/config.example.php config/config.php   # Datenbankzugang eintragen
 composer install
+php bin/create-key.php                           # Schlüssel für Verschlüsselung anlegen
+php bin/migrate.php                              # Datenbank einrichten
+php bin/create-user.php <benutzername>           # Nutzer mit Passwort und TOTP-Schlüssel anlegen
 php -S localhost:8080 -t public
 ```
 
-`http://localhost:8080/` antwortet mit Status 404 und dem Header `X-Robots-Tag: noindex, nofollow, noarchive`.
+`bin/create-user.php` gibt den TOTP-Schlüssel und die `otpauth://`-URI aus. Beides in die Authenticator-App übernehmen.
+Der Schlüssel in `config/keys/app.key` muss mitgesichert werden: Ohne ihn sind verschlüsselte Daten (TOTP-Geheimnisse, später ICS-Links) verloren.
+
+Tests brauchen eine leere MariaDB-Datenbank (`personal_hub_test`, Zugang über `PH_TEST_DB_*`, Standard `ph`/`ph` auf 127.0.0.1). Ist sie nicht erreichbar, werden die Datenbanktests übersprungen.
 
 `config/config.php` bleibt lokal und wird nicht versioniert. Abhängigkeiten werden für PHP 8.3 aufgelöst, auch wenn lokal eine neuere PHP-Version liegt.
 

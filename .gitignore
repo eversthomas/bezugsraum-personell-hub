@@ -17,3 +17,5 @@
 .vscode/
 .phpunit.cache/
 .php-cs-fixer.cache
+/storage/sessions/*
+!/storage/sessions/.gitkeep
