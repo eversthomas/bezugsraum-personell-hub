@@ -80,7 +80,7 @@ final class MediaService
         }
         $rows = $this->db->fetchAll(
             'SELECT item_id, id FROM item_media WHERE item_id IN (' . implode(',', array_fill(0, count($itemIds), '?')) . ') ORDER BY id',
-            array_values($itemIds),
+            $itemIds,
         );
         $map = [];
         foreach ($rows as $row) {
