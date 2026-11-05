@@ -15,6 +15,9 @@ final class Item
         public readonly ?string $context,
         public readonly ?string $dueDate,
         public readonly string $createdAt,
+        public readonly ?string $recurrence = null,
+        public readonly ?string $doneAt = null,
+        public readonly string $updatedAt = '',
     ) {
     }
 }
