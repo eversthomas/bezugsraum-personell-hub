@@ -65,6 +65,11 @@ final class SourceRepository
         );
     }
 
+    public function setReminder(int $id, ?int $minutes): void
+    {
+        $this->db->execute('UPDATE calendar_sources SET remind_before_min = ? WHERE id = ?', [$minutes, $id]);
+    }
+
     public function setActive(int $id, bool $active): void
     {
         $this->db->execute('UPDATE calendar_sources SET active = ? WHERE id = ?', [$active ? 1 : 0, $id]);
@@ -123,6 +128,7 @@ final class SourceRepository
             $row['last_attempt_at'] === null ? null : (string) $row['last_attempt_at'],
             $row['last_ok_at'] === null ? null : (string) $row['last_ok_at'],
             $row['last_error'] === null ? null : (string) $row['last_error'],
+            $row['remind_before_min'] === null ? null : (int) $row['remind_before_min'],
         );
     }
 }

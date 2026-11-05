@@ -78,6 +78,57 @@ final class EventRepository
         return $result;
     }
 
+    /**
+     * Beansprucht Terminhinweise: Termine aktiver Quellen mit eingestelltem Vorlauf, deren Hinweiszeit erreicht
+     * ist und die noch nicht begonnen haben. Jeder Termin wird genau einmal beansprucht.
+     *
+     * @return list<array{source_id: int, uid_hash: string, starts_at: string, title: string, location: string, source: string, minutes: int}>
+     */
+    public function claimReminders(\DateTimeImmutable $now): array
+    {
+        $stamp = $now->format(self::FORMAT);
+        $rows = $this->db->fetchAll(
+            'SELECT e.source_id, e.uid_hash, e.starts_at, e.title, e.location, s.name AS source, s.remind_before_min AS minutes '
+            . 'FROM calendar_events e JOIN calendar_sources s ON s.id = e.source_id '
+            . 'WHERE s.active = 1 AND s.remind_before_min IS NOT NULL AND e.all_day = 0 AND e.starts_at > ? '
+            . 'AND e.starts_at <= DATE_ADD(?, INTERVAL s.remind_before_min MINUTE) ORDER BY e.starts_at LIMIT 50',
+            [$stamp, $stamp],
+        );
+        $claims = [];
+        foreach ($rows as $row) {
+            $inserted = $this->db->execute(
+                'INSERT IGNORE INTO event_reminders_sent (source_id, uid_hash, starts_at, sent_at) VALUES (?, ?, ?, ?)',
+                [$row['source_id'], $row['uid_hash'], $row['starts_at'], $stamp],
+            );
+            if ($inserted === 1) {
+                $claims[] = [
+                    'source_id' => (int) $row['source_id'],
+                    'uid_hash' => (string) $row['uid_hash'],
+                    'starts_at' => (string) $row['starts_at'],
+                    'title' => (string) $row['title'],
+                    'location' => (string) $row['location'],
+                    'source' => (string) $row['source'],
+                    'minutes' => (int) $row['minutes'],
+                ];
+            }
+        }
+
+        return $claims;
+    }
+
+    public function releaseReminder(int $sourceId, string $uidHash, string $startsAt): void
+    {
+        $this->db->execute(
+            'DELETE FROM event_reminders_sent WHERE source_id = ? AND uid_hash = ? AND starts_at = ?',
+            [$sourceId, $uidHash, $startsAt],
+        );
+    }
+
+    public function purgeReminderLog(\DateTimeImmutable $before): void
+    {
+        $this->db->execute('DELETE FROM event_reminders_sent WHERE starts_at < ?', [$before->format(self::FORMAT)]);
+    }
+
     public function purgeEndedBefore(\DateTimeImmutable $cutoff): int
     {
         return $this->db->execute('DELETE FROM calendar_events WHERE ends_at < ?', [$cutoff->format(self::FORMAT)]);

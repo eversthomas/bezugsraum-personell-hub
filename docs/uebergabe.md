@@ -49,6 +49,16 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 - Im Browser geprüft: Foto mit eingebetteten GPS-Daten (2400×1800) wird 1600×1200 ohne GPS/EXIF gespeichert.
 - Fotos hängen am Eintrag (Inbox, Notiz); beim Löschen werden die Dateien mitgelöscht.
 
+**AP 7 – Push-Erinnerungen**
+
+- Einrichten: `php bin/create-vapid.php`, Schlüssel in `config/config.php` (`vapid`) eintragen, dann unter „Benachrichtigungen“ je Gerät aktivieren und Testnachricht senden. Cronjob `php bin/cron.php` (alle 15 Minuten) verschickt die Erinnerungen.
+- Aufgaben: Erinnerung am Fälligkeitstag um 8:00 Uhr (Berlin), genau einmal. Wiederkehrende Aufgaben erinnern beim nächsten Termin wieder. Erinnerungen, die mehr als 2 Tage zurückliegen (etwa nach einem Ausfall), werden still übersprungen. Scheitert der Versand an allen Geräten, wird die Erinnerung freigegeben und höchstens 3-mal versucht.
+- Termine: Hinweis „5 bis 60 Minuten vorher“, je Kalenderquelle einstellbar (Seite Kalenderquellen). Jeder Termin wird genau einmal gemeldet, auch wenn der Abruf die Terminzeilen ersetzt. Bei einem Cron-Takt von 15 Minuten kommt der Hinweis zwischen 0 und 15 Minuten nach Erreichen der Vorlaufzeit; für genauere Hinweise den Cron häufiger laufen lassen (All-Inkl: Mindestintervall prüfen).
+- Sicherheit: Push-Endpunkte werden vom Server aufgerufen, daher nur Endpunkte von Google, Mozilla, Apple und Microsoft (erweiterbar über `push.allowed_hosts`), nur https auf Port 443. Der private VAPID-Schlüssel wird nirgends ausgegeben.
+- **`minishlink/web-push` braucht einen PSR-18-Client, und im Projekt ist keiner installiert.** Statt ein neues Paket aufzunehmen (laut Regeldatei nur nach Rückfrage), liegt unter `src/Notify/Http/` ein kleiner eigener PSR-7/17/18-Client auf cURL. Wenn du lieber Guzzle oder `symfony/http-client` nutzen willst, ist das ein Austausch in `MinishlinkPushSender` (Konstruktor-Argument `$client`).
+- Die PHP-Erweiterung `gmp` oder `bcmath` beschleunigt die Verschlüsselung und unterdrückt eine Hinweismeldung der Bibliothek; bei All-Inkl in AP 0 prüfen.
+- **Nicht geprüft:** der Zustellweg bis auf ein echtes Gerät. Getestet sind die Verschlüsselung und das Signieren (VAPID, aes128gcm) gegen einen Mitschnitt-Client sowie die gesamte Logik; Zustellung über FCM/Mozilla/Apple ist aus der Sandbox nicht möglich. Die Abnahme „Erinnerung kommt bei geschlossener App auf dem Pixel an“ steht aus.
+
 ## Noch nicht geprüft
 
 - **PHPStan (Level 6) lief lokal nicht.** In der Sandbox war das Paket nicht installierbar. Bitte lokal `composer stan` ausführen und die CI ansehen.
@@ -69,7 +79,7 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 
 ## Nächster Schritt
 
-**AP 7 – Push-Erinnerungen** (siehe `docs/umsetzungskonzept.md`). Vorher sinnvoll: AP 0 (All-Inkl-Checks) und die Abnahme von AP 2/3 mit echten ICS-Links.
+**AP 0 nachholen** (All-Inkl-Checks, siehe `docs/umsetzungskonzept.md`), dann Abnahme am Pixel, danach **AP 8 – Zeitfenster reservieren** (nach dem MVP). Vorher sinnvoll: AP 0 (All-Inkl-Checks) und die Abnahme von AP 2/3 mit echten ICS-Links.
 
 ## Lokal ausprobieren
 

@@ -140,6 +140,42 @@ final class ItemRepository
         return array_map($this->hydrate(...), $this->db->fetchAll($sql, $params));
     }
 
+    /** @return list<Item> offene Aufgaben mit Fälligkeit bis einschließlich $untilDate */
+    public function tasksDueUntil(string $untilDate): array
+    {
+        $rows = $this->db->fetchAll(
+            "SELECT * FROM items WHERE type = 'task' AND done_at IS NULL AND archived_at IS NULL "
+            . 'AND due_date IS NOT NULL AND due_date <= ? ORDER BY due_date, id LIMIT 200',
+            [$untilDate],
+        );
+
+        return array_map($this->hydrate(...), $rows);
+    }
+
+    /**
+     * Beansprucht eine Erinnerung genau einmal. Gibt true zurück, wenn dieser Aufruf sie bekommen hat.
+     */
+    public function claimReminder(int $itemId, string $remindAt, string $now, bool $silent): bool
+    {
+        $this->db->execute('INSERT IGNORE INTO reminders (item_id, remind_at) VALUES (?, ?)', [$itemId, $remindAt]);
+
+        return $this->db->execute(
+            'UPDATE reminders SET sent_at = ?, attempts = attempts + 1 WHERE item_id = ? AND remind_at = ? AND sent_at IS NULL AND attempts < 3',
+            [$now, $itemId, $remindAt],
+        ) === 1 && !$silent;
+    }
+
+    /** Gibt eine beanspruchte Erinnerung frei (Versand ist gescheitert), damit der nächste Lauf es erneut versucht. */
+    public function releaseReminder(int $itemId, string $remindAt): void
+    {
+        $this->db->execute('UPDATE reminders SET sent_at = NULL WHERE item_id = ? AND remind_at = ?', [$itemId, $remindAt]);
+    }
+
+    public function purgeReminders(string $before): void
+    {
+        $this->db->execute('DELETE FROM reminders WHERE sent_at IS NOT NULL AND sent_at < ?', [$before]);
+    }
+
     /** @return list<array<string, mixed>> alle Einträge für den Export */
     public function exportAll(): array
     {

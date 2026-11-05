@@ -111,6 +111,40 @@ final class TaskService
         return ['overdue' => count($groups['overdue']), 'today' => count($groups['today']), 'items' => array_slice($items, 0, $limit)];
     }
 
+    /**
+     * Erinnerungen für fällige Aufgaben: um 08:00 Uhr (Berlin) am Fälligkeitstag, jede genau einmal.
+     * Ältere Erinnerungen (mehr als 2 Tage zurück, etwa nach einem langen Ausfall) werden stillschweigend übersprungen.
+     *
+     * @return list<array{item: Item, remindAt: string}>
+     */
+    public function claimDueReminders(): array
+    {
+        $zone = new \DateTimeZone(Time::DISPLAY_ZONE);
+        $utc = new \DateTimeZone('UTC');
+        $nowTs = ($this->clock)();
+        $today = $this->today();
+        $claims = [];
+        foreach ($this->items->tasksDueUntil($today) as $task) {
+            $remindAt = (new \DateTimeImmutable((string) $task->dueDate . ' 08:00:00', $zone))->setTimezone($utc);
+            if ($remindAt->getTimestamp() > $nowTs) {
+                continue; // heute noch nicht 08:00 Uhr
+            }
+            $stale = $remindAt->getTimestamp() < $nowTs - 2 * 86400;
+            $key = $remindAt->format('Y-m-d H:i:s');
+            if ($this->items->claimReminder($task->id, $key, $this->utcNow(), $stale)) {
+                $claims[] = ['item' => $task, 'remindAt' => $key];
+            }
+        }
+        $this->items->purgeReminders(gmdate('Y-m-d H:i:s', $nowTs - 30 * 86400));
+
+        return $claims;
+    }
+
+    public function releaseReminder(int $itemId, string $remindAt): void
+    {
+        $this->items->releaseReminder($itemId, $remindAt);
+    }
+
     // ---------- Notizen ----------
 
     /** @throws \InvalidArgumentException */

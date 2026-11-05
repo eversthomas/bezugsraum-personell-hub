@@ -12,4 +12,5 @@ return [
     App\Items\Module::class,
     App\Media\Module::class,
     App\Links\Module::class,
+    App\Notify\Module::class,
 ];

@@ -1166,3 +1166,16 @@ html[data-nav="collapsed"] .sidebar__heading {
     margin: var(--space-2) 0;
     border-radius: var(--radius-sm);
 }
+
+.source__remind {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: var(--space-3) 0 0 30px;
+}
+
+.source__remind .input {
+    width: auto;
+    min-height: 36px;
+}

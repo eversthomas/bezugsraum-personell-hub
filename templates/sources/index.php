@@ -115,6 +115,17 @@ $intervals = [15 => 'alle 15 Minuten', 30 => 'alle 30 Minuten', 60 => 'stündlic
             <?php if (!empty($row['error'])) : ?>
             <p class="notice notice--warn small"><?= e($row['error']) ?> Die zuletzt geladenen Termine bleiben sichtbar.</p>
             <?php endif; ?>
+            <form method="post" action="/einstellungen/quellen/<?= e($row['id']) ?>/erinnerung" class="source__remind small">
+                <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                <label for="remind-<?= e($row['id']) ?>">Hinweis vor Terminen</label>
+                <select class="input" id="remind-<?= e($row['id']) ?>" name="minutes">
+                    <option value="">aus</option>
+                    <?php foreach ([5, 10, 15, 30, 60] as $minutes) : ?>
+                    <option value="<?= e($minutes) ?>"<?= $row['remind'] === $minutes ? ' selected' : '' ?>><?= e($minutes) ?> Min. vorher</option>
+                    <?php endforeach; ?>
+                </select>
+                <button class="btn btn--small btn--ghost" type="submit">Speichern</button>
+            </form>
             <details class="source__more">
                 <summary class="small">Link ersetzen</summary>
                 <form method="post" action="/einstellungen/quellen/<?= e($row['id']) ?>/link" class="source__replace">

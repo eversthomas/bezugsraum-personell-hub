@@ -84,6 +84,35 @@ final class CalendarService
         }
     }
 
+    public const REMINDER_CHOICES = [5, 10, 15, 30, 60];
+
+    /** Hinweis vor Terminen dieser Quelle (null = aus). @throws \InvalidArgumentException */
+    public function setReminder(int $id, ?int $minutes): void
+    {
+        $this->require($id);
+        if ($minutes !== null && !in_array($minutes, self::REMINDER_CHOICES, true)) {
+            throw new \InvalidArgumentException('Ungültiger Vorlauf.');
+        }
+        $this->sources->setReminder($id, $minutes);
+    }
+
+    /**
+     * Beansprucht fällige Terminhinweise (jeder Termin genau einmal).
+     *
+     * @return list<array{source_id: int, uid_hash: string, starts_at: string, title: string, location: string, source: string, minutes: int}>
+     */
+    public function claimDueEventReminders(): array
+    {
+        $this->events->purgeReminderLog((new \DateTimeImmutable('@' . $this->now()))->modify('-2 days'));
+
+        return $this->events->claimReminders(new \DateTimeImmutable('@' . $this->now()));
+    }
+
+    public function releaseEventReminder(int $sourceId, string $uidHash, string $startsAt): void
+    {
+        $this->events->releaseReminder($sourceId, $uidHash, $startsAt);
+    }
+
     public function replaceUrl(int $id, string $url): void
     {
         $this->require($id);

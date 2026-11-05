@@ -44,6 +44,7 @@ final class SourceController
                 'error' => $source->lastError,
                 'lastOk' => $source->lastOkAt === null ? 'noch nie' : Time::berlin($source->lastOkAt),
                 'status' => $this->status($source),
+                'remind' => $source->remindBeforeMin,
             ];
         }
 
@@ -106,6 +107,17 @@ final class SourceController
             $this->service->resume((int) $params['id']);
             $this->service->refresh((int) $params['id']);
         }, 'Quelle fortgesetzt.');
+    }
+
+    /** @param array<string, string> $params */
+    public function reminder(Request $request, array $params): Response
+    {
+        $minutes = $request->input('minutes');
+
+        return $this->guarded(
+            fn () => $this->service->setReminder((int) $params['id'], $minutes === '' ? null : (int) $minutes),
+            $minutes === '' ? 'Terminhinweis ausgeschaltet.' : 'Terminhinweis gespeichert.',
+        );
     }
 
     /** @param array<string, string> $params */

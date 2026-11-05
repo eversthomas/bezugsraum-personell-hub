@@ -19,6 +19,7 @@ final class Source
         public readonly ?string $lastAttemptAt,
         public readonly ?string $lastOkAt,
         public readonly ?string $lastError,
+        public readonly ?int $remindBeforeMin = null,
     ) {
     }
 }
