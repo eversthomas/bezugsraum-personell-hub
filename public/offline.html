@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <title>Offline</title>
+    <link rel="stylesheet" href="/assets/css/tokens.css">
+    <link rel="stylesheet" href="/assets/css/base.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/views.css">
+    <script src="/assets/js/theme.js"></script>
+</head>
+<body class="auth">
+<main class="auth-card card">
+    <h1>Keine Verbindung</h1>
+    <p class="lead">Neue Einträge werden hier gespeichert und gesendet, sobald die Verbindung wieder steht.</p>
+    <form class="capture" data-capture data-offline>
+        <label class="visually-hidden" for="capture-text">Text</label>
+        <textarea class="input capture__text" id="capture-text" name="text" rows="4" maxlength="10000" placeholder="Was geht dir durch den Kopf?" required data-capture-text></textarea>
+        <input type="hidden" name="origin" value="text" data-capture-origin>
+        <div class="actions capture__actions">
+            <button type="submit" class="btn">Vormerken</button>
+        </div>
+    </form>
+    <p class="small muted" data-capture-status role="status"></p>
+    <p><a href="/">Erneut versuchen</a></p>
+</main>
+<script type="module" src="/assets/js/capture.js"></script>
+</body>
+</html>

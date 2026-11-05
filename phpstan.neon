@@ -1,5 +1,18 @@
 parameters:
     level: 6
+    reportUnmatchedIgnoredErrors: false
     paths:
         - src
         - tests
+    ignoreErrors:
+        # In Tests sind Array-Hilfsfunktionen ohne Generics-Angabe in Ordnung.
+        -
+            identifier: missingType.iterableValue
+            path: tests/*
+        -
+            identifier: missingType.generics
+            path: tests/*
+        # sabre/vobject-Komponenten sind durchlaufbar, haben aber keine Typangabe für die Elemente.
+        -
+            identifier: missingType.iterableValue
+            path: src/Calendar/IcsParser.php

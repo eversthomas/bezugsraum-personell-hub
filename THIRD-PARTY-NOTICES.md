@@ -23,7 +23,7 @@ Diese Pakete gehören nur in die Entwicklung. `composer install --no-dev` nimmt 
 
 ## Schrift
 
-Atkinson Hyperlegible Next (Braille Institute) ist die vorgesehene Schrift der Oberfläche. Die Schriftdatei folgt später unter `public/assets/fonts/`.
+Atkinson Hyperlegible Next (Braille Institute) ist die Schrift der Oberfläche. Die variablen WOFF2-Dateien (Latin und Latin Extended, Gewichtsachse 200–800) stammen aus dem npm-Paket `@fontsource-variable/atkinson-hyperlegible-next` 5.3.0 und liegen unter `public/assets/fonts/`; der Lizenztext liegt dort als `OFL.txt`. Die Schrift unterstützt Tabellenziffern (`tnum`), die Uhrzeiten nutzen `font-variant-numeric: tabular-nums`.
 
 Maßgeblich ist die Copyright-Zeile der Upstream-Lizenz. Der folgende Text ist die Datei `OFL.txt` des Projekts Atkinson Hyperlegible Next.
 
