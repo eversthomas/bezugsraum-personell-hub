@@ -10,6 +10,15 @@
         <div class="next" data-next></div>
     </section>
 
+    <section class="quick" aria-label="Schnell erfassen">
+        <?php
+        $prefill = '';
+        $origin = 'text';
+        require __DIR__ . '/items/capture_form.php';
+        ?>
+        <p class="small muted" data-capture-status role="status"></p>
+    </section>
+
     <div class="toolbar">
         <div class="segment" role="group" aria-label="Ansicht" data-views></div>
         <div class="toolbar__nav">
@@ -28,4 +37,5 @@
         <aside data-detail hidden></aside>
     </div>
 </main>
+<script type="module" src="/assets/js/capture.js"></script>
 <script type="module" src="/assets/js/leitstand.js"></script>

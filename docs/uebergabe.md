@@ -26,12 +26,22 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 - Navigation: ab 900 px Seitenleiste (einklappbar, pro Gerät gemerkt), darunter Hamburger-Menü mit Off-Canvas (Escape, Tipp daneben, Wischen, Fokus bleibt im Menü).
 - Per Playwright in Hell und Dunkel, Desktop und 390 px geprüft; keine Konsolenfehler.
 
+**AP 4 – Erfassen und Inbox (PWA)**
+
+- Migration 003 (`items` nach ADR 0002). `ItemService::capture` ist idempotent über `client_uuid`.
+- Seiten: `/erfassen` (auch Share-Target, GET mit title/text/url), `/inbox` (einsortieren als Aufgabe oder Notiz, löschen), Erfassungsfeld im Leitstand. API: `POST /api/v1/items`.
+- Offline-Warteschlange liegt in `localStorage` (nicht im Service Worker), weil das CSRF-Token der Sitzung gebraucht wird. Gesendet wird beim nächsten Seitenaufruf, bei „online“ und jede Minute. Im Browser geprüft: Eintrag offline erfasst, nach Wiederverbindung genau einmal in der Datenbank; doppelter Versand ergibt 201 und dann 200.
+- Service Worker: statische Dateien, Offline-Seite `/offline.html`; authentifizierte Seiten und API werden nie zwischengespeichert.
+- „Sprechen“ ist Tastatur-Diktat (Fokus ins Textfeld, Herkunft `voice`). Foto kommt mit AP 6.
+
 ## Noch nicht geprüft
 
 - **PHPStan (Level 6) lief lokal nicht.** In der Sandbox war das Paket nicht installierbar. Bitte lokal `composer stan` ausführen und die CI ansehen.
 - AP 2/3 sind nur mit selbst geschriebenen ICS-Dateien und Demo-Daten getestet, nicht mit echten M365-/Google-Links. Die Abnahme „alle vier Quellen aktuell“ steht aus.
 - Der Leitstand hat keine automatisierten Browser-Tests; geprüft wurde per Playwright-Screenshot.
 - Nicht auf All-Inkl getestet (AP 0 steht aus: PHP-Version, Erweiterungen, Subdomain, Datenbank).
+- Installation als PWA, Share-Target und App-Shortcuts sind nur im Playwright-Chromium geprüft, nicht auf dem Pixel. Share-Target braucht eine installierte PWA.
+- Die Kontext-Stammdaten (`contexts`) werden von `Calendar\SourceRepository` und `Core\ContextRepository` doppelt gelesen; bei Gelegenheit zusammenführen.
 - Passkey ist bewusst nicht enthalten (später laut Konzept).
 - Fehlerseite für Anmeldungen zeigt kein Captcha o. Ä.; die Sperre ist die einzige Bremse.
 
@@ -44,7 +54,7 @@ Stand: 5. November 2026. Branch: `claude/personal-hub-entwicklung` (noch nicht i
 
 ## Nächster Schritt
 
-**AP 4 – Erfassen und Inbox (PWA)** (siehe `docs/umsetzungskonzept.md`). Vorher sinnvoll: AP 0 (All-Inkl-Checks) und die Abnahme von AP 2/3 mit echten ICS-Links.
+**AP 5 – Aufgaben und Notizen** (siehe `docs/umsetzungskonzept.md`). Vorher sinnvoll: AP 0 (All-Inkl-Checks) und die Abnahme von AP 2/3 mit echten ICS-Links.
 
 ## Lokal ausprobieren
 

@@ -9,4 +9,5 @@ return [
     App\Core\CoreModule::class,
     App\Auth\Module::class,
     App\Calendar\Module::class,
+    App\Items\Module::class,
 ];

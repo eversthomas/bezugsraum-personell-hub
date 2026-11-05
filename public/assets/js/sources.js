@@ -1,13 +1,6 @@
 import { api } from './api.js';
 
-// Nachfrage vor dem Entfernen
-document.querySelectorAll('form[data-confirm]').forEach((form) => {
-    form.addEventListener('submit', (event) => {
-        if (!window.confirm(form.dataset.confirm)) {
-            event.preventDefault();
-        }
-    });
-});
+import './confirm.js';
 
 // „Verbindung testen“ im Formular für neue Quellen
 const form = document.querySelector('[data-source-form]');

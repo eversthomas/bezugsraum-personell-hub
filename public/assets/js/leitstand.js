@@ -20,6 +20,8 @@ const DAYS = { day: 1, week: 7, w2: 14, w4: 28 };
 const HOUR_PX = 56;
 const REFRESH_MS = 5 * 60 * 1000;
 
+const narrow = window.matchMedia('(max-width: 699px)');
+
 const store = {
     get(key, fallback) {
         try {
@@ -39,7 +41,8 @@ const store = {
 };
 
 const state = {
-    view: VIEWS[store.get('view', 'day')] ? store.get('view', 'day') : 'day',
+    // Auf dem Handy gibt es nur die Tagesansicht
+    view: !narrow.matches && VIEWS[store.get('view', 'day')] ? store.get('view', 'day') : 'day',
     anchor: dayKeyOf(Date.now()),
     hidden: new Set(store.get('hidden-sources', [])),
     sources: [],
@@ -138,6 +141,7 @@ function renderControls() {
     for (const [key, label] of Object.entries(VIEWS)) {
         const b = el('button', undefined, label);
         b.type = 'button';
+        b.dataset.view = key;
         b.setAttribute('aria-pressed', String(state.view === key));
         b.addEventListener('click', () => {
             state.view = key;

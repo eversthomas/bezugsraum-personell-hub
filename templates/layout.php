@@ -15,6 +15,10 @@
     <meta name="csrf" content="<?= e($csrf) ?>">
     <?php endif; ?>
     <title><?= e($title) ?></title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#16181d">
+    <link rel="icon" href="/assets/icons/icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
     <link rel="preload" href="/assets/fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/assets/css/tokens.css">
     <link rel="stylesheet" href="/assets/css/base.css">
@@ -27,6 +31,8 @@
 <?php
 $nav = [
     ['key' => 'leitstand', 'label' => 'Leitstand', 'href' => '/', 'icon' => 'L'],
+    ['key' => 'erfassen', 'label' => 'Erfassen', 'href' => '/erfassen', 'icon' => '+'],
+    ['key' => 'inbox', 'label' => 'Inbox', 'href' => '/inbox', 'icon' => 'I'],
     ['key' => 'quellen', 'label' => 'Kalenderquellen', 'href' => '/einstellungen/quellen', 'icon' => 'K'],
 ];
 $active = $active ?? '';

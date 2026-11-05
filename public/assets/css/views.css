@@ -819,3 +819,99 @@ body.nav-locked {
         display: none;
     }
 }
+
+/* ---------- Erfassen und Inbox ---------- */
+
+.page--narrow {
+    max-width: 40rem;
+}
+
+.capture {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.capture__text {
+    min-height: 7rem;
+    resize: vertical;
+}
+
+.capture__actions {
+    justify-content: space-between;
+}
+
+.quick .capture {
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.quick .capture__text {
+    flex: 1;
+    min-height: 3.5rem;
+}
+
+.quick .capture__actions {
+    flex-wrap: nowrap;
+}
+
+.quick .small {
+    min-height: 1.2em;
+    margin: var(--space-1) 0 0;
+}
+
+.inbox-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+
+.inbox-item h2 {
+    margin: 0;
+    font-size: 1.125rem;
+}
+
+.inbox-item header p {
+    margin: 0;
+}
+
+.inbox-item__body {
+    margin: 0;
+    color: var(--ink2);
+}
+
+.inbox-item__sort {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.inbox-item form {
+    margin: 0;
+}
+
+.inbox-item__sort .input {
+    flex: 1 1 10rem;
+    width: auto;
+}
+
+@media (max-width: 699px) {
+    .segment button[data-view="week"],
+    .segment button[data-view="w2"],
+    .segment button[data-view="w4"] {
+        display: none;
+    }
+
+    .quick .capture {
+        flex-direction: column;
+    }
+
+    .quick .capture__actions {
+        justify-content: stretch;
+    }
+
+    .quick .capture__actions .btn {
+        flex: 1;
+    }
+}
