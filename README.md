@@ -5,16 +5,25 @@ Kern: nur lesende Kalender-Gesamtansicht über ICS, Inbox, Aufgaben, Notizen und
 
 ## Status
 
-AP 1 (Gerüst und Login) ist umgesetzt: Front-Controller, Router, Module, Migrationen, Anmeldung mit Passwort und TOTP,
-Sperre nach Fehlversuchen, „Gerät merken“, CSRF-Schutz und Security-Header. Danach folgen die Kalenderquellen (AP 2).
+Das MVP (AP 1 bis 7) und der Kern von AP 8 sind umgesetzt. Details und offene Punkte stehen in [docs/uebergabe.md](docs/uebergabe.md).
+
+- **Leitstand:** nur lesende Gesamtansicht aller Kalender per ICS (Tag, Woche, 2 und 4 Wochen), Uhr mit nächstem Termin, Quellenfilter, Aufgaben-Karte
+- **Kalenderquellen:** ICS-Links anlegen, testen, pausieren, ersetzen, entfernen; Links nur verschlüsselt gespeichert
+- **Erfassen (PWA):** Text, Diktat, Foto; Offline-Warteschlange; Inbox zum Einsortieren
+- **Aufgaben und Notizen:** Fälligkeit, Kontext, Wiederholung, Markdown, Suche, JSON-Export
+- **Erinnerungen:** Web Push für fällige Aufgaben und optional vor Terminen
+- **Zeit reservieren:** Vorschläge über alle Kalender, Link in den Zielkalender
+- **Sicherheit:** Passwort plus TOTP, Sperre nach Fehlversuchen, gemerkte Geräte, CSRF, strenge Security-Header
+
 Ohne Anmeldung liefert die Anwendung nur Login-Seite und Assets, alles andere antwortet mit 404.
+Einrichtung auf einem Webspace: [docs/deployment.md](docs/deployment.md).
 
 ## Anforderungen
 
 - PHP 8.3 oder neuer
 - Composer 2
 
-- MariaDB (10.6 oder neuer) sowie die PHP-Erweiterungen `pdo_mysql`, `sodium`, `mbstring`; später `gd` oder `imagick`, `intl` und `curl`
+- MariaDB (10.6 oder neuer) sowie die PHP-Erweiterungen `pdo_mysql`, `sodium`, `mbstring`, `curl`, `gd`, `openssl`; empfohlen `gmp` oder `bcmath`
 
 ## Lokaler Start
 
@@ -24,6 +33,7 @@ composer install
 php bin/create-key.php                           # Schlüssel für Verschlüsselung anlegen
 php bin/migrate.php                              # Datenbank einrichten
 php bin/create-user.php <benutzername>           # Nutzer mit Passwort und TOTP-Schlüssel anlegen
+php bin/create-vapid.php                         # Schlüssel für Push erzeugen (in config/config.php eintragen)
 php -S localhost:8080 -t public
 ```
 

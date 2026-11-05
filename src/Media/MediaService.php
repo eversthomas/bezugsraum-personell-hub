@@ -69,7 +69,10 @@ final class MediaService
         return $result;
     }
 
-    /** @return array<int, list<int>> Eintrags-ID => Medien-IDs */
+    /**
+     * @param list<int> $itemIds
+     * @return array<int, list<int>> Eintrags-ID => Medien-IDs
+     */
     public function idsForItems(array $itemIds): array
     {
         if ($itemIds === []) {

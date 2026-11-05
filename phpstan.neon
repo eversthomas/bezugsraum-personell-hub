@@ -3,3 +3,11 @@ parameters:
     paths:
         - src
         - tests
+    ignoreErrors:
+        # In Tests sind Array-Hilfsfunktionen ohne Generics-Angabe in Ordnung.
+        -
+            identifier: missingType.iterableValue
+            path: tests/*
+        -
+            identifier: missingType.generics
+            path: tests/*
