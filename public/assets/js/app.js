@@ -1,4 +1,5 @@
 import './nav.js';
+import './clock.js';
 import { initThemeSwitch } from './theme-switch.js';
 
 initThemeSwitch();

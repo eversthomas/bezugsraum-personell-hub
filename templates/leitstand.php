@@ -2,11 +2,7 @@
 /** @var string $csrf */
 ?>
 <main class="leitstand" data-leitstand>
-    <section class="hero" aria-label="Uhrzeit und nächster Termin">
-        <div class="hero__time">
-            <span class="hero__clock tnum" data-clock>--:--</span>
-            <span class="hero__date muted" data-date></span>
-        </div>
+    <section class="hero" aria-label="Nächster Termin">
         <div class="next" data-next></div>
     </section>
 

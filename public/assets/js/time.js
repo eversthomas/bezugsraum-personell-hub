@@ -46,6 +46,21 @@ export function weekdayOf(key) {
 
 export const startOfWeek = (key) => addDays(key, -weekdayOf(key));
 
+function utcDayNumber(key) {
+    const [y, m, d] = split(key);
+    return Math.round(Date.UTC(y, m - 1, d) / 86400000);
+}
+
+/** ISO-8601-Woche: Montag als Beginn, Woche 1 enthält den ersten Donnerstag. */
+export function isoWeek(key) {
+    const thursday = addDays(startOfWeek(key), 3);
+    const isoYear = split(thursday)[0];
+    const firstMonday = startOfWeek(dateKey(isoYear, 1, 4));
+    const week = Math.round((utcDayNumber(startOfWeek(key)) - utcDayNumber(firstMonday)) / 7) + 1;
+
+    return { year: isoYear, week };
+}
+
 /** Zeitstempel (ms) von 00:00 Uhr Berlin an diesem Kalendertag; berücksichtigt Sommer-/Winterzeit. */
 export function midnightMs(key) {
     const [y, m, d] = split(key);

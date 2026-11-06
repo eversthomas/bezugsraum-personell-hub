@@ -85,7 +85,9 @@ final class KernelTest extends DbTestCase
         $home = $this->call('GET', '/');
         self::assertSame(303, $home->status);
         self::assertSame('/login', $home->headers['Location']);
-        self::assertSame(200, $this->call('GET', '/login')->status);
+        $login = $this->call('GET', '/login');
+        self::assertSame(200, $login->status);
+        self::assertStringNotContainsString('data-clockbar', $login->body);
     }
 
     public function testEveryResponseCarriesNoindexHeader(): void
@@ -133,6 +135,17 @@ final class KernelTest extends DbTestCase
         self::assertStringContainsString('href="/kalender" aria-current="page"', $calendar->body);
         self::assertStringNotContainsString('Schnell erfassen', $calendar->body);
         self::assertStringNotContainsString('data-taskcard', $calendar->body);
+        self::assertStringNotContainsString('hero__clock', $home->body);
+
+        $tasks = $this->call('GET', '/aufgaben');
+        foreach (['/' => $home, '/kalender' => $calendar, '/aufgaben' => $tasks] as $path => $page) {
+            self::assertSame(200, $page->status, $path);
+            self::assertStringContainsString('data-clockbar', $page->body, $path);
+            self::assertStringContainsString('data-now', $page->body, $path);
+            self::assertStringContainsString('href="/kalender"', $page->body, $path);
+            self::assertStringContainsString('href="/aufgaben"', $page->body, $path);
+            self::assertStringContainsString('>Leitstand<', $page->body, $path);
+        }
 
         // Nach dem Login ist das CSRF-Token erneuert: das alte gilt nicht mehr.
         self::assertSame(403, $this->call('POST', '/logout', ['_csrf' => $token])->status);

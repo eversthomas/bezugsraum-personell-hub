@@ -94,6 +94,11 @@ $active = $active ?? '';
         </div>
     </aside>
     <div class="shell__main" data-shell-main>
+        <header class="clockbar" data-clockbar aria-label="Datum und Uhrzeit">
+            <time class="clockbar__time tnum" data-now datetime="">--:--</time>
+            <span class="clockbar__date" data-now-date></span>
+            <span class="clockbar__week tnum" data-now-week>KW --</span>
+        </header>
 <?= $content ?>
     </div>
 </div>

@@ -121,14 +121,11 @@ const visible = (events) => events.filter((e) => !state.hidden.has(e.source));
 // ---------- Kopf: Uhr, nächster Termin ----------
 
 function renderHeader() {
-    const clock = root.querySelector('[data-clock]');
     const nextBox = root.querySelector('[data-next]');
-    if (!clock || !nextBox) {
+    if (!nextBox) {
         return;
     }
     const now = Date.now();
-    clock.textContent = formatTime(now);
-    root.querySelector('[data-date]').textContent = formatLongDay(dayKeyOf(now));
 
     const timed = visible(state.upcoming).filter((e) => !e.allDay);
     const running = timed.find((e) => e.startMs <= now && e.endMs > now);
@@ -621,7 +618,7 @@ root.querySelector('[data-today]').addEventListener('click', () => {
     load();
 });
 
-// Uhr und Jetzt-Linie laufen sekundengenau, Daten alle 5 Minuten neu.
+// Nächster Termin und Jetzt-Linie, Daten alle 5 Minuten neu. Die Uhr steht in der Kopfzeile.
 setInterval(() => {
     renderHeader();
     const line = root.querySelector('[data-now-line]');
