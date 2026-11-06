@@ -62,12 +62,14 @@ final class RealFinishTest extends DbTestCase
         self::assertGreaterThan(0, $applied);
         $this->username = 'probe' . bin2hex(random_bytes(3));
         $password = 'install-probe-pass';
+        $hash = password_hash($password, PASSWORD_DEFAULT);
 
-        $result = $this->finisher()->finish($this->database(), $this->username, $password, (new TotpVerifier())->generateSecret());
+        $result = $this->finisher()->finish($this->database(), $this->username, $hash, (new TotpVerifier())->generateSecret());
 
         $row = $this->db->fetchOne('SELECT username, password_hash FROM users WHERE username = ?', [$this->username]);
         self::assertNotNull($row);
         self::assertSame($this->username, $row['username']);
+        self::assertSame($hash, (string) $row['password_hash']);
         self::assertTrue(password_verify($password, (string) $row['password_hash']));
         self::assertSame($applied, (int) $this->db->fetchValue('SELECT COUNT(*) FROM schema_migrations'));
         self::assertSame($this->username, $result->username);
@@ -86,12 +88,13 @@ final class RealFinishTest extends DbTestCase
     {
         $this->username = 'probe' . bin2hex(random_bytes(3));
         $password = 'install-probe-pass';
+        $hash = password_hash($password, PASSWORD_DEFAULT);
         $secret = (new TotpVerifier())->generateSecret();
         $applied = (int) $this->db->fetchValue('SELECT COUNT(*) FROM schema_migrations');
         mkdir($this->dir . '/config/config.php', 0700);
 
         try {
-            $this->finisher()->finish($this->database(), $this->username, $password, $secret);
+            $this->finisher()->finish($this->database(), $this->username, $hash, $secret);
             self::fail('Der erste Abschluss hätte scheitern müssen.');
         } catch (InstallException $e) {
             self::assertSame(
@@ -107,10 +110,11 @@ final class RealFinishTest extends DbTestCase
         self::assertFileDoesNotExist($this->dir . '/storage/cron-credentials.php');
 
         rmdir($this->dir . '/config/config.php');
-        $result = $this->finisher()->finish($this->database(), $this->username, $password, $secret);
+        $result = $this->finisher()->finish($this->database(), $this->username, $hash, $secret);
 
         $row = $this->db->fetchOne('SELECT password_hash FROM users WHERE username = ?', [$this->username]);
         self::assertNotNull($row);
+        self::assertSame($hash, (string) $row['password_hash']);
         self::assertTrue(password_verify($password, (string) $row['password_hash']));
         self::assertSame($applied, (int) $this->db->fetchValue('SELECT COUNT(*) FROM schema_migrations'));
         self::assertFileExists($this->dir . '/config/config.php');

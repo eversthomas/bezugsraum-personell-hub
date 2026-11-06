@@ -25,10 +25,7 @@ final class CronCredentialStore
             'basic_password_hash' => $credentials->passwordHash,
         ], true) . ";\n";
         $tmp = $this->path . '.tmp';
-        if (file_put_contents($tmp, $php) === false) {
-            throw new \RuntimeException('Der Cron-Zugang konnte nicht geschrieben werden.');
-        }
-        chmod($tmp, 0600);
+        RestrictedFile::put($tmp, $php);
         if (!rename($tmp, $this->path)) {
             if (is_file($tmp)) {
                 unlink($tmp);

@@ -102,7 +102,9 @@ final class FinishStepTest extends TestCase
     {
         $actions = new RecordingInstallActions();
         $password = "a'; system('id'); //";
-        $result = $this->finisher($actions)->finish($this->database($password), 'tom', 'benutzer-passwort', 'GEHEIMNIS');
+        $hash = password_hash('benutzer-passwort', PASSWORD_DEFAULT);
+        $result = $this->finisher($actions)->finish($this->database($password), 'tom', $hash, 'GEHEIMNIS');
+        self::assertSame($hash, $actions->passwordHash);
         $config = require $this->dir . '/config/config.php';
 
         self::assertSame($password, $config['db']['password']);
@@ -298,6 +300,7 @@ final class RecordingInstallActions implements InstallActions
     public bool $userRemoved = false;
     public bool $configExistedBeforeMigrate = false;
     public bool $configExistedBeforeUser = false;
+    public string $passwordHash = '';
 
     public function migrate(Config $config): void
     {
@@ -310,6 +313,7 @@ final class RecordingInstallActions implements InstallActions
     public function createUser(Config $config, Crypto $crypto, string $username, string $passwordHash, string $totpSecret): void
     {
         $this->configExistedBeforeUser = is_file($this->root . '/config/config.php');
+        $this->passwordHash = $passwordHash;
         $this->userCreated = true;
     }
 

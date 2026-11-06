@@ -250,7 +250,7 @@ final class InstallController
             return $this->totpForm(['Der Code stimmt nicht.'], 401);
         }
         try {
-            $result = $this->finisher->finish($database, $account['username'], $account['password'], $account['secret']);
+            $result = $this->finisher->finish($database, $account['username'], $account['password_hash'], $account['secret']);
         } catch (InstallException) {
             return $this->totpForm(['Die Einrichtung konnte nicht abgeschlossen werden. Es wurde keine Konfiguration geschrieben.']);
         }

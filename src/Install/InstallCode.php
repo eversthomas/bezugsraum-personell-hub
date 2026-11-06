@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Install;
 
+use App\Core\RestrictedFile;
+
 /**
  * Einrichtungscode außerhalb des Webroots. Fünf Fehlversuche erzeugen einen neuen Code.
  */
@@ -118,26 +120,7 @@ final class InstallCode
         if (!is_writable($dir)) {
             return false;
         }
-        $handle = fopen($path, 'c');
-        if ($handle === false) {
-            return false;
-        }
-        try {
-            if (!flock($handle, LOCK_EX)) {
-                return false;
-            }
-            ftruncate($handle, 0);
-            rewind($handle);
-            if (fwrite($handle, $contents) === false) {
-                return false;
-            }
-            fflush($handle);
-        } finally {
-            flock($handle, LOCK_UN);
-            fclose($handle);
-        }
-        chmod($path, 0600);
 
-        return true;
+        return RestrictedFile::tryPut($path, $contents);
     }
 }

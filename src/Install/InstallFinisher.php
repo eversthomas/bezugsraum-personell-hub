@@ -7,6 +7,7 @@ namespace App\Install;
 use App\Core\Config;
 use App\Core\CronCredentialStore;
 use App\Core\Crypto;
+use App\Core\RestrictedFile;
 
 /**
  * Schließt die Einrichtung ab. Die Konfigurationsdatei entsteht zuletzt und nur vollständig.
@@ -22,8 +23,9 @@ final class InstallFinisher
 
     /**
      * @param array{host: string, port: int, name: string, user: string, password: string, url: string, timezone: string} $database
+     * @param string $passwordHash bereits gehasht, nicht das Klartextpasswort
      */
-    public function finish(array $database, string $username, string $password, string $totpSecret): InstallResult
+    public function finish(array $database, string $username, string $passwordHash, string $totpSecret): InstallResult
     {
         $configPath = $this->root . '/config/config.php';
         if (is_file($configPath)) {
@@ -54,8 +56,7 @@ final class InstallFinisher
             $cron = $this->actions->cron($database['url']);
             (new CronCredentialStore($cronFile))->save($cron);
             $createdCron = true;
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $this->actions->createUser($dbConfig, Crypto::fromFile($keyPath), $username, $hash, $totpSecret);
+            $this->actions->createUser($dbConfig, Crypto::fromFile($keyPath), $username, $passwordHash, $totpSecret);
             $userCreated = true;
             $this->writeConfig($configPath, $database, $vapid);
             $result = new InstallResult($username, $cron->url, $cron->user, $cron->password);
@@ -90,10 +91,7 @@ final class InstallFinisher
         if (!is_dir($dir) && !mkdir($dir, 0700, true) && !is_dir($dir)) {
             throw new \RuntimeException('Das Schlüsselverzeichnis konnte nicht angelegt werden.');
         }
-        if (file_put_contents($path, Crypto::generateKeyHex() . "\n") === false) {
-            throw new \RuntimeException('Der Schlüssel konnte nicht geschrieben werden.');
-        }
-        chmod($path, 0600);
+        RestrictedFile::put($path, Crypto::generateKeyHex() . "\n");
     }
 
     /**
@@ -132,10 +130,7 @@ final class InstallFinisher
         $exported = str_replace(var_export($marker, true), "__DIR__ . '/keys/app.key'", var_export($values, true));
         $php = "<?php\n\ndeclare(strict_types=1);\n\nreturn " . $exported . ";\n";
         $tmp = $path . '.tmp';
-        if (file_put_contents($tmp, $php) === false) {
-            throw new \RuntimeException('Die Konfiguration konnte nicht geschrieben werden.');
-        }
-        chmod($tmp, 0600);
+        RestrictedFile::put($tmp, $php);
         if (file_exists($path) || !rename($tmp, $path)) {
             if (is_file($tmp)) {
                 unlink($tmp);
@@ -148,8 +143,8 @@ final class InstallFinisher
     private function markInstalled(): void
     {
         $lock = $this->root . '/storage/install.lock';
-        if (is_dir(dirname($lock)) && file_put_contents($lock, "eingerichtet\n") !== false) {
-            chmod($lock, 0600);
+        if (is_dir(dirname($lock))) {
+            RestrictedFile::tryPut($lock, "eingerichtet\n");
         }
         $this->code->discard();
     }
