@@ -27,6 +27,7 @@
 
 ### Fixed
 
+- Eine fehlgeschlagene Migration nennt nur die Datei und bleibt auf der Seite „Datenbank aktualisieren“. Gleichzeitige Läufe warten auf eine Sperre.
 - Datenbanktests werden ohne erreichbare Datenbank übersprungen, ohne Fehler im Aufräumen.
 - Bilder mit einer Kante über 1600 px werden verkleinert oder abgelehnt.
 - `X-Forwarded-Proto` gilt nur, wenn `app.trust_proxy` gesetzt ist.

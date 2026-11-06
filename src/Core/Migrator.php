@@ -9,8 +9,13 @@ namespace App\Core;
  */
 final class Migrator implements MigratorInterface
 {
-    public function __construct(private readonly Db $db, private readonly string $dir)
-    {
+    public const LOCK_NAME = 'personal_hub_migrations';
+
+    public function __construct(
+        private readonly Db $db,
+        private readonly string $dir,
+        private readonly int $lockTimeoutSeconds = 10,
+    ) {
     }
 
     public function pending(): array
@@ -27,34 +32,37 @@ final class Migrator implements MigratorInterface
         ));
     }
 
-    /** @return list<string> Namen der neu eingespielten Migrationen */
+    /**
+     * @return list<string> Namen der neu eingespielten Migrationen
+     * @throws MigrationException
+     */
     public function migrate(): array
     {
-        $this->db->exec(
-            'CREATE TABLE IF NOT EXISTS schema_migrations ('
-            . 'version VARCHAR(190) NOT NULL PRIMARY KEY, '
-            . 'applied_at DATETIME NOT NULL'
-            . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
-        );
-        $done = array_column($this->db->fetchAll('SELECT version FROM schema_migrations'), 'version');
-
-        $applied = [];
-        foreach ($this->fileNames() as $name) {
-            if (in_array($name, $done, true)) {
-                continue;
-            }
-            $file = $this->dir . '/' . $name;
-            foreach ($this->statements((string) file_get_contents($file)) as $statement) {
-                $this->db->exec($statement);
-            }
-            $this->db->execute(
-                'INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)',
-                [$name, gmdate('Y-m-d H:i:s')],
-            );
-            $applied[] = $name;
+        if (!$this->acquireLock()) {
+            throw MigrationException::busy();
         }
+        try {
+            $this->db->exec(
+                'CREATE TABLE IF NOT EXISTS schema_migrations ('
+                . 'version VARCHAR(190) NOT NULL PRIMARY KEY, '
+                . 'applied_at DATETIME NOT NULL'
+                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
+            );
+            $done = array_column($this->db->fetchAll('SELECT version FROM schema_migrations'), 'version');
 
-        return $applied;
+            $applied = [];
+            foreach ($this->fileNames() as $name) {
+                if (in_array($name, $done, true)) {
+                    continue;
+                }
+                $this->apply($name);
+                $applied[] = $name;
+            }
+
+            return $applied;
+        } finally {
+            $this->releaseLock();
+        }
     }
 
     /** @return list<string> */
@@ -64,6 +72,38 @@ final class Migrator implements MigratorInterface
         sort($files);
 
         return array_map(static fn (string $file): string => basename($file), $files);
+    }
+
+    private function apply(string $name): void
+    {
+        $file = $this->dir . '/' . $name;
+        try {
+            foreach ($this->statements((string) file_get_contents($file)) as $statement) {
+                $this->db->exec($statement);
+            }
+            $this->db->execute(
+                'INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)',
+                [$name, gmdate('Y-m-d H:i:s')],
+            );
+        } catch (\Throwable) {
+            throw MigrationException::failed($name);
+        }
+    }
+
+    private function acquireLock(): bool
+    {
+        $got = $this->db->fetchValue('SELECT GET_LOCK(?, ?)', [self::LOCK_NAME, $this->lockTimeoutSeconds]);
+
+        return $got === 1 || $got === '1';
+    }
+
+    private function releaseLock(): void
+    {
+        try {
+            $this->db->fetchValue('SELECT RELEASE_LOCK(?)', [self::LOCK_NAME]);
+        } catch (\Throwable) {
+            // Die Verbindung gibt die Sperre beim Schließen frei.
+        }
     }
 
     private function hasTable(): bool

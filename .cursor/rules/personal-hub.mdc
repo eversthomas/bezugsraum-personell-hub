@@ -25,6 +25,7 @@ Gestaltung und Abläufe: siehe docs/prototyp/. Code daraus nicht übernehmen.
 - Externe Dienste nur über die Interfaces in src/Core/Contracts.
 - Jede Antwort trägt X-Robots-Tag: noindex, nofollow, noarchive.
 - Schemaänderungen nur als neue Datei in migrations/, nie bestehende ändern.
+- Neue Migrationen müssen wiederholbar sein (`IF NOT EXISTS`, `IF EXISTS`).
 - Zeiten in UTC speichern, in Europe/Berlin anzeigen.
 
 ## Sicherheit (nicht verhandelbar)

@@ -33,17 +33,23 @@ final class UpdateController
             return Response::notFound();
         }
 
-        return $this->page($this->migrator->migrate());
+        try {
+            return $this->page($this->migrator->migrate());
+        } catch (MigrationException $e) {
+            return $this->page(null, $e->busy ? null : $e->filename, $e->busy);
+        }
     }
 
     /** @param list<string>|null $applied */
-    private function page(?array $applied): Response
+    private function page(?array $applied, ?string $failedFile = null, bool $busy = false): Response
     {
         return Response::html($this->view->render('update', [
             'title' => 'Datenbank aktualisieren',
             'bodyClass' => 'auth',
             'csrf' => $this->csrf->token(),
             'applied' => $applied,
+            'failedFile' => $failedFile,
+            'busy' => $busy,
         ]));
     }
 }

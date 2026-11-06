@@ -11,6 +11,7 @@ use App\Core\Crypto;
 use App\Core\Db;
 use App\Core\Csrf;
 use App\Core\Kernel;
+use App\Core\Migrator;
 use App\Core\MigratorInterface;
 use App\Core\Request;
 use App\Core\Response;
@@ -120,6 +121,63 @@ final class UpdatePageTest extends DbTestCase
         $after = $this->get('/');
         self::assertSame(200, $after->status);
         self::assertStringContainsString('Leitstand', $after->body);
+    }
+
+    public function testABrokenMigrationStaysOnThePageAndHidesTheSql(): void
+    {
+        $dir = sys_get_temp_dir() . '/ph-upd-' . bin2hex(random_bytes(4));
+        mkdir($dir);
+        $marker = 'ph_marker_nicht_zeigen';
+        file_put_contents($dir . '/009_bad.sql', "CREATE TABLE ph_page_probe (id INT);\nSELECT {$marker} FROM ph_missing_table;\n");
+        $this->kernel->container()->instance(MigratorInterface::class, new Migrator($this->db, $dir, 0));
+        $this->session->set('uid', $this->userId);
+        try {
+            $response = $this->post('/aktualisieren');
+
+            self::assertSame(200, $response->status);
+            self::assertStringContainsString('009_bad.sql', $response->body);
+            self::assertStringContainsString('Spiele die Sicherung der Datenbank ein', $response->body);
+            self::assertStringContainsString('Jetzt aktualisieren', $response->body);
+            self::assertStringNotContainsString($marker, $response->body);
+            self::assertStringNotContainsString('SQLSTATE', $response->body);
+            self::assertStringNotContainsString('ph_missing_table', $response->body);
+            self::assertStringNotContainsString('Die Anfrage konnte nicht verarbeitet werden.', $response->body);
+        } finally {
+            $this->db->exec('DROP TABLE IF EXISTS ph_page_probe');
+            unlink($dir . '/009_bad.sql');
+            rmdir($dir);
+        }
+    }
+
+    public function testABusyMigrationSaysSoWithoutFailingTheRequest(): void
+    {
+        $dir = sys_get_temp_dir() . '/ph-upd-' . bin2hex(random_bytes(4));
+        mkdir($dir);
+        file_put_contents($dir . '/009_wait.sql', "SELECT 1;\n");
+        $other = Db::connect(new Config(['db' => [
+            'host' => getenv('PH_TEST_DB_HOST') ?: '127.0.0.1',
+            'port' => (int) (getenv('PH_TEST_DB_PORT') ?: 3306),
+            'name' => getenv('PH_TEST_DB_NAME') ?: 'personal_hub_test',
+            'user' => getenv('PH_TEST_DB_USER') ?: 'ph',
+            'password' => getenv('PH_TEST_DB_PASSWORD') ?: 'ph',
+            'charset' => 'utf8mb4',
+        ]]));
+        $this->kernel->container()->instance(MigratorInterface::class, new Migrator($this->db, $dir, 0));
+        $this->session->set('uid', $this->userId);
+        $other->fetchValue('SELECT GET_LOCK(?, 0)', [Migrator::LOCK_NAME]);
+        try {
+            $response = $this->post('/aktualisieren');
+
+            self::assertSame(200, $response->status);
+            self::assertStringContainsString('Aktualisierung läuft bereits.', $response->body);
+            self::assertStringContainsString('Jetzt aktualisieren', $response->body);
+            self::assertStringNotContainsString('009_wait.sql', $response->body);
+            self::assertStringNotContainsString('Die Anfrage konnte nicht verarbeitet werden.', $response->body);
+        } finally {
+            $other->fetchValue('SELECT RELEASE_LOCK(?)', [Migrator::LOCK_NAME]);
+            unlink($dir . '/009_wait.sql');
+            rmdir($dir);
+        }
     }
 
     private function get(string $path): Response

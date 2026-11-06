@@ -12,6 +12,9 @@ interface MigratorInterface
     /** @return list<string> Dateinamen, die noch nicht eingespielt sind */
     public function pending(): array;
 
-    /** @return list<string> Namen der neu eingespielten Migrationen */
+    /**
+     * @return list<string> Namen der neu eingespielten Migrationen
+     * @throws MigrationException
+     */
     public function migrate(): array;
 }
