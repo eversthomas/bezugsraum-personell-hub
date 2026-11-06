@@ -13,9 +13,20 @@ Voraussetzungen und Prüfliste gelten für beide Wege. Details stehen im [Umsetz
 - `storage/` für PHP beschreibbar, insbesondere `storage/logs`, `storage/cache`, `storage/sessions`, `storage/uploads`.
 - Upload-Limit mindestens 12 MB (`upload_max_filesize`, `post_max_size`), damit Fotos vom Handy ankommen.
 
+## Release erzeugen
+
+Das ZIP entsteht auf GitHub, ohne Terminal.
+
+1. In GitHub Desktop „View on GitHub“ öffnen. GitHub Desktop legt das Release nicht an.
+2. Auf der Projektseite Releases öffnen und ein neues Release anlegen.
+3. Den Tag neu vergeben, zum Beispiel `v0.1.0`, und das Release veröffentlichen.
+4. Der Workflow hängt danach `personal-hub-v0.1.0.zip` an dieses Release. Die Seite neu laden, sobald der Lauf fertig ist.
+
+Im ZIP liegen `vendor/`, `LICENSE` und leere Verzeichnisse `storage/logs`, `storage/cache`, `storage/sessions` und `storage/uploads`. Nicht darin liegen `.git`, `.github`, `.cursor`, `tests` und die Werkzeuge für Tests und Analyse. `config/config.php` und Schlüsseldateien fehlen ebenfalls.
+
 ## Erstinstallation mit Installer
 
-1. Das Release-ZIP aus dem GitHub-Release herunterladen. Es enthält `vendor/`. Es enthält keine `config/config.php`, keine Schlüssel und keinen Inhalt von `storage/`.
+1. Das Release-ZIP aus dem GitHub-Release herunterladen. Es enthält `vendor/`. Es enthält keine `config/config.php`, keine Schlüssel und keinen Inhalt von `storage/`. Die Datei heißt `personal-hub-` plus der Tag, zum Beispiel `personal-hub-v0.1.0.zip`.
 2. Das Archiv entpacken und hochladen. Der Dokumentenstamm der Subdomain ist `public/`.
 3. Die Subdomain im Browser öffnen. Der Installer schreibt einen Zufallscode nach `storage/install-code.txt`, außerhalb des Webroots.
 4. Den Code im Dateimanager des KAS oder per FTP aus dieser Datei lesen und im Formular eingeben. Ohne den Code entsteht keine Installation.
