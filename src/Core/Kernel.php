@@ -97,7 +97,7 @@ final class Kernel
             $response = $this->errorResponse($request);
         }
 
-        return SecurityHeaders::apply($response, $request->isHttps());
+        return SecurityHeaders::apply($response, $request->isHttps($this->config->bool('app.trust_proxy')));
     }
 
     private function dispatch(Request $request): Response

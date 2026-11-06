@@ -1,6 +1,6 @@
 # Projektplan
 
-Stand: 5. November 2026. Verbindlich für die Reihenfolge ist dieses Dokument, für die fachlichen Festlegungen [das Umsetzungskonzept](umsetzungskonzept.md). Status: offen, in Arbeit oder erledigt.
+Stand: 6. November 2026. Verbindlich für die Reihenfolge ist dieses Dokument, für die fachlichen Festlegungen [das Umsetzungskonzept](umsetzungskonzept.md). Status: offen, in Arbeit oder erledigt.
 
 ## Phase 1 – Ordnung
 
@@ -17,8 +17,8 @@ Stand: 5. November 2026. Verbindlich für die Reihenfolge ist dieses Dokument, f
 
 - **Ziel:** Tests und Bildgrenze sind verlässlich, die CI prüft PHP 8.3 und 8.5, der geschützte Cron-Endpunkt existiert.
 - **Begründung:** Erinnerungen und der Abruf brauchen einen Minuten-Takt, bevor die Anwendung auf dem Server liegt.
-- **Abnahme:** `composer test` ohne Datenbank ergibt nur übersprungene Tests, keine Fehler. `ImageProcessor` lehnt zu große Bilder ab oder verkleinert sie, nie ein Original über 1600 px. `composer audit` läuft in der CI. Die CI läuft mit PHP 8.3 und 8.5. Der Endpunkt antwortet ohne HTTP-Zugang oder ohne Token mit 404 und startet mit beidem dieselbe Logik wie `bin/cron.php`. Den Pfad legt dieses Paket fest.
-- **Status:** offen
+- **Abnahme:** `composer test` ohne Datenbank ergibt nur übersprungene Tests, keine Fehler. `ImageProcessor` lehnt zu große Bilder ab oder verkleinert sie, nie ein Original über 1600 px. `composer audit` läuft in der CI. Die CI läuft mit PHP 8.3 und 8.5. Der Endpunkt `/cron/{token}` antwortet bei falschem Token mit 404 und ohne gültigen HTTP-Zugang mit 401. Mit beidem startet er dieselbe Logik wie `bin/cron.php`.
+- **Status:** erledigt
 
 ### Installer und Release-ZIP
 
@@ -80,10 +80,10 @@ Stand: 5. November 2026. Verbindlich für die Reihenfolge ist dieses Dokument, f
 
 ### Abrufeinstellungen
 
-- **Ziel:** In den Einstellungen und pro Kalenderquelle wählbar, wie oft abgerufen wird (z. B. 5, 15, 30, 60 Minuten). Der Cronjob bleibt minütlich und ist nur Taktgeber; die App entscheidet, welche Quellen fällig sind. Dazu ein Knopf „Jetzt aktualisieren“ im Leitstand und auf der Kalenderseite, der über den CronRunner sofort alle aktiven Quellen abruft und die gemeinsame Sperre gegen Doppelläufe nutzt.
+- **Ziel:** In den Einstellungen und pro Kalenderquelle wählbar, wie oft abgerufen wird (z. B. 5, 15, 30, 60 Minuten). Der Cronjob bleibt minütlich und ist nur Taktgeber; die App entscheidet, welche Quellen fällig sind. Dazu ein Knopf „Jetzt aktualisieren“ im Leitstand und auf der Kalenderseite, der über den CronRunner sofort alle aktiven Quellen abruft und die gemeinsame Sperre gegen Doppelläufe nutzt. Auch der bestehende Einzelknopf „Jetzt abrufen“ auf der Seite Kalenderquellen nutzt die gemeinsame Sperre.
 - **Begründung:** Häufige und seltene Kalender brauchen verschiedene Takte. Ein zweiter Lauf darf einen laufenden Abruf nicht überholen.
 - **Bestand:** Pro Quelle gibt es `interval_min` (5 bis 1440 Minuten, Standard 15). Die Seite Kalenderquellen bietet 15, 30 und 60 Minuten. `refreshDue()` ruft nur fällige Quellen ab; der Auftrag `calendar.refresh` hängt am minütlichen Cron. `everyMinutes` am Auftrag wird nicht ausgewertet. „Jetzt abrufen“ gibt es nur je Quelle und geht an `CalendarService::refresh`, ohne CronRunner und ohne die Sperre. Ein globaler Takt und ein Knopf im Leitstand oder auf der Kalenderseite fehlen.
-- **Abnahme:** Der Minuten-Cron bleibt der Taktgeber. Eine Quelle mit 60 Minuten wird nicht jede Minute geholt. „Jetzt aktualisieren“ auf Leitstand und Kalenderseite holt alle aktiven Quellen über den CronRunner. Läuft schon ein Abruf, startet kein zweiter.
+- **Abnahme:** Der Minuten-Cron bleibt der Taktgeber. Eine Quelle mit 60 Minuten wird nicht jede Minute geholt. „Jetzt aktualisieren“ auf Leitstand und Kalenderseite holt alle aktiven Quellen über den CronRunner. „Jetzt abrufen“ an einer einzelnen Quelle nutzt dieselbe Sperre. Läuft schon ein Abruf, startet kein zweiter.
 - **Status:** offen
 
 ## Phase 4 – Feinschliff

@@ -15,6 +15,7 @@ final class AuthController
         private readonly AuthService $auth,
         private readonly View $view,
         private readonly Csrf $csrf,
+        private readonly bool $trustProxy = false,
     ) {
     }
 
@@ -74,7 +75,7 @@ final class AuthController
                 $response = $response->withCookie(DeviceCookie::NAME, $result->deviceToken, [
                     'expires' => time() + AuthService::DEVICE_DAYS * 86400,
                     'path' => '/',
-                    'secure' => $request->isHttps(),
+                    'secure' => $request->isHttps($this->trustProxy),
                     'httponly' => true,
                     'samesite' => 'Lax',
                 ]);

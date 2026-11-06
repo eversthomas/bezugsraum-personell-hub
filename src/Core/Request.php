@@ -118,11 +118,15 @@ final class Request
         return is_array($data) ? $data : [];
     }
 
-    public function isHttps(): bool
+    /** $trustProxy nur setzen, wenn ein eigener Proxy X-Forwarded-Proto zuverlässig setzt. */
+    public function isHttps(bool $trustProxy = false): bool
     {
         $https = $this->server['HTTPS'] ?? '';
         if (is_string($https) && $https !== '' && strtolower($https) !== 'off') {
             return true;
+        }
+        if (!$trustProxy) {
+            return false;
         }
 
         return ($this->server['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';

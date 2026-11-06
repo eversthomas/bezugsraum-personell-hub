@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Auth;
 
+use App\Core\Config;
 use App\Core\Container;
 use App\Core\Contracts\AuthenticatorInterface;
 use App\Core\Contracts\ModuleInterface;
@@ -42,6 +43,7 @@ final class Module implements ModuleInterface
             $c->get(AuthService::class),
             $c->get(View::class),
             $c->get(Csrf::class),
+            $c->get(Config::class)->bool('app.trust_proxy'),
         ));
     }
 

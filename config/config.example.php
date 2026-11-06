@@ -19,6 +19,8 @@ return [
     'app' => [
         'url' => 'https://hub.example.invalid',
         'timezone' => 'Europe/Berlin',
+        // true nur hinter einem eigenen Proxy, der X-Forwarded-Proto setzt. Sonst bleibt der Header unbeachtet.
+        'trust_proxy' => false,
     ],
     'crypto' => [
         'key_path' => __DIR__ . '/keys/app.key',

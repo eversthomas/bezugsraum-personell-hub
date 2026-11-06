@@ -20,7 +20,7 @@ Voraussetzungen und Prüfliste gelten für beide Wege. Details stehen im [Umsetz
 3. Die Subdomain im Browser öffnen. Der Installer schreibt einen Zufallscode nach `storage/install-code.txt`, außerhalb des Webroots.
 4. Den Code im Dateimanager des KAS oder per FTP aus dieser Datei lesen und im Formular eingeben. Ohne den Code entsteht keine Installation.
 5. Im Formular den Datenbankzugang eintragen und den Verbindungstest abwarten. Danach legt der Installer Konfiguration, Schlüssel, Tabellen, VAPID-Schlüssel und den ersten Benutzer an. Passwort mindestens 12 Zeichen. Den TOTP-QR-Code mit der Authenticator-App scannen oder das Geheimnis als Text abtippen.
-6. Die angezeigte Cron-Adresse samt Token in den Cronjob des KAS übernehmen: jede Minute, HTTPS, HTTP-Benutzer und HTTP-Passwort setzen. Das E-Mail-Feld leer lassen, sonst kommt jede Minute eine Mail. Den Pfad der Adresse legt das Paket Härtung fest. Bis dahin zeigt der Installer die dann geltende Adresse.
+6. Den Cronjob einrichten, wie unter „Cron im KAS“ beschrieben. Der Installer zeigt die Adresse später selbst an.
 7. Der Installer legt eine Sperrdatei an und löscht `storage/install-code.txt`. Die Installer-Route antwortet danach mit 404, auch wenn die Sperrdatei später gelöscht wird, solange `config/config.php` existiert.
 8. Anmelden, unter „Kalenderquellen“ die ICS-Links eintragen, unter „Benachrichtigungen“ das Gerät aktivieren.
 
@@ -31,7 +31,8 @@ Voraussetzungen und Prüfliste gelten für beide Wege. Details stehen im [Umsetz
 - `https://<subdomain>/` leitet zur Anmeldung. Jeder andere Pfad ohne Anmeldung antwortet mit 404.
 - `https://<subdomain>/config/config.php` und `https://<subdomain>/src/` antworten mit 404. Der Dokumentenstamm muss `public/` sein.
 - `https://<subdomain>/robots.txt` enthält `Disallow: /`. Die Antwort enthält `X-Robots-Tag: noindex, nofollow, noarchive`, auch bei statischen Dateien.
-- Der Cron-Endpunkt antwortet ohne HTTP-Zugang oder ohne Token mit 404.
+- Ohne gültiges Token antwortet `/cron/{token}` mit 404. Mit gültigem Token und ohne HTTP-Zugang antwortet der Endpunkt mit 401 und `WWW-Authenticate`.
+- Nach dem ersten Aufruf per HTTPS prüfen, ob das Sitzungscookie `ph_session` das Flag Secure trägt und der HSTS-Header gesendet wird. Fehlt beides, erkennt die App HTTPS nicht; dann `app.trust_proxy` auf true setzen und erneut prüfen. Apache sendet den HSTS-Header zusätzlich aus `public/.htaccess`. Fehlt nur das Secure-Flag, gilt derselbe Schritt.
 - Anmeldung auf dem Handy und am Desktop klappt. „Gerät merken“ funktioniert.
 - Kalenderquellen zeigen „Aktuell“ nach dem ersten Abruf. Ein bewusst kaputter Link zeigt einen Fehler, die alten Termine bleiben.
 
@@ -41,7 +42,7 @@ Dieser Weg gilt auf dem Entwicklungsrechner und überall, wo eine Kommandozeile 
 
 1. Abhängigkeiten lokal installieren: `composer install --no-dev --optimize-autoloader`. Der Ordner `vendor/` wird mit hochgeladen.
 2. Hochladen ohne `.git`, `tests/`, `config/config.php`, `config/keys/*` und ohne Inhalt von `storage/`. Dokumentenstamm ist `public/`.
-3. `config/config.example.php` nach `config/config.php` kopieren und ausfüllen: Datenbank, `app.url` mit `https://`, Pfad des Schlüssels, VAPID-Daten.
+3. `config/config.example.php` nach `config/config.php` kopieren und ausfüllen: Datenbank, `app.url` mit `https://`, Pfad des Schlüssels, VAPID-Daten. `app.trust_proxy` bleibt false, bis die Prüfliste etwas anderes zeigt.
 4. Auf der Kommandozeile:
 
    ```bash
@@ -53,7 +54,19 @@ Dieser Weg gilt auf dem Entwicklungsrechner und überall, wo eine Kommandozeile 
 
    `create-user.php` fragt das Passwort ab und gibt den TOTP-Schlüssel aus. Die VAPID-Schlüssel kommen in `config/config.php`.
 5. `storage/logs`, `storage/cache`, `storage/sessions` und `storage/uploads` müssen für PHP beschreibbar sein.
-6. Hintergrund: lokal `php bin/cron.php`. Auf dem Server, solange der HTTPS-Endpunkt noch nicht steht, ersatzweise dasselbe Skript über den Cron des Hostings. Sobald der Endpunkt existiert, gilt der Minuten-Aufruf per HTTPS aus der Erstinstallation.
+6. Hintergrund: lokal `php bin/cron.php`. Auf dem Server den Abschnitt „Cron im KAS“ verwenden.
+
+## Cron im KAS
+
+Der Cronjob ist der Taktgeber und ruft jede Minute eine HTTPS-Adresse auf. Adresse, HTTP-Benutzer und HTTP-Passwort kommen aus:
+
+```bash
+php bin/create-cron-credentials.php
+```
+
+Der Befehl zeigt sie einmal und schreibt `config/config.php` nicht. Die Hashes aus der Ausgabe gehören in die Konfiguration. Im KAS: jede Minute, Protokoll HTTPS, die ausgegebene Adresse (`/cron/{token}`), HTTP-Benutzer und HTTP-Passwort. Das E-Mail-Feld bleibt leer, sonst kommt jede Minute eine Mail.
+
+Ohne gültiges Token antwortet die Adresse mit 404. Mit gültigem Token und ohne oder mit falschem HTTP-Zugang antwortet sie mit 401. Mit beidem läuft derselbe Ablauf wie `php bin/cron.php`.
 
 ## Aktualisieren
 
