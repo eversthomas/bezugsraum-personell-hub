@@ -10,7 +10,7 @@ namespace App\Core;
 final class CronController
 {
     public function __construct(
-        private readonly Config $config,
+        private readonly CronCredentialStore $credentials,
         private readonly CronRunner $runner,
     ) {
     }
@@ -18,25 +18,29 @@ final class CronController
     /** @param array<string, string> $params */
     public function run(Request $request, array $params): Response
     {
-        $expected = $this->config->string('cron.token_hash');
+        $stored = $this->credentials->read();
         $token = $params['token'] ?? '';
-        if ($expected === '' || !hash_equals($expected, hash('sha256', $token))) {
+        if (
+            $stored === null
+            || $stored['token_hash'] === ''
+            || !hash_equals($stored['token_hash'], hash('sha256', $token))
+        ) {
             return Response::notFound();
         }
 
-        if (!$this->basicAccepted($request)) {
+        if (!$this->basicAccepted($request, $stored['basic_user'], $stored['basic_password_hash'])) {
             return new Response(401, "Anmeldung erforderlich\n", [
                 'Content-Type' => 'text/plain; charset=utf-8',
                 'WWW-Authenticate' => 'Basic realm="cron"',
             ]);
         }
 
-        $body = $this->runner->run() ? "ok\n" : "läuft bereits\n";
-
-        return new Response(200, $body, ['Content-Type' => 'text/plain; charset=utf-8']);
+        return new Response(200, $this->runner->notice($this->runner->run()), [
+            'Content-Type' => 'text/plain; charset=utf-8',
+        ]);
     }
 
-    private function basicAccepted(Request $request): bool
+    private function basicAccepted(Request $request, string $expectedUser, string $passwordHash): bool
     {
         $header = $this->authorization($request);
         if (!preg_match('/^Basic\s+(\S+)\z/i', $header, $match)) {
@@ -47,8 +51,6 @@ final class CronController
             return false;
         }
         [$user, $password] = explode(':', $decoded, 2);
-        $expectedUser = $this->config->string('cron.basic_user');
-        $passwordHash = $this->config->string('cron.basic_password_hash');
         if ($expectedUser === '' || $passwordHash === '') {
             return false;
         }

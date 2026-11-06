@@ -21,7 +21,7 @@ Voraussetzungen und Prüfliste gelten für beide Wege. Details stehen im [Umsetz
 4. Den Code im Dateimanager des KAS oder per FTP aus dieser Datei lesen und im Formular eingeben. Ohne den Code entsteht keine Installation.
 5. Im Formular den Datenbankzugang eintragen und den Verbindungstest abwarten. Danach legt der Installer Konfiguration, Schlüssel, Tabellen, VAPID-Schlüssel und den ersten Benutzer an. Passwort mindestens 12 Zeichen. Den TOTP-QR-Code mit der Authenticator-App scannen oder das Geheimnis als Text abtippen.
 6. Den Cronjob einrichten, wie unter „Cron im KAS“ beschrieben. Der Installer zeigt die Adresse später selbst an.
-7. Der Installer legt eine Sperrdatei an und löscht `storage/install-code.txt`. Die Installer-Route antwortet danach mit 404, auch wenn die Sperrdatei später gelöscht wird, solange `config/config.php` existiert.
+7. Der Installer legt `storage/install.lock` an und löscht `storage/install-code.txt` sowie `storage/install-attempts.txt`. Die Installer-Route antwortet danach mit 404, auch wenn die Sperrdatei später gelöscht wird, solange `config/config.php` existiert.
 8. Anmelden, unter „Kalenderquellen“ die ICS-Links eintragen, unter „Benachrichtigungen“ das Gerät aktivieren.
 
 ## Prüfliste nach dem Einrichten
@@ -64,14 +64,14 @@ Der Cronjob ist der Taktgeber und ruft jede Minute eine HTTPS-Adresse auf. Adres
 php bin/create-cron-credentials.php
 ```
 
-Der Befehl zeigt sie einmal und schreibt `config/config.php` nicht. Die Hashes aus der Ausgabe gehören in die Konfiguration. Im KAS: jede Minute, Protokoll HTTPS, die ausgegebene Adresse (`/cron/{token}`), HTTP-Benutzer und HTTP-Passwort. Das E-Mail-Feld bleibt leer, sonst kommt jede Minute eine Mail.
+Der Befehl zeigt Adresse, Benutzer und Passwort einmal und schreibt nur die Hashes nach `storage/cron-credentials.php` (Dateirechte 0600). `config/config.php` bleibt unverändert. Ein neuer Aufruf macht den bisherigen Zugang sofort ungültig. Dasselbe kann nach der Anmeldung unter „Sicherheit“ der Knopf „Cron-Zugang neu erzeugen“. Im KAS: jede Minute, Protokoll HTTPS, die ausgegebene Adresse (`/cron/{token}`), HTTP-Benutzer und HTTP-Passwort. Das E-Mail-Feld bleibt leer, sonst kommt jede Minute eine Mail. Stehen Datenbankänderungen aus, antwortet der Cron mit einem kurzen Hinweis und führt nichts aus.
 
 Ohne gültiges Token antwortet die Adresse mit 404. Mit gültigem Token und ohne oder mit falschem HTTP-Zugang antwortet sie mit 401. Mit beidem läuft derselbe Ablauf wie `php bin/cron.php`.
 
 ## Aktualisieren
 
 1. Neue Dateien hochladen, ohne `config/config.php`, `config/keys/` und `storage/`.
-2. `php bin/migrate.php` ausführen, sobald eine Kommandozeile erreichbar ist. Migrationen laufen nur vorwärts. Ein späterer Weg ohne Terminal wird mit dem Installer nicht vermischt und ist noch nicht festgelegt.
+2. Nach der Anmeldung zeigt die Anwendung nur noch „Datenbank aktualisieren“, solange Migrationen ausstehen. Der Hinweis erinnert an eine Sicherung. Der Knopf „Jetzt aktualisieren“ spielt die Änderungen ein. Abgemeldete Besucher sehen davon nichts und melden sich normal an. `php bin/migrate.php` bleibt der Weg auf der Kommandozeile. Migrationen laufen nur vorwärts.
 3. Der Service Worker prüft sich selbst. Den Browser-Cache muss man dafür nicht leeren.
 
 ## Sicherung

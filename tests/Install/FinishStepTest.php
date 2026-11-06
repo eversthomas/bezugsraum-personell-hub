@@ -93,6 +93,7 @@ final class FinishStepTest extends TestCase
         self::assertTrue($actions->userCreated);
         self::assertTrue($actions->userRemoved);
         self::assertFileDoesNotExist($this->dir . '/config/keys/app.key');
+        self::assertFileDoesNotExist($this->dir . '/storage/cron-credentials.php');
         self::assertFileDoesNotExist($this->dir . '/config/config.php.tmp');
         self::assertDirectoryExists($this->dir . '/config/config.php');
     }
@@ -107,13 +108,20 @@ final class FinishStepTest extends TestCase
         self::assertSame($password, $config['db']['password']);
         self::assertSame('https://hub.example.test', $config['app']['url']);
         self::assertFalse($config['app']['trust_proxy']);
-        self::assertSame('cron', $config['cron']['basic_user']);
-        self::assertSame(hash('sha256', 'cron-token-test-wert'), $config['cron']['token_hash']);
-        self::assertTrue(password_verify('cron-passwort-test', $config['cron']['basic_password_hash']));
+        self::assertArrayNotHasKey('cron', $config);
+        $cronFile = (string) file_get_contents($this->dir . '/storage/cron-credentials.php');
+        self::assertStringNotContainsString('cron-passwort-test', $cronFile);
+        self::assertStringNotContainsString('cron-token-test-wert', $cronFile);
+        self::assertSame(0600, fileperms($this->dir . '/storage/cron-credentials.php') & 0777);
+        $stored = require $this->dir . '/storage/cron-credentials.php';
+        self::assertSame('cron', $stored['basic_user']);
+        self::assertSame(hash('sha256', 'cron-token-test-wert'), $stored['token_hash']);
+        self::assertTrue(password_verify('cron-passwort-test', $stored['basic_password_hash']));
         self::assertSame('vapid-public-test', $config['vapid']['public_key']);
         self::assertStringContainsString("__DIR__ . '/keys/app.key'", (string) file_get_contents($this->dir . '/config/config.php'));
-        self::assertStringNotContainsString('cron-passwort-test', (string) file_get_contents($this->dir . '/config/config.php'));
-        self::assertStringNotContainsString('cron-token-test-wert', (string) file_get_contents($this->dir . '/config/config.php'));
+        $configPhp = (string) file_get_contents($this->dir . '/config/config.php');
+        self::assertStringNotContainsString('cron-passwort-test', $configPhp);
+        self::assertStringNotContainsString('cron-token-test-wert', $configPhp);
         self::assertSame(0600, fileperms($this->dir . '/config/config.php') & 0777);
         self::assertSame(0600, fileperms($this->dir . '/config/keys/app.key') & 0777);
         self::assertFileExists($this->dir . '/storage/install.lock');

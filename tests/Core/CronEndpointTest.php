@@ -7,6 +7,7 @@ namespace Tests\Core;
 use App\Core\Config;
 use App\Core\Container;
 use App\Core\Contracts\ModuleInterface;
+use App\Core\CronCredentialStore;
 use App\Core\CronCredentials;
 use App\Core\CronJob;
 use App\Core\CronRunner;
@@ -25,20 +26,25 @@ final class CronEndpointTest extends TestCase
 
     private Kernel $kernel;
     private JobList $jobs;
+    private string $cronFile;
 
     protected function setUp(): void
     {
         $this->jobs = new JobList();
+        $this->cronFile = sys_get_temp_dir() . '/ph-cron-cred-' . bin2hex(random_bytes(4)) . '.php';
         $this->kernel = new Kernel(dirname(__DIR__, 2), new Config([
             'app' => ['url' => 'https://hub.example.invalid'],
-            'cron' => [
-                'token_hash' => hash('sha256', self::TOKEN),
-                'basic_user' => self::USER,
-                'basic_password_hash' => password_hash(self::PASSWORD, PASSWORD_DEFAULT),
-            ],
         ]));
         $this->kernel->boot(require dirname(__DIR__, 2) . '/config/modules.php');
+        $this->saveCredentials(self::TOKEN, self::PASSWORD);
         $this->kernel->container()->instance(CronRunner::class, $this->recordingRunner($this->jobs));
+    }
+
+    protected function tearDown(): void
+    {
+        if (isset($this->cronFile)) {
+            @unlink($this->cronFile);
+        }
     }
 
     public function testWrongTokenLooksLikeAnUnknownRoute(): void
@@ -56,9 +62,9 @@ final class CronEndpointTest extends TestCase
     {
         $kernel = new Kernel(dirname(__DIR__, 2), new Config([
             'app' => ['url' => 'https://hub.example.invalid'],
-            'cron' => ['token_hash' => '', 'basic_user' => self::USER, 'basic_password_hash' => 'x'],
         ]));
         $kernel->boot(require dirname(__DIR__, 2) . '/config/modules.php');
+        $kernel->container()->instance(CronCredentialStore::class, new CronCredentialStore($this->cronFile . '.leer'));
         $kernel->container()->instance(CronRunner::class, $this->recordingRunner($this->jobs));
 
         $response = $kernel->handle(new Request('GET', '/cron/' . self::TOKEN, server: ['HTTPS' => 'on']));
@@ -169,7 +175,7 @@ final class CronEndpointTest extends TestCase
             },
         );
 
-        self::assertTrue($runner->run());
+        self::assertSame(CronRunner::STATUS_OK, $runner->run());
         self::assertSame(['one'], $module->ran);
     }
 
@@ -193,6 +199,39 @@ final class CronEndpointTest extends TestCase
         $token = substr($credentials->url, strlen('https://hub.example.invalid/cron/'));
         self::assertSame(hash('sha256', $token), $credentials->tokenHash);
         self::assertTrue(password_verify($credentials->password, $credentials->passwordHash));
+    }
+
+    public function testPendingMigrationsRunNoJobs(): void
+    {
+        $runner = new CronRunner(
+            [new RecordingModule($this->jobs)],
+            new Container(),
+            new Logger(sys_get_temp_dir() . '/ph-cron-paused.log'),
+            sys_get_temp_dir() . '/ph-cron-paused.lock',
+            null,
+            CronRunner::BUDGET_SECONDS,
+            static fn (): bool => true,
+        );
+        $this->kernel->container()->instance(CronRunner::class, $runner);
+
+        $response = $this->call('/cron/' . self::TOKEN, $this->basic(self::USER, self::PASSWORD));
+
+        self::assertSame(200, $response->status);
+        self::assertSame("Migrationen stehen aus.\n", $response->body);
+        self::assertSame([], $this->jobs->names);
+    }
+
+    private function saveCredentials(string $token, string $password): void
+    {
+        $store = new CronCredentialStore($this->cronFile);
+        $store->save(new CronCredentials(
+            'https://hub.example.invalid/cron/' . $token,
+            self::USER,
+            $password,
+            hash('sha256', $token),
+            password_hash($password, PASSWORD_DEFAULT),
+        ));
+        $this->kernel->container()->instance(CronCredentialStore::class, $store);
     }
 
     private function recordingRunner(JobList $jobs): CronRunner

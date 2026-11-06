@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Core\CronCredentials;
+use App\Core\CronCredentialStore;
 
 if (PHP_SAPI !== 'cli') {
     exit(1);
@@ -20,14 +21,11 @@ if (is_file($configPath)) {
 }
 
 $credentials = CronCredentials::generate($appUrl);
+(new CronCredentialStore(dirname(__DIR__) . '/storage/cron-credentials.php'))->save($credentials);
 
-echo "Cron-Zugang, einmal anzeigen. Danach nur die Hashes in config/config.php eintragen.\n";
-echo "Die Datei wird von diesem Befehl nicht verändert.\n\n";
+echo "Cron-Zugang, einmal anzeigen. Der bisherige gilt sofort nicht mehr.\n";
+echo "Gespeichert wurden nur die Hashes in storage/cron-credentials.php.\n";
+echo "config/config.php bleibt unverändert.\n\n";
 echo "Adresse:  {$credentials->url}\n";
 echo "Benutzer: {$credentials->user}\n";
-echo "Passwort: {$credentials->password}\n\n";
-echo "    'cron' => [\n";
-echo "        'token_hash' => '{$credentials->tokenHash}',\n";
-echo "        'basic_user' => '{$credentials->user}',\n";
-echo "        'basic_password_hash' => '{$credentials->passwordHash}',\n";
-echo "    ],\n";
+echo "Passwort: {$credentials->password}\n";

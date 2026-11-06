@@ -31,6 +31,12 @@ final class CoreModule implements ModuleInterface
         $router->get('/cron/{token}', function (Request $request, array $params) use ($container): Response {
             return $container->get(CronController::class)->run($request, $params);
         }, Router::AUTH_NONE);
+        $router->get('/aktualisieren', function (Request $request, array $params) use ($container): Response {
+            return $container->get(UpdateController::class)->show($request, $params);
+        });
+        $router->post('/aktualisieren', function (Request $request, array $params) use ($container): Response {
+            return $container->get(UpdateController::class)->apply($request, $params);
+        });
     }
 
     public function cronJobs(): array

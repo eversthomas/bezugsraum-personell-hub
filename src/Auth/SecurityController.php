@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Auth;
 
+use App\Core\CronCredentials;
+use App\Core\CronCredentialStore;
 use App\Core\Csrf;
 use App\Core\Request;
 use App\Core\Response;
@@ -20,6 +22,8 @@ final class SecurityController
         private readonly View $view,
         private readonly Csrf $csrf,
         private readonly Session $session,
+        private readonly CronCredentialStore $cronCredentials,
+        private readonly string $appUrl,
     ) {
     }
 
@@ -28,6 +32,8 @@ final class SecurityController
     {
         $flash = $this->session->get('flash');
         $this->session->remove('flash');
+        $reveal = $this->session->get('cron_reveal');
+        $this->session->remove('cron_reveal');
         $devices = [];
         foreach ($this->auth->trustedDevices() as $device) {
             $devices[] = [
@@ -47,7 +53,46 @@ final class SecurityController
             'devices' => $devices,
             'minLength' => AuthService::MIN_PASSWORD_LENGTH,
             'flash' => is_array($flash) ? $flash : null,
+            'cron' => $this->cronReveal($reveal),
         ]));
+    }
+
+    /** @param array<string, string> $params */
+    public function regenerateCron(Request $request, array $params = []): Response
+    {
+        if (!$this->auth->confirmPassword($request->input('password'))) {
+            return $this->back('error', 'Das Passwort stimmt nicht.');
+        }
+        $credentials = CronCredentials::generate($this->appUrl);
+        $this->cronCredentials->save($credentials);
+        $this->session->set('cron_reveal', [
+            'url' => $credentials->url,
+            'user' => $credentials->user,
+            'password' => $credentials->password,
+        ]);
+
+        return Response::redirect(self::BASE);
+    }
+
+    /**
+     * @return array{url: string, user: string, password: string}|null
+     */
+    private function cronReveal(mixed $value): ?array
+    {
+        if (!is_array($value)) {
+            return null;
+        }
+        foreach (['url', 'user', 'password'] as $key) {
+            if (!is_string($value[$key] ?? null) || $value[$key] === '') {
+                return null;
+            }
+        }
+
+        return [
+            'url' => $value['url'],
+            'user' => $value['user'],
+            'password' => $value['password'],
+        ];
     }
 
     /** @param array<string, string> $params */

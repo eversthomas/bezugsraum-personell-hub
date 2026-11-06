@@ -6,6 +6,7 @@ namespace App\Auth;
 
 use App\Core\Config;
 use App\Core\Container;
+use App\Core\CronCredentialStore;
 use App\Core\Contracts\AuthenticatorInterface;
 use App\Core\Contracts\ModuleInterface;
 use App\Core\Crypto;
@@ -38,6 +39,8 @@ final class Module implements ModuleInterface
             $c->get(View::class),
             $c->get(Csrf::class),
             $c->get(Session::class),
+            $c->get(CronCredentialStore::class),
+            $c->get(Config::class)->string('app.url'),
         ));
         $container->set(AuthController::class, fn (Container $c): AuthController => new AuthController(
             $c->get(AuthService::class),
@@ -58,6 +61,7 @@ final class Module implements ModuleInterface
         $security = static fn (): SecurityController => $container->get(SecurityController::class);
         $router->get('/einstellungen/sicherheit', fn ($r, $p) => $security()->index($r, $p));
         $router->post('/einstellungen/sicherheit/passwort', fn ($r, $p) => $security()->changePassword($r, $p));
+        $router->post('/einstellungen/sicherheit/cron', fn ($r, $p) => $security()->regenerateCron($r, $p));
         // 'alle' muss vor {id} stehen, sonst würde es als Kennung gelesen
         $router->post('/einstellungen/sicherheit/geraete/alle/entfernen', fn ($r, $p) => $security()->revokeAll($r, $p));
         $router->post('/einstellungen/sicherheit/geraete/{id}/entfernen', fn ($r, $p) => $security()->revoke($r, $p));

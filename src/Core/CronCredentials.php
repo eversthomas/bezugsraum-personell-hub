@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core;
 
 /**
- * Einmalige Cron-Zugangsdaten. Der Installer nutzt dieselbe Erzeugung, ohne die Konfiguration zu schreiben.
+ * Einmalige Cron-Zugangsdaten. Gespeichert werden nur die Hashes, nicht die Konfiguration.
  */
 final class CronCredentials
 {

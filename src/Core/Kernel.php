@@ -43,6 +43,18 @@ final class Kernel
         ));
         $c->set(Csrf::class, fn (Container $c): Csrf => new Csrf($c->get(Session::class)));
         $c->set(View::class, fn (): View => new View($this->root . '/templates'));
+        $c->set(MigratorInterface::class, fn (Container $c): MigratorInterface => new Migrator(
+            $c->get(Db::class),
+            $this->root . '/migrations',
+        ));
+        $c->set(CronCredentialStore::class, fn (): CronCredentialStore => new CronCredentialStore(
+            $this->root . '/storage/cron-credentials.php',
+        ));
+        $c->set(UpdateController::class, fn (Container $c): UpdateController => new UpdateController(
+            $c->get(MigratorInterface::class),
+            $c->get(View::class),
+            $c->get(Csrf::class),
+        ));
 
         foreach ($moduleClasses as $class) {
             $module = new $class();
@@ -57,9 +69,12 @@ final class Kernel
             $c,
             $c->get(Logger::class),
             $this->root . '/storage/cache/cron.lock',
+            null,
+            CronRunner::BUDGET_SECONDS,
+            fn (): bool => $c->get(MigratorInterface::class)->pending() !== [],
         ));
         $c->set(CronController::class, fn (Container $c): CronController => new CronController(
-            $c->get(Config::class),
+            $c->get(CronCredentialStore::class),
             $c->get(CronRunner::class),
         ));
     }
@@ -116,6 +131,9 @@ final class Kernel
             if ($match['auth'] === Router::AUTH_REDIRECT && !$authenticated) {
                 return Response::redirect('/login');
             }
+            if ($authenticated && $request->path !== '/aktualisieren' && $this->migrationsPending()) {
+                return Response::redirect('/aktualisieren');
+            }
         }
 
         if ($request->isMutating() && !$this->container->get(Csrf::class)->isValid($request)) {
@@ -125,6 +143,11 @@ final class Kernel
         $handler = $match['handler'];
 
         return $handler($request, $match['params']);
+    }
+
+    private function migrationsPending(): bool
+    {
+        return $this->container->get(MigratorInterface::class)->pending() !== [];
     }
 
     private function errorResponse(Request $request): Response

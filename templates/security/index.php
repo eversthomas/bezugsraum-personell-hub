@@ -3,6 +3,7 @@
 /** @var list<array<string, mixed>> $devices */
 /** @var int $minLength */
 /** @var array{type: string, message: string}|null $flash */
+/** @var array{url: string, user: string, password: string}|null $cron */
 ?>
 <main class="page page--narrow">
     <h1>Sicherheit</h1>
@@ -26,6 +27,25 @@
             <input class="input" id="pw-confirm" name="confirm" type="password" autocomplete="new-password" minlength="<?= e($minLength) ?>" required>
         </div>
         <div class="actions"><button class="btn" type="submit">Passwort ändern</button></div>
+    </form>
+
+    <h2>Cron-Zugang</h2>
+    <p class="muted">Erzeugt einen neuen Zugang. Der bisherige gilt sofort nicht mehr.</p>
+    <?php if ($cron !== null) : ?>
+    <div class="notice notice--ok" role="status">
+        <p>Diese Angaben gibt es nur dieses eine Mal.</p>
+        <p><span class="muted">Adresse</span><code class="secret"><?= e($cron['url']) ?></code></p>
+        <p><span class="muted">Benutzer</span><code class="secret"><?= e($cron['user']) ?></code></p>
+        <p><span class="muted">Passwort</span><code class="secret"><?= e($cron['password']) ?></code></p>
+    </div>
+    <?php endif; ?>
+    <form method="post" action="/einstellungen/sicherheit/cron" class="card">
+        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+        <div class="field">
+            <label for="cron-password">Passwort zur Bestätigung</label>
+            <input class="input" id="cron-password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="actions"><button class="btn" type="submit">Cron-Zugang neu erzeugen</button></div>
     </form>
 
     <h2>Gemerkte Geräte</h2>

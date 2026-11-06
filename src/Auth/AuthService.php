@@ -167,6 +167,13 @@ final class AuthService implements AuthenticatorInterface
         return new LoginResult(LoginStatus::LoggedIn, $token);
     }
 
+    public function confirmPassword(string $password): bool
+    {
+        $user = $this->currentUser();
+
+        return $user !== null && password_verify($password, $user->passwordHash);
+    }
+
     /**
      * Ändert das Passwort. Alle gemerkten Geräte werden danach widerrufen.
      *

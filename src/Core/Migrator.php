@@ -7,10 +7,24 @@ namespace App\Core;
 /**
  * Spielt nummerierte SQL-Dateien aus migrations/ nur vorwärts ein.
  */
-final class Migrator
+final class Migrator implements MigratorInterface
 {
     public function __construct(private readonly Db $db, private readonly string $dir)
     {
+    }
+
+    public function pending(): array
+    {
+        $files = $this->fileNames();
+        if (!$this->hasTable()) {
+            return $files;
+        }
+        $done = array_column($this->db->fetchAll('SELECT version FROM schema_migrations'), 'version');
+
+        return array_values(array_filter(
+            $files,
+            static fn (string $name): bool => !in_array($name, $done, true),
+        ));
     }
 
     /** @return list<string> Namen der neu eingespielten Migrationen */
@@ -24,14 +38,12 @@ final class Migrator
         );
         $done = array_column($this->db->fetchAll('SELECT version FROM schema_migrations'), 'version');
 
-        $files = glob($this->dir . '/*.sql') ?: [];
-        sort($files);
         $applied = [];
-        foreach ($files as $file) {
-            $name = basename($file);
+        foreach ($this->fileNames() as $name) {
             if (in_array($name, $done, true)) {
                 continue;
             }
+            $file = $this->dir . '/' . $name;
             foreach ($this->statements((string) file_get_contents($file)) as $statement) {
                 $this->db->exec($statement);
             }
@@ -43,6 +55,25 @@ final class Migrator
         }
 
         return $applied;
+    }
+
+    /** @return list<string> */
+    private function fileNames(): array
+    {
+        $files = glob($this->dir . '/*.sql') ?: [];
+        sort($files);
+
+        return array_map(static fn (string $file): string => basename($file), $files);
+    }
+
+    private function hasTable(): bool
+    {
+        $found = $this->db->fetchValue(
+            'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?',
+            ['schema_migrations'],
+        );
+
+        return (int) $found > 0;
     }
 
     /** @return list<string> */

@@ -13,6 +13,9 @@ use App\Core\Contracts\ModuleInterface;
 final class CronRunner
 {
     public const BUDGET_SECONDS = 50;
+    public const STATUS_OK = 'ok';
+    public const STATUS_BUSY = 'busy';
+    public const STATUS_PAUSED = 'paused';
 
     /** @var callable(): int */
     private $clock;
@@ -28,6 +31,7 @@ final class CronRunner
         private readonly string $lockFile,
         ?callable $clock = null,
         private readonly int $budgetSeconds = self::BUDGET_SECONDS,
+        private readonly ?\Closure $migrationsPending = null,
     ) {
         $this->clock = $clock ?? time(...);
     }
@@ -46,9 +50,16 @@ final class CronRunner
         return $jobs;
     }
 
-    /** true, wenn dieser Aufruf den Lauf ausgeführt hat. false, wenn schon einer läuft. */
-    public function run(): bool
+    /**
+     * ok, wenn dieser Aufruf die Aufträge ausgeführt hat.
+     * busy, wenn schon einer läuft. paused, wenn Migrationen ausstehen.
+     */
+    public function run(): string
     {
+        if ($this->migrationsPending !== null && ($this->migrationsPending)()) {
+            return self::STATUS_PAUSED;
+        }
+
         $dir = dirname($this->lockFile);
         if (!is_dir($dir)) {
             mkdir($dir, 0700, true);
@@ -59,7 +70,7 @@ final class CronRunner
                 fclose($handle);
             }
 
-            return false;
+            return self::STATUS_BUSY;
         }
 
         try {
@@ -79,6 +90,15 @@ final class CronRunner
             fclose($handle);
         }
 
-        return true;
+        return self::STATUS_OK;
+    }
+
+    public function notice(string $status): string
+    {
+        return match ($status) {
+            self::STATUS_BUSY => "läuft bereits\n",
+            self::STATUS_PAUSED => "Migrationen stehen aus.\n",
+            default => "ok\n",
+        };
     }
 }

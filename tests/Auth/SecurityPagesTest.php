@@ -9,6 +9,8 @@ use App\Auth\TotpVerifier;
 use App\Auth\TrustedDeviceRepository;
 use App\Auth\UserRepository;
 use App\Core\Config;
+use App\Core\CronCredentialStore;
+use App\Core\CronCredentials;
 use App\Core\Crypto;
 use App\Core\Csrf;
 use App\Core\Db;
@@ -25,6 +27,7 @@ final class SecurityPagesTest extends DbTestCase
     private Kernel $kernel;
     private Session $session;
     private string $keyFile;
+    private string $cronFile;
     private int $userId;
 
     protected function setUp(): void
@@ -41,6 +44,8 @@ final class SecurityPagesTest extends DbTestCase
         $c->instance(Session::class, $this->session);
         $c->instance(Db::class, $this->db);
         $this->kernel->boot(require dirname(__DIR__, 2) . '/config/modules.php');
+        $this->cronFile = sys_get_temp_dir() . '/ph-sec-cron-' . bin2hex(random_bytes(4)) . '.php';
+        $c->instance(CronCredentialStore::class, new CronCredentialStore($this->cronFile));
         $this->userId = $c->get(UserRepository::class)->create(
             'thomas',
             password_hash(self::PASSWORD, PASSWORD_DEFAULT),
@@ -54,6 +59,9 @@ final class SecurityPagesTest extends DbTestCase
     {
         if (isset($this->keyFile)) {
             @unlink($this->keyFile);
+        }
+        if (isset($this->cronFile)) {
+            @unlink($this->cronFile);
         }
     }
 
@@ -86,9 +94,11 @@ final class SecurityPagesTest extends DbTestCase
     public function testRequiresLoginAndCsrf(): void
     {
         self::assertSame(403, $this->post('/einstellungen/sicherheit/passwort', [], false)->status);
+        self::assertSame(403, $this->post('/einstellungen/sicherheit/cron', [], false)->status);
         $this->kernel->container()->get(AuthService::class)->logout();
         self::assertSame(404, $this->get('/einstellungen/sicherheit')->status);
         self::assertSame(404, $this->post('/einstellungen/sicherheit/geraete/alle/entfernen')->status);
+        self::assertSame(404, $this->post('/einstellungen/sicherheit/cron')->status);
     }
 
     public function testDevicesAreListedAndCanBeRevokedIndividually(): void
@@ -142,5 +152,28 @@ final class SecurityPagesTest extends DbTestCase
         $user = $this->kernel->container()->get(UserRepository::class)->findById($this->userId);
         self::assertNotNull($user);
         self::assertTrue(password_verify(self::PASSWORD, $user->passwordHash), 'Passwort blieb unverändert');
+    }
+
+    public function testCronRegenerateReplacesTheHashFileAndShowsTheSecretOnce(): void
+    {
+        $store = $this->kernel->container()->get(CronCredentialStore::class);
+        $store->save(CronCredentials::generate('https://hub.example.invalid'));
+        $before = $store->read();
+        self::assertIsArray($before);
+
+        $this->post('/einstellungen/sicherheit/cron', ['password' => 'falsch']);
+        self::assertSame($before['token_hash'], $store->read()['token_hash'] ?? null);
+        self::assertStringContainsString('stimmt nicht', $this->get('/einstellungen/sicherheit')->body);
+
+        $this->post('/einstellungen/sicherheit/cron', ['password' => self::PASSWORD]);
+        $page = $this->get('/einstellungen/sicherheit');
+        $after = $store->read();
+        self::assertNotSame($before['token_hash'], $after['token_hash']);
+        self::assertSame(0600, fileperms($this->cronFile) & 0777);
+        self::assertStringContainsString('nur dieses eine Mal', $page->body);
+        self::assertSame(1, preg_match('/Passwort<\/span><code class="secret">([^<]+)</', $page->body, $match));
+        self::assertStringNotContainsString($match[1], (string) file_get_contents($this->cronFile));
+        self::assertTrue(password_verify($match[1], $after['basic_password_hash']));
+        self::assertStringNotContainsString($match[1], $this->get('/einstellungen/sicherheit')->body);
     }
 }

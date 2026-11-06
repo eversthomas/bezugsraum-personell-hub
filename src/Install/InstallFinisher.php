@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Install;
 
 use App\Core\Config;
+use App\Core\CronCredentialStore;
 use App\Core\Crypto;
 
 /**
@@ -30,7 +31,9 @@ final class InstallFinisher
         }
 
         $keyPath = $this->root . '/config/keys/app.key';
+        $cronFile = $this->root . '/storage/cron-credentials.php';
         $createdKey = false;
+        $createdCron = false;
         $userCreated = false;
         $dbConfig = new Config(['db' => [
             'host' => $database['host'],
@@ -49,10 +52,12 @@ final class InstallFinisher
             $this->actions->migrate($dbConfig);
             $vapid = $this->actions->vapid();
             $cron = $this->actions->cron($database['url']);
+            (new CronCredentialStore($cronFile))->save($cron);
+            $createdCron = true;
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $this->actions->createUser($dbConfig, Crypto::fromFile($keyPath), $username, $hash, $totpSecret);
             $userCreated = true;
-            $this->writeConfig($configPath, $database, $vapid, $cron->user, $cron->tokenHash, $cron->passwordHash);
+            $this->writeConfig($configPath, $database, $vapid);
             $result = new InstallResult($username, $cron->url, $cron->user, $cron->password);
         } catch (\Throwable) {
             if (!is_file($configPath)) {
@@ -65,6 +70,9 @@ final class InstallFinisher
                 }
                 if ($createdKey && is_file($keyPath)) {
                     unlink($keyPath);
+                }
+                if ($createdCron && is_file($cronFile)) {
+                    unlink($cronFile);
                 }
             }
 
@@ -92,14 +100,8 @@ final class InstallFinisher
      * @param array{host: string, port: int, name: string, user: string, password: string, url: string, timezone: string} $database
      * @param array{publicKey: string, privateKey: string} $vapid
      */
-    private function writeConfig(
-        string $path,
-        array $database,
-        array $vapid,
-        string $cronUser,
-        string $tokenHash,
-        string $passwordHash,
-    ): void {
+    private function writeConfig(string $path, array $database, array $vapid): void
+    {
         $marker = '___PH_KEY_' . bin2hex(random_bytes(8)) . '___';
         $values = [
             'db' => [
@@ -120,11 +122,6 @@ final class InstallFinisher
             ],
             'push' => [
                 'allowed_hosts' => [],
-            ],
-            'cron' => [
-                'token_hash' => $tokenHash,
-                'basic_user' => $cronUser,
-                'basic_password_hash' => $passwordHash,
             ],
             'vapid' => [
                 'subject' => $database['url'],
