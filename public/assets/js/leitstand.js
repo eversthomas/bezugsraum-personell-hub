@@ -50,6 +50,8 @@ const state = {
     upcoming: [],
     planned: [],
     selected: null,
+    returnKey: '',
+    returnButton: null,
     loadedAt: null,
     failed: false,
 };
@@ -237,11 +239,22 @@ function layoutLanes(segments) {
     return sorted;
 }
 
+function eventKey(e) {
+    if (e.planned) {
+        return `p:${e.id}`;
+    }
+    return `${e.source}|${e.allDay ? e.startKey : e.startMs}|${e.title}`;
+}
+
 function eventButton(e, className) {
     const src = sourceById(e.source);
     const b = el('button', `ev ${src ? src.class : 'src-neutral'} ${e.planned ? 'ev--planned' : ''} ${className}`);
     b.type = 'button';
-    b.addEventListener('click', () => select(e));
+    b.dataset.eventKey = eventKey(e);
+    if (state.selected && eventKey(state.selected) === eventKey(e)) {
+        b.classList.add('is-selected');
+    }
+    b.addEventListener('click', () => select(e, b));
     return b;
 }
 
@@ -328,7 +341,7 @@ function renderGrid(container) {
             })),
         );
         for (const s of segs) {
-            const b = eventButton(s.e, state.selected === s.e ? 'is-selected' : '');
+            const b = eventButton(s.e, '');
             b.style.top = `${((s.start - startHour * 60) / 60) * HOUR_PX}px`;
             b.style.height = `${Math.max(((s.end - s.start) / 60) * HOUR_PX - 2, 20)}px`;
             b.style.left = `${(s.lane / s.lanes) * 100}%`;
@@ -387,37 +400,83 @@ function renderMonth(container) {
 
 // ---------- Details ----------
 
-function select(e) {
-    state.selected = e;
-    renderDetail();
-    root.querySelectorAll('.ev').forEach((b) => b.classList.remove('is-selected'));
+const sheetQuery = window.matchMedia('(max-width: 1099px)');
+
+function markSelected() {
+    const key = state.selected ? eventKey(state.selected) : '';
+    root.querySelectorAll('.ev').forEach((node) => {
+        node.classList.toggle('is-selected', key !== '' && node.dataset.eventKey === key);
+    });
 }
 
-function renderDetail() {
-    const box = root.querySelector('[data-detail]');
-    box.replaceChildren();
-    const e = state.selected;
-    if (!e) {
-        box.hidden = true;
+function focusEvent() {
+    if (state.returnButton instanceof HTMLElement && state.returnButton.isConnected) {
+        state.returnButton.focus();
         return;
     }
-    box.hidden = false;
-    const src = sourceById(e.source);
-    box.className = `detail card ${src ? src.class : 'src-neutral'}`;
-    const when = e.allDay
-        ? e.endKey > addDays(e.startKey, 1)
-            ? `${formatLongDay(e.startKey)} bis ${formatLongDay(addDays(e.endKey, -1))}`
-            : formatLongDay(e.startKey)
-        : `${formatLongDay(dayKeyOf(e.startMs))}, ${formatTime(e.startMs)}–${formatTime(e.endMs)} Uhr`;
-    const close = el('button', 'btn btn--small btn--ghost', 'Schließen');
+    if (!state.returnKey) {
+        return;
+    }
+    root.querySelector(`.ev[data-event-key="${CSS.escape(state.returnKey)}"]`)?.focus();
+}
+
+function select(event, button) {
+    if (event) {
+        state.selected = event;
+        state.returnKey = eventKey(event);
+        state.returnButton = button ?? null;
+        renderDetail(true);
+        markSelected();
+        return;
+    }
+    state.selected = null;
+    renderDetail(false);
+    markSelected();
+    focusEvent();
+    state.returnButton = null;
+}
+
+function renderDetail(moveFocus) {
+    const box = root.querySelector('[data-detail]');
+    const scrim = root.querySelector('[data-detail-scrim]');
+    const event = state.selected;
+    const keepFocus = box.contains(document.activeElement);
+    if (!event) {
+        box.hidden = true;
+        box.replaceChildren();
+        scrim.hidden = true;
+        document.body.classList.remove('detail-open');
+        return;
+    }
+    const src = sourceById(event.source);
+    const when = event.allDay
+        ? event.endKey > addDays(event.startKey, 1)
+            ? `${formatLongDay(event.startKey)} bis ${formatLongDay(addDays(event.endKey, -1))}`
+            : formatLongDay(event.startKey)
+        : `${formatLongDay(dayKeyOf(event.startMs))}, ${formatTime(event.startMs)}–${formatTime(event.endMs)} Uhr`;
+    const title = el('h2', undefined, event.title);
+    title.id = 'detail-title';
+    const close = el('button', 'btn btn--ghost detail__close', 'Schließen');
     close.type = 'button';
     close.addEventListener('click', () => select(null));
-    box.append(
-        el('h2', undefined, e.title),
+    const head = el('div', 'detail__head');
+    head.append(title, close);
+    box.replaceChildren(
+        head,
         el('p', 'tnum', when),
-        el('p', 'muted', [src?.name, e.location].filter(Boolean).join(' · ')),
-        close,
+        el('p', 'muted', [src?.name, event.location].filter(Boolean).join(' · ')),
     );
+    box.className = `detail card ${src ? src.class : 'src-neutral'}`;
+    box.tabIndex = -1;
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', sheetQuery.matches ? 'true' : 'false');
+    box.setAttribute('aria-labelledby', 'detail-title');
+    box.hidden = false;
+    scrim.hidden = !sheetQuery.matches;
+    document.body.classList.toggle('detail-open', sheetQuery.matches);
+    if (moveFocus || keepFocus) {
+        box.focus({ preventScroll: true });
+    }
 }
 
 // ---------- Gesamt ----------
@@ -444,6 +503,43 @@ function shift(direction) {
     state.anchor = addDays(state.anchor, direction * DAYS[state.view]);
     load();
 }
+
+root.querySelector('[data-detail-scrim]').addEventListener('click', () => select(null));
+sheetQuery.addEventListener('change', () => {
+    if (state.selected) {
+        renderDetail(false);
+    }
+});
+document.addEventListener('keydown', (event) => {
+    if (!state.selected || document.querySelector('[data-shell]')?.classList.contains('is-open')) {
+        return;
+    }
+    const box = root.querySelector('[data-detail]');
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        select(null);
+        return;
+    }
+    if (event.key !== 'Tab' || !sheetQuery.matches) {
+        return;
+    }
+    const items = [...box.querySelectorAll('button, a[href], input, select, textarea')].filter((node) => !node.disabled);
+    if (items.length === 0) {
+        event.preventDefault();
+        box.focus();
+        return;
+    }
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || active === box)) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+    }
+});
 
 root.querySelector('[data-prev]').addEventListener('click', () => shift(-1));
 root.querySelector('[data-next-range]').addEventListener('click', () => shift(1));

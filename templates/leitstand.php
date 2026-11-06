@@ -38,6 +38,7 @@
         <div class="calendar" data-calendar></div>
         <aside data-detail hidden></aside>
     </div>
+    <div class="detail-scrim" data-detail-scrim hidden></div>
 </main>
 <script type="module" src="/assets/js/capture.js"></script>
 <script type="module" src="/assets/js/taskcard.js"></script>
