@@ -41,6 +41,11 @@ final class LoginAttemptRepository
         $this->db->execute('DELETE FROM login_attempts WHERE ip_hash = ? AND success = 0', [$ipHash]);
     }
 
+    public function clearFailuresForUser(string $userHash): void
+    {
+        $this->db->execute('DELETE FROM login_attempts WHERE user_hash = ? AND success = 0', [$userHash]);
+    }
+
     public function purgeOlderThan(string $cutoff): void
     {
         $this->db->execute('DELETE FROM login_attempts WHERE attempted_at < ?', [$cutoff]);

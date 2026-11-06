@@ -60,7 +60,7 @@ final class SecurityController
     /** @param array<string, string> $params */
     public function regenerateCron(Request $request, array $params = []): Response
     {
-        if (!$this->auth->confirmPassword($request->input('password'))) {
+        if (!$this->auth->confirmPassword($request, $request->input('password'))) {
             return $this->back('error', 'Das Passwort stimmt nicht.');
         }
         $credentials = CronCredentials::generate($this->appUrl);
@@ -102,7 +102,7 @@ final class SecurityController
             return $this->back('error', 'Die beiden neuen Passwörter stimmen nicht überein.');
         }
         try {
-            $this->auth->changePassword($request->input('current'), $request->input('new'));
+            $this->auth->changePassword($request, $request->input('current'), $request->input('new'));
         } catch (\InvalidArgumentException $e) {
             return $this->back('error', $e->getMessage());
         }

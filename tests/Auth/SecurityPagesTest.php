@@ -176,4 +176,72 @@ final class SecurityPagesTest extends DbTestCase
         self::assertTrue(password_verify($match[1], $after['basic_password_hash']));
         self::assertStringNotContainsString($match[1], $this->get('/einstellungen/sicherheit')->body);
     }
+
+    public function testWrongPasswordsShareTheLoginLockAndEndTheSession(): void
+    {
+        $store = $this->kernel->container()->get(CronCredentialStore::class);
+        $store->save(CronCredentials::generate('https://hub.example.invalid'));
+        $before = $store->read();
+        self::assertIsArray($before);
+
+        for ($i = 0; $i < AuthService::MAX_FAILURES - 2; ++$i) {
+            $this->post('/einstellungen/sicherheit/cron', ['password' => 'falsch-' . $i]);
+        }
+        $this->post('/einstellungen/sicherheit/passwort', [
+            'current' => 'falsch-konto',
+            'new' => 'ein-ganz-neues-passwort',
+            'confirm' => 'ein-ganz-neues-passwort',
+        ]);
+        $this->post('/einstellungen/sicherheit/cron', ['password' => 'noch-falsch']);
+
+        self::assertSame(AuthService::MAX_FAILURES, $this->failures());
+        self::assertSame($this->userId, $this->session->get('uid'));
+        $unchanged = $store->read();
+        self::assertIsArray($unchanged);
+        self::assertSame($before['token_hash'], $unchanged['token_hash']);
+
+        $this->post('/einstellungen/sicherheit/cron', ['password' => self::PASSWORD]);
+
+        self::assertNull($this->session->get('uid'));
+        $locked = $store->read();
+        self::assertIsArray($locked);
+        self::assertSame($before['token_hash'], $locked['token_hash']);
+        self::assertSame(AuthService::MAX_FAILURES, $this->failures());
+        self::assertSame(404, $this->post('/einstellungen/sicherheit/cron', ['password' => self::PASSWORD])->status);
+
+        $this->session->set('uid', $this->userId);
+        $this->post('/einstellungen/sicherheit/passwort', [
+            'current' => self::PASSWORD,
+            'new' => 'ein-ganz-neues-passwort',
+            'confirm' => 'ein-ganz-neues-passwort',
+        ]);
+        $user = $this->kernel->container()->get(UserRepository::class)->findById($this->userId);
+        self::assertNotNull($user);
+        self::assertTrue(password_verify(self::PASSWORD, $user->passwordHash));
+        self::assertNull($this->session->get('uid'));
+        self::assertSame(404, $this->get('/einstellungen/sicherheit')->status);
+    }
+
+    public function testACorrectPasswordClearsTheFailureCounters(): void
+    {
+        for ($i = 0; $i < AuthService::MAX_FAILURES - 1; ++$i) {
+            $this->post('/einstellungen/sicherheit/cron', ['password' => 'falsch-' . $i]);
+        }
+        self::assertSame(AuthService::MAX_FAILURES - 1, $this->failures());
+
+        $this->post('/einstellungen/sicherheit/cron', ['password' => self::PASSWORD]);
+
+        self::assertSame(0, $this->failures());
+        self::assertSame($this->userId, $this->session->get('uid'));
+        for ($i = 0; $i < AuthService::MAX_FAILURES - 1; ++$i) {
+            $this->post('/einstellungen/sicherheit/cron', ['password' => 'danach-' . $i]);
+        }
+        self::assertSame(AuthService::MAX_FAILURES - 1, $this->failures());
+        self::assertNotNull($this->session->get('uid'));
+    }
+
+    private function failures(): int
+    {
+        return (int) $this->db->fetchValue('SELECT COUNT(*) FROM login_attempts WHERE success = 0');
+    }
 }

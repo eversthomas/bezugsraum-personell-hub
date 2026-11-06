@@ -27,6 +27,7 @@
 
 ### Fixed
 
+- Passwortbestätigung und Passwortänderung zählen Fehlversuche wie die Anmeldung. Bei Sperre endet die Sitzung.
 - Eine fehlgeschlagene Migration nennt nur die Datei und bleibt auf der Seite „Datenbank aktualisieren“. Gleichzeitige Läufe warten auf eine Sperre.
 - Datenbanktests werden ohne erreichbare Datenbank übersprungen, ohne Fehler im Aufräumen.
 - Bilder mit einer Kante über 1600 px werden verkleinert oder abgelehnt.

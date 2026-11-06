@@ -167,11 +167,25 @@ final class AuthService implements AuthenticatorInterface
         return new LoginResult(LoginStatus::LoggedIn, $token);
     }
 
-    public function confirmPassword(string $password): bool
+    public function confirmPassword(Request $request, string $password): bool
     {
         $user = $this->currentUser();
+        if ($user === null) {
+            return false;
+        }
+        $keys = $this->openAttempt($request, $user);
+        if ($keys === null) {
+            return false;
+        }
+        [$ipHash, $userHash] = $keys;
+        if (!password_verify($password, $user->passwordHash)) {
+            $this->attempts->record($ipHash, $userHash, false, $this->time($this->now()));
 
-        return $user !== null && password_verify($password, $user->passwordHash);
+            return false;
+        }
+        $this->clearFailures($ipHash, $userHash);
+
+        return true;
     }
 
     /**
@@ -179,12 +193,19 @@ final class AuthService implements AuthenticatorInterface
      *
      * @throws \InvalidArgumentException bei falschem aktuellem Passwort oder zu kurzem neuem
      */
-    public function changePassword(string $current, string $new): void
+    public function changePassword(Request $request, string $current, string $new): void
     {
         $user = $this->currentUser() ?? throw new \InvalidArgumentException('Nicht angemeldet.');
+        $keys = $this->openAttempt($request, $user);
+        if ($keys === null) {
+            throw new \InvalidArgumentException('Zu viele Versuche. Bitte in 15 Minuten erneut versuchen.');
+        }
+        [$ipHash, $userHash] = $keys;
         if (!password_verify($current, $user->passwordHash)) {
+            $this->attempts->record($ipHash, $userHash, false, $this->time($this->now()));
             throw new \InvalidArgumentException('Das aktuelle Passwort stimmt nicht.');
         }
+        $this->clearFailures($ipHash, $userHash);
         if (mb_strlen($new) < self::MIN_PASSWORD_LENGTH) {
             throw new \InvalidArgumentException('Das neue Passwort braucht mindestens ' . self::MIN_PASSWORD_LENGTH . ' Zeichen.');
         }
@@ -232,6 +253,29 @@ final class AuthService implements AuthenticatorInterface
         $this->csrf->rotate();
         $this->session->set('uid', $user->id);
         $this->current = $user;
+    }
+
+    /**
+     * @return array{0: string, 1: string}|null Schlüssel für IP und Konto, null wenn die Sperre greift
+     */
+    private function openAttempt(Request $request, User $user): ?array
+    {
+        $ipHash = $this->crypto->hmac('ip', $request->ip());
+        $userHash = $this->crypto->hmac('user', mb_strtolower(mb_substr($user->username, 0, 190)));
+        $this->attempts->purgeOlderThan($this->time($this->now() - 86400));
+        if ($this->isLocked($ipHash, $userHash)) {
+            $this->logout();
+
+            return null;
+        }
+
+        return [$ipHash, $userHash];
+    }
+
+    private function clearFailures(string $ipHash, string $userHash): void
+    {
+        $this->attempts->clearFailuresForIp($ipHash);
+        $this->attempts->clearFailuresForUser($userHash);
     }
 
     private function isLocked(string $ipHash, string $userHash): bool
