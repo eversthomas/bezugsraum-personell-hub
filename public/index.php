@@ -14,6 +14,12 @@ header_remove('X-Powered-By');
 try {
     require $root . '/vendor/autoload.php';
 
+    if (!is_file($root . '/config/config.php')) {
+        (new App\Install\InstallerApp($root))->handle(Request::fromGlobals())->send();
+
+        return;
+    }
+
     $kernel = new Kernel($root, Config::fromFile($root . '/config/config.php'));
     $kernel->boot(require $root . '/config/modules.php');
     $kernel->handle(Request::fromGlobals())->send();
