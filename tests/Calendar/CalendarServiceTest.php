@@ -37,7 +37,9 @@ final class CalendarServiceTest extends DbTestCase
 
     protected function tearDown(): void
     {
-        @unlink($this->logFile);
+        if (isset($this->logFile)) {
+            @unlink($this->logFile);
+        }
     }
 
     private function ics(string $name = 'outlook.ics'): string

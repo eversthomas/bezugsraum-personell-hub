@@ -52,7 +52,9 @@ final class SecurityPagesTest extends DbTestCase
 
     protected function tearDown(): void
     {
-        @unlink($this->keyFile);
+        if (isset($this->keyFile)) {
+            @unlink($this->keyFile);
+        }
     }
 
     /** @param array<string, mixed> $post */

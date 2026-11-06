@@ -30,7 +30,9 @@ abstract class DbTestCase extends TestCase
         ]]);
         try {
             $this->db = Db::connect($config);
-        } catch (\PDOException $e) {
+        } catch (\PDOException) {
+            // markTestSkipped bricht setUp ab, tearDown läuft trotzdem.
+            // Unterklassen dürfen dort nur gesetzte Eigenschaften anfassen.
             $this->markTestSkipped('Testdatenbank nicht erreichbar.');
         }
 

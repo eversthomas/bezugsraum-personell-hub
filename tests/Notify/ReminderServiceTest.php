@@ -62,7 +62,9 @@ final class ReminderServiceTest extends DbTestCase
 
     protected function tearDown(): void
     {
-        @unlink($this->logFile);
+        if (isset($this->logFile)) {
+            @unlink($this->logFile);
+        }
     }
 
     /** @return list<string> */

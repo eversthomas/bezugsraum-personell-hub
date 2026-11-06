@@ -41,7 +41,9 @@ final class ItemControllerTest extends DbTestCase
 
     protected function tearDown(): void
     {
-        @unlink($this->keyFile);
+        if (isset($this->keyFile)) {
+            @unlink($this->keyFile);
+        }
     }
 
     private function login(): void

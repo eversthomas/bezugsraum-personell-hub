@@ -48,9 +48,14 @@ final class PhotoUploadTest extends DbTestCase
 
     protected function tearDown(): void
     {
-        @unlink($this->keyFile);
+        if (isset($this->keyFile)) {
+            @unlink($this->keyFile);
+        }
         foreach ($this->tmpFiles as $file) {
             @unlink($file);
+        }
+        if (!isset($this->uploads)) {
+            return;
         }
         foreach (glob($this->uploads . '/*/*') ?: [] as $file) {
             @unlink($file);
