@@ -202,6 +202,24 @@ select.input {
     justify-content: flex-end;
 }
 
+.qr {
+    display: block;
+    width: 220px;
+    height: 220px;
+    margin-bottom: var(--space-4);
+    background: var(--paper);
+}
+
+.secret {
+    display: block;
+    margin-bottom: var(--space-4);
+    padding: var(--space-3);
+    overflow-wrap: anywhere;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+}
+
 [hidden] {
     display: none !important;
 }

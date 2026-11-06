@@ -9,6 +9,8 @@ namespace App\Core;
  */
 final class Session
 {
+    public const NAME = 'ph_session';
+
     private bool $started = false;
     /** @var array<string, mixed> Nur im Speicher-Modus (Tests) */
     private array $memory = [];
@@ -37,7 +39,7 @@ final class Session
             mkdir($this->savePath, 0700, true);
         }
         session_save_path($this->savePath);
-        session_name('ph_session');
+        session_name(self::NAME);
         session_cache_limiter('');
         ini_set('session.use_strict_mode', '1');
         ini_set('session.use_only_cookies', '1');
@@ -96,6 +98,11 @@ final class Session
         if ($this->savePath !== null) {
             session_regenerate_id(true);
         }
+    }
+
+    public function secure(): bool
+    {
+        return $this->secure;
     }
 
     /** Sitzung vollständig beenden. */

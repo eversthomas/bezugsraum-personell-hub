@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Install;
 
+use App\Auth\AuthService;
+use App\Auth\TotpVerifier;
 use App\Core\Csrf;
 use App\Core\Request;
 use App\Core\Response;
@@ -11,7 +13,7 @@ use App\Core\Session;
 use App\Core\View;
 
 /**
- * Einrichtung bis zum gemerkten Datenbankzugang. Die Konfiguration entsteht erst beim Abschluss.
+ * Einrichtung bis zum Abschluss. Die Konfiguration entsteht erst nach einem gültigen TOTP-Code.
  */
 final class InstallController
 {
@@ -23,6 +25,9 @@ final class InstallController
         private readonly View $view,
         private readonly InstallDraft $draft,
         private readonly DatabaseProbe $probe,
+        private readonly InstallFinisher $finisher,
+        private readonly TotpVerifier $totp,
+        private readonly TotpQr $qr,
     ) {
     }
 
@@ -37,6 +42,12 @@ final class InstallController
         }
         if ($request->method === 'POST' && $path === '/einrichten/datenbank') {
             return $this->saveDatabase($request);
+        }
+        if ($request->method === 'POST' && $path === '/einrichten/benutzer') {
+            return $this->submitUser($request);
+        }
+        if ($request->method === 'POST' && $path === '/einrichten/abschluss') {
+            return $this->finish($request);
         }
         if ($request->method === 'GET' && ($path === '/' || $path === '/einrichten')) {
             return $this->page($request);
@@ -64,9 +75,15 @@ final class InstallController
                 ]);
             }
 
-            return $this->databaseForm($request, [], $this->draft->saved()
-                ? 'Der Zugang liegt nur in dieser Sitzung. Eine Konfigurationsdatei gibt es noch nicht.'
-                : null);
+            if ($this->draft->saved()) {
+                if ($this->draft->account() === null) {
+                    return $this->userForm([]);
+                }
+
+                return $this->totpForm([]);
+            }
+
+            return $this->databaseForm($request, [], null);
         }
 
         return $this->render('install/code', [
@@ -130,6 +147,115 @@ final class InstallController
         $this->draft->save($values);
 
         return Response::redirect('/einrichten');
+    }
+
+    /** @param list<string> $errors */
+    private function userForm(array $errors, string $username = ''): Response
+    {
+        return $this->render('install/user', [
+            'title' => 'Einrichten',
+            'errors' => $errors,
+            'username' => $username,
+            'minLength' => AuthService::MIN_PASSWORD_LENGTH,
+        ]);
+    }
+
+    /** @param list<string> $errors */
+    private function totpForm(array $errors, int $status = 200): Response
+    {
+        $account = $this->draft->account();
+        if ($account === null) {
+            return Response::notFound();
+        }
+        $qr = null;
+        try {
+            $qr = $this->qr->dataUri($this->totp->provisioningUri($account['secret'], $account['username'], 'Personal Hub'));
+        } catch (\Throwable) {
+            $errors[] = 'Der QR-Code konnte nicht erzeugt werden. Bitte den Schlüssel manuell eingeben.';
+        }
+
+        return $this->render('install/totp', [
+            'title' => 'Einrichten',
+            'errors' => $errors,
+            'secret' => $account['secret'],
+            'qr' => $qr,
+        ], $status);
+    }
+
+    private function submitUser(Request $request): Response
+    {
+        $blocked = $this->guardAccount($request);
+        if ($blocked !== null) {
+            return $blocked;
+        }
+        $username = trim($request->input('username'));
+        $password = $request->input('password');
+        $errors = [];
+        if (preg_match('/^[A-Za-z0-9._-]{1,64}$/', $username) !== 1) {
+            $errors[] = 'Der Benutzername darf Buchstaben, Ziffern, Punkt, Unterstrich und Bindestrich enthalten.';
+        }
+        if (mb_strlen($password) < AuthService::MIN_PASSWORD_LENGTH) {
+            $errors[] = 'Das Passwort braucht mindestens ' . AuthService::MIN_PASSWORD_LENGTH . ' Zeichen.';
+        } elseif (mb_strlen($password) > 200) {
+            $errors[] = 'Das Passwort ist zu lang.';
+        }
+        if ($errors !== []) {
+            return $this->userForm($errors, $username);
+        }
+        $this->draft->saveAccount($username, $password, $this->totp->generateSecret());
+
+        return Response::redirect('/einrichten');
+    }
+
+    private function finish(Request $request): Response
+    {
+        $blocked = $this->guardAccount($request);
+        if ($blocked !== null) {
+            return $blocked;
+        }
+        $account = $this->draft->account();
+        $database = $this->draft->get();
+        if ($account === null || $database === null) {
+            return Response::notFound();
+        }
+        if ($this->totp->verify($account['secret'], $request->input('code'), time()) === null) {
+            return $this->totpForm(['Der Code stimmt nicht.'], 401);
+        }
+        try {
+            $result = $this->finisher->finish($database, $account['username'], $account['password'], $account['secret']);
+        } catch (InstallException) {
+            return $this->totpForm(['Die Einrichtung konnte nicht abgeschlossen werden. Es wurde keine Konfiguration geschrieben.']);
+        }
+        $html = $this->view->render('install/done', [
+            'title' => 'Einrichtung abgeschlossen',
+            'bodyClass' => 'auth',
+            'username' => $result->username,
+            'cronUrl' => $result->cronUrl,
+            'cronUser' => $result->cronUser,
+            'cronPassword' => $result->cronPassword,
+        ]);
+        $secure = $this->session->secure();
+        $this->session->clear();
+
+        return Response::html($html)->withCookie(Session::NAME, '', [
+            'expires' => 1,
+            'path' => '/',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+    }
+
+    private function guardAccount(Request $request): ?Response
+    {
+        if (!$this->csrf->isValid($request)) {
+            return new Response(403, "Ungültige Anfrage\n", ['Content-Type' => 'text/plain; charset=utf-8']);
+        }
+        if ($this->session->get('install_unlocked') !== true || $this->check->problems() !== [] || !$this->draft->saved()) {
+            return Response::notFound();
+        }
+
+        return null;
     }
 
     private function guardDatabase(Request $request): ?Response

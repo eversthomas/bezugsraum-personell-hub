@@ -10,6 +10,10 @@ Personal Hub steht unter der MIT-Lizenz. Die folgenden Bestandteile bleiben bei 
 | league/commonmark | ^2.10 | BSD-3-Clause |
 | minishlink/web-push | ^11.0 | MIT |
 | spomky-labs/otphp | ^11.5 | MIT |
+| chillerlan/php-qrcode | ^6.0 | MIT |
+| chillerlan/php-settings-container | ^3.2.1 | MIT |
+
+`chillerlan/php-qrcode` steht unter einer Doppellizenz MIT/Apache-2.0. Personal Hub nutzt es unter der MIT-Lizenz. `chillerlan/php-settings-container` ist die dazugehörige Bibliothek und steht unter der MIT-Lizenz.
 
 ## Entwicklung
 

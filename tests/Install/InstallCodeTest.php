@@ -147,6 +147,9 @@ final class InstallCodeTest extends TestCase
             new View(dirname(__DIR__, 2) . '/templates'),
             new \App\Install\InstallDraft($session),
             new \App\Install\DatabaseProbe(),
+            new \App\Install\InstallFinisher($this->dir, new \App\Install\DefaultInstallActions($this->dir), $code),
+            new \App\Auth\TotpVerifier(),
+            new \App\Install\TotpQr(),
         );
 
         $response = $controller->handle(new Request('GET', '/einrichten'));

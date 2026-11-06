@@ -65,6 +65,16 @@ final class InstallCode
         return preg_match('/^\d+$/', $value) === 1 ? (int) $value : 0;
     }
 
+    public function discard(): void
+    {
+        if (is_file($this->codeFile)) {
+            unlink($this->codeFile);
+        }
+        if (is_file($this->attemptFile)) {
+            unlink($this->attemptFile);
+        }
+    }
+
     public static function normalize(string $value): string
     {
         return (string) preg_replace('/[^A-Z2-9]/', '', strtoupper($value));

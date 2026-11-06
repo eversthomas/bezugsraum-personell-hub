@@ -73,6 +73,37 @@ final class InstallDraft
         ];
     }
 
+    public function saveAccount(string $username, string $password, string $secret): void
+    {
+        $this->session->set('install_account', [
+            'username' => $username,
+            'password' => $password,
+            'secret' => $secret,
+        ]);
+    }
+
+    /**
+     * @return array{username: string, password: string, secret: string}|null
+     */
+    public function account(): ?array
+    {
+        $values = $this->session->get('install_account');
+        if (!is_array($values)) {
+            return null;
+        }
+        foreach (['username', 'password', 'secret'] as $key) {
+            if (!is_string($values[$key] ?? null) || $values[$key] === '') {
+                return null;
+            }
+        }
+
+        return [
+            'username' => $values['username'],
+            'password' => $values['password'],
+            'secret' => $values['secret'],
+        ];
+    }
+
     public static function fingerprint(string $host, int $port, string $name, string $user, string $password): string
     {
         return hash('sha256', implode("\0", [$host, (string) $port, $name, $user, $password]));
