@@ -18,6 +18,9 @@ final class CronController
     /** @param array<string, string> $params */
     public function run(Request $request, array $params): Response
     {
+        if ($request->method === 'HEAD') {
+            return Response::notFound();
+        }
         $stored = $this->credentials->read();
         $token = $params['token'] ?? '';
         if (

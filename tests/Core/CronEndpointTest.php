@@ -83,6 +83,19 @@ final class CronEndpointTest extends TestCase
         self::assertSame([], $this->jobs->names);
     }
 
+    public function testHeadWithValidCredentialsDoesNotRun(): void
+    {
+        $response = $this->kernel->handle(new Request(
+            'HEAD',
+            '/cron/' . self::TOKEN,
+            headers: ['authorization' => $this->basic(self::USER, self::PASSWORD)],
+            server: ['HTTPS' => 'on'],
+        ));
+
+        self::assertSame(404, $response->status);
+        self::assertSame([], $this->jobs->names);
+    }
+
     public function testRightTokenAndBasicAuthRunsTheRunner(): void
     {
         $response = $this->call('/cron/' . self::TOKEN, $this->basic(self::USER, self::PASSWORD));

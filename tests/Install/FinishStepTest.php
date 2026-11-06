@@ -133,6 +133,53 @@ final class FinishStepTest extends TestCase
         self::assertFalse($actions->configExistedBeforeMigrate);
         self::assertFalse($actions->configExistedBeforeUser);
         self::assertFileDoesNotExist($this->dir . '/storage/install-attempts.txt');
+        self::assertSame("eingerichtet\n", (string) file_get_contents($this->dir . '/storage/install.lock'));
+    }
+
+    public function testFinishHoldsTheLockUntilTheWorkIsDone(): void
+    {
+        $probe = new LockProbe();
+        $actions = new RecordingInstallActions();
+        $lock = $this->dir . '/storage/install.lock';
+        $actions->duringMigrate = static function () use ($probe, $lock): void {
+            $handle = fopen($lock, 'c');
+            self::assertNotFalse($handle);
+            $probe->busy = !flock($handle, LOCK_EX | LOCK_NB);
+            if (!$probe->busy) {
+                flock($handle, LOCK_UN);
+            }
+            fclose($handle);
+        };
+
+        $this->finisher($actions)->finish(
+            $this->database('datenbank-test-passwort'),
+            'tom',
+            password_hash('benutzer-passwort', PASSWORD_DEFAULT),
+            'GEHEIMNIS',
+        );
+
+        self::assertTrue($probe->busy);
+    }
+
+    public function testCleanupStopsWhenConfigAppearsBeforeTheFilesAreRemoved(): void
+    {
+        $actions = new RecordingInstallActions();
+        $actions->plantConfigOnRemove = true;
+        try {
+            $this->finisher($actions)->finish(
+                $this->database('datenbank-test-passwort'),
+                'tom',
+                password_hash('benutzer-passwort', PASSWORD_DEFAULT),
+                'GEHEIMNIS',
+            );
+            self::fail('Abschluss hätte scheitern müssen.');
+        } catch (InstallException) {
+        }
+
+        self::assertTrue($actions->userRemoved);
+        self::assertFileExists($this->dir . '/config/config.php');
+        self::assertFileExists($this->dir . '/config/keys/app.key');
+        self::assertFileExists($this->dir . '/storage/cron-credentials.php');
     }
 
     public function testBrowserFinishShowsCronOnceAndDestroysTheSession(): void
@@ -301,10 +348,17 @@ final class RecordingInstallActions implements InstallActions
     public bool $configExistedBeforeMigrate = false;
     public bool $configExistedBeforeUser = false;
     public string $passwordHash = '';
+    public bool $plantConfigOnRemove = false;
+
+    /** @var \Closure(): void|null */
+    public ?\Closure $duringMigrate = null;
 
     public function migrate(Config $config): void
     {
         $this->configExistedBeforeMigrate = is_file($this->root . '/config/config.php');
+        if ($this->duringMigrate !== null) {
+            ($this->duringMigrate)();
+        }
         if ($this->failMigrate) {
             throw new \RuntimeException('Migration kaputt');
         }
@@ -315,11 +369,21 @@ final class RecordingInstallActions implements InstallActions
         $this->configExistedBeforeUser = is_file($this->root . '/config/config.php');
         $this->passwordHash = $passwordHash;
         $this->userCreated = true;
+        if ($this->plantConfigOnRemove) {
+            mkdir($this->root . '/config/config.php', 0700);
+        }
     }
 
     public function removeUser(Config $config, string $username): void
     {
         $this->userRemoved = true;
+        if ($this->plantConfigOnRemove) {
+            $path = $this->root . '/config/config.php';
+            if (is_dir($path)) {
+                rmdir($path);
+            }
+            file_put_contents($path, "<?php\ndeclare(strict_types=1);\n\nreturn [];\n");
+        }
     }
 
     public function vapid(): array
@@ -337,4 +401,9 @@ final class RecordingInstallActions implements InstallActions
             password_hash('cron-passwort-test', PASSWORD_DEFAULT),
         );
     }
+}
+
+final class LockProbe
+{
+    public bool $busy = false;
 }

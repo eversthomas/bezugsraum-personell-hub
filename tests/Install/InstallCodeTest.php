@@ -58,20 +58,74 @@ final class InstallCodeTest extends TestCase
         self::assertSame('ok', $code->check(strtolower(str_replace('-', ' ', $stored))));
     }
 
-    public function testFifthFailureReplacesTheCode(): void
+    public function testFifthFailureDelaysAndKeepsTheCode(): void
     {
-        $code = $this->code();
+        $delay = new DelayLog();
+        $code = new InstallCode(
+            $this->dir . '/storage/install-code.txt',
+            $this->dir . '/storage/install-attempts.txt',
+            null,
+            static function (int $seconds) use ($delay): void {
+                $delay->calls++;
+                $delay->seconds = $seconds;
+            },
+        );
         $code->ensure();
         $first = (string) file_get_contents($this->dir . '/storage/install-code.txt');
+        $ip = '203.0.113.5';
         for ($i = 0; $i < 4; $i++) {
-            self::assertSame('wrong', $code->check('falsch'));
+            self::assertSame('wrong', $code->check('falsch', $ip));
         }
+        self::assertSame(0, $delay->calls);
         self::assertSame($first, (string) file_get_contents($this->dir . '/storage/install-code.txt'));
 
-        self::assertSame('renewed', $code->check('falsch'));
-        self::assertNotSame($first, (string) file_get_contents($this->dir . '/storage/install-code.txt'));
-        self::assertSame(0, $code->attempts());
-        self::assertSame('wrong', $code->check($first));
+        self::assertSame('wrong', $code->check('falsch', $ip));
+        self::assertSame(1, $delay->calls);
+        self::assertSame(InstallCode::DELAY_SECONDS, $delay->seconds);
+        self::assertSame($first, (string) file_get_contents($this->dir . '/storage/install-code.txt'));
+        self::assertSame(InstallCode::MAX_FAILURES, $code->attempts($ip));
+        self::assertSame(0, $code->attempts('203.0.113.6'));
+        self::assertSame('wrong', $code->check('falsch', '203.0.113.6'));
+        self::assertSame(1, $delay->calls);
+        $stored = (string) file_get_contents($this->dir . '/storage/install-attempts.txt');
+        self::assertStringNotContainsString($ip, $stored);
+        self::assertSame('ok', $code->check(trim($first), $ip));
+        self::assertSame(0, $code->attempts($ip));
+    }
+
+    public function testCodeIsReplacedOnlyAfterFifteenMinutes(): void
+    {
+        $path = $this->dir . '/storage/install-code.txt';
+        $code = $this->code();
+        $code->ensure();
+        $first = (string) file_get_contents($path);
+        $modified = filemtime($path);
+        self::assertIsInt($modified);
+        $fresh = new InstallCode(
+            $path,
+            $this->dir . '/storage/install-attempts.txt',
+            static fn (): int => $modified + InstallCode::MAX_AGE_SECONDS - 1,
+        );
+        self::assertSame('wrong', $fresh->check('falsch'));
+        self::assertSame($first, (string) file_get_contents($path));
+
+        $stale = new InstallCode(
+            $path,
+            $this->dir . '/storage/install-attempts.txt',
+            static fn (): int => $modified + InstallCode::MAX_AGE_SECONDS,
+        );
+        self::assertSame('renewed', $stale->check(trim($first)));
+        $replacement = (string) file_get_contents($path);
+        self::assertNotSame($first, $replacement);
+        $replacedAt = filemtime($path);
+        self::assertIsInt($replacedAt);
+        $settled = new InstallCode(
+            $path,
+            $this->dir . '/storage/install-attempts.txt',
+            static fn (): int => $replacedAt,
+        );
+        self::assertSame('wrong', $settled->check(trim($first)));
+        self::assertSame($replacement, (string) file_get_contents($path));
     }
 
     public function testPageExplainsWhereToReadTheCodeAndDoesNotRevealIt(): void
@@ -87,7 +141,7 @@ final class InstallCodeTest extends TestCase
         self::assertSame('noindex, nofollow, noarchive', $response->headers['X-Robots-Tag']);
     }
 
-    public function testWrongCodeAndRenewalStayOnTheForm(): void
+    public function testWrongCodeStaysOnTheFormWithoutReplacingTheCode(): void
     {
         $app = $this->app();
         $first = $this->csrf($app);
@@ -99,10 +153,8 @@ final class InstallCodeTest extends TestCase
             $first = $this->tokenFrom($response->body);
         }
 
-        $renewed = $this->post($app, $first, 'falsch');
-        self::assertStringContainsString('ein neuer Code', $renewed->body);
-        self::assertStringNotContainsString(InstallCode::normalize($stored), $renewed->body);
-        self::assertNotSame($stored, (string) file_get_contents($this->dir . '/storage/install-code.txt'));
+        self::assertSame($stored, (string) file_get_contents($this->dir . '/storage/install-code.txt'));
+        self::assertStringNotContainsString('ein neuer Code', $response->body);
     }
 
     public function testMissingCsrfIsRejected(): void
@@ -212,4 +264,10 @@ final class InstallCodeTest extends TestCase
     {
         return $app->handle(new Request('POST', '/einrichten/code', post: ['_csrf' => $token, 'code' => $code]));
     }
+}
+
+final class DelayLog
+{
+    public int $calls = 0;
+    public int $seconds = 0;
 }

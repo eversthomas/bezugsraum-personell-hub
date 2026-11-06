@@ -378,7 +378,7 @@ final class InstallController
         if (!$this->csrf->isValid($request)) {
             return new Response(403, "Ungültige Anfrage\n", ['Content-Type' => 'text/plain; charset=utf-8']);
         }
-        $result = $this->code->check($request->input('code'));
+        $result = $this->code->check($request->input('code'), $request->ip());
         if ($result === 'ok') {
             $this->session->set('install_unlocked', true);
             $this->session->regenerate();

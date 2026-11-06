@@ -27,6 +27,7 @@
 
 ### Fixed
 
+- Falsche Einrichtungscodes zählen je IP. Ab dem fünften Versuch verzögert die Antwort, der Code bleibt. Ein neuer Code entsteht erst nach 15 Minuten. Der Abschluss hält eine Dateisperre und lässt eine vorhandene Konfiguration stehen. HEAD auf `/cron/{token}` startet keinen Lauf.
 - Passwortbestätigung und Passwortänderung zählen Fehlversuche wie die Anmeldung. Bei Sperre endet die Sitzung.
 - Eine fehlgeschlagene Migration nennt nur die Datei und bleibt auf der Seite „Datenbank aktualisieren“. Gleichzeitige Läufe warten auf eine Sperre.
 - Datenbanktests werden ohne erreichbare Datenbank übersprungen, ohne Fehler im Aufräumen.

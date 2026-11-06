@@ -27,6 +27,22 @@ final class InstallFinisher
      */
     public function finish(array $database, string $username, string $passwordHash, string $totpSecret): InstallResult
     {
+        $lock = $this->root . '/storage/install.lock';
+        $handle = $this->openLock($lock);
+        try {
+            return $this->finishWhileLocked($handle, $database, $username, $passwordHash, $totpSecret);
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+        }
+    }
+
+    /**
+     * @param resource $handle
+     * @param array{host: string, port: int, name: string, user: string, password: string, url: string, timezone: string} $database
+     */
+    private function finishWhileLocked($handle, array $database, string $username, string $passwordHash, string $totpSecret): InstallResult
+    {
         $configPath = $this->root . '/config/config.php';
         if (is_file($configPath)) {
             throw new InstallException('Die Einrichtung konnte nicht abgeschlossen werden. Es wurde keine Konfiguration geschrieben.');
@@ -61,28 +77,48 @@ final class InstallFinisher
             $this->writeConfig($configPath, $database, $vapid);
             $result = new InstallResult($username, $cron->url, $cron->user, $cron->password);
         } catch (\Throwable) {
-            if (!is_file($configPath)) {
-                if ($userCreated) {
-                    try {
-                        $this->actions->removeUser($dbConfig, $username);
-                    } catch (\Throwable) {
-                        // Der Schlüssel wird trotzdem entfernt, damit der nächste Versuch neu verschlüsselt.
-                    }
-                }
-                if ($createdKey && is_file($keyPath)) {
-                    unlink($keyPath);
-                }
-                if ($createdCron && is_file($cronFile)) {
-                    unlink($cronFile);
-                }
-            }
+            $this->rollback($configPath, $dbConfig, $username, $userCreated, $createdKey, $keyPath, $createdCron, $cronFile);
 
             throw new InstallException('Die Einrichtung konnte nicht abgeschlossen werden. Es wurde keine Konfiguration geschrieben.');
         }
 
-        $this->markInstalled();
+        $this->markInstalled($handle);
 
         return $result;
+    }
+
+    private function rollback(
+        string $configPath,
+        Config $dbConfig,
+        string $username,
+        bool $userCreated,
+        bool $createdKey,
+        string $keyPath,
+        bool $createdCron,
+        string $cronFile,
+    ): void {
+        if (is_file($configPath)) {
+            return;
+        }
+        if ($userCreated) {
+            try {
+                $this->actions->removeUser($dbConfig, $username);
+            } catch (\Throwable) {
+                // Der Schlüssel wird trotzdem entfernt, damit der nächste Versuch neu verschlüsselt.
+            }
+        }
+        if (is_file($configPath)) {
+            return;
+        }
+        if ($createdKey && is_file($keyPath)) {
+            unlink($keyPath);
+        }
+        if (is_file($configPath)) {
+            return;
+        }
+        if ($createdCron && is_file($cronFile)) {
+            unlink($cronFile);
+        }
     }
 
     private function writeKey(string $path): void
@@ -140,12 +176,37 @@ final class InstallFinisher
         chmod($path, 0600);
     }
 
-    private function markInstalled(): void
+    /** @param resource $handle */
+    private function markInstalled($handle): void
     {
-        $lock = $this->root . '/storage/install.lock';
-        if (is_dir(dirname($lock))) {
-            RestrictedFile::tryPut($lock, "eingerichtet\n");
-        }
+        rewind($handle);
+        ftruncate($handle, 0);
+        fwrite($handle, "eingerichtet\n");
+        fflush($handle);
         $this->code->discard();
+    }
+
+    /** @return resource */
+    private function openLock(string $path)
+    {
+        $dir = dirname($path);
+        if (!is_dir($dir) && !mkdir($dir, 0700, true) && !is_dir($dir)) {
+            throw new InstallException('Die Einrichtung konnte nicht abgeschlossen werden. Es wurde keine Konfiguration geschrieben.');
+        }
+        $previous = umask(0077);
+        try {
+            $handle = fopen($path, 'c+');
+        } finally {
+            umask($previous);
+        }
+        if ($handle === false || !flock($handle, LOCK_EX)) {
+            if (is_resource($handle)) {
+                fclose($handle);
+            }
+            throw new InstallException('Die Einrichtung konnte nicht abgeschlossen werden. Es wurde keine Konfiguration geschrieben.');
+        }
+        chmod($path, 0600);
+
+        return $handle;
     }
 }
