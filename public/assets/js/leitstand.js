@@ -15,8 +15,8 @@ import {
 } from './time.js';
 
 const root = document.querySelector('[data-leitstand]');
-const VIEWS = { day: 'Tag', week: 'Woche', w2: '2 Wochen', w4: '4 Wochen' };
-const DAYS = { day: 1, week: 7, w2: 14, w4: 28 };
+const VIEWS = { day: 'Tag', week: 'Woche', w2: '2 Wochen', w4: '4 Wochen', agenda: 'Agenda' };
+const DAYS = { day: 1, week: 7, w2: 14, w4: 28, agenda: 14 };
 const HOUR_PX = 56;
 const REFRESH_MS = 5 * 60 * 1000;
 
@@ -40,9 +40,20 @@ const store = {
     },
 };
 
+function initialView() {
+    const stored = store.get('view', 'day');
+    if (typeof stored !== 'string' || !Object.hasOwn(VIEWS, stored)) {
+        return 'day';
+    }
+    // Auf dem Handy bleiben die Wochenraster aus, Tag und Agenda nicht.
+    if (narrow.matches && stored !== 'day' && stored !== 'agenda') {
+        return 'day';
+    }
+    return stored;
+}
+
 const state = {
-    // Auf dem Handy gibt es nur die Tagesansicht
-    view: !narrow.matches && VIEWS[store.get('view', 'day')] ? store.get('view', 'day') : 'day',
+    view: initialView(),
     anchor: dayKeyOf(Date.now()),
     hidden: new Set(store.get('hidden-sources', [])),
     sources: [],
@@ -78,7 +89,7 @@ function normalize(raw) {
 
 function range() {
     const days = DAYS[state.view];
-    const from = state.view === 'day' ? state.anchor : startOfWeek(state.anchor);
+    const from = state.view === 'day' || state.view === 'agenda' ? state.anchor : startOfWeek(state.anchor);
     return { from, to: addDays(from, days) };
 }
 
@@ -157,12 +168,16 @@ function renderControls() {
 
     const { from, to } = range();
     const title = root.querySelector('[data-title]');
-    title.textContent =
-        state.view === 'day'
-            ? formatLongDay(from)
-            : state.view === 'week'
-              ? `${formatShortDay(from)} – ${formatShortDay(addDays(to, -1))}`
-              : `${formatMonthYear(from)} · ${formatShortDay(from)} – ${formatShortDay(addDays(to, -1))}`;
+    const endLabel = formatShortDay(addDays(to, -1));
+    if (state.view === 'day') {
+        title.textContent = formatLongDay(from);
+    } else if (state.view === 'agenda') {
+        title.textContent = `${formatLongDay(from)} – ${formatLongDay(addDays(to, -1))}`;
+    } else if (state.view === 'week') {
+        title.textContent = `${formatShortDay(from)} – ${endLabel}`;
+    } else {
+        title.textContent = `${formatMonthYear(from)} · ${formatShortDay(from)} – ${endLabel}`;
+    }
 
     const chips = root.querySelector('[data-sources]');
     chips.replaceChildren();
@@ -365,6 +380,56 @@ function renderGrid(container) {
     container.append(grid);
 }
 
+// ---------- Agenda ----------
+
+function renderAgenda(container) {
+    const today = dayKeyOf(Date.now());
+    const tomorrow = addDays(today, 1);
+    const { from } = range();
+    const items = [...visible(state.events), ...state.planned];
+    const wrap = el('div', 'agenda');
+    let shown = 0;
+
+    for (let i = 0; i < DAYS.agenda; i += 1) {
+        const key = addDays(from, i);
+        const dayStart = midnightMs(key);
+        const dayEnd = midnightMs(addDays(key, 1));
+        const dayItems = items
+            .filter((event) => (event.allDay
+                ? event.startKey <= key && event.endKey > key
+                : event.startMs < dayEnd && event.endMs > dayStart))
+            .sort((a, b) => (a.allDay === b.allDay ? (a.startMs ?? 0) - (b.startMs ?? 0) : (a.allDay ? -1 : 1)));
+        if (dayItems.length === 0) {
+            continue;
+        }
+        shown += dayItems.length;
+        const day = el('section', 'agenda__day');
+        const heading = key === today ? 'Heute' : key === tomorrow ? 'Morgen' : formatLongDay(key);
+        day.append(el('h2', 'agenda__heading', heading));
+        const list = el('ul', 'agenda__list');
+        for (const event of dayItems) {
+            const row = eventButton(event, 'ev--agenda');
+            const when = event.allDay ? 'ganztägig' : `${formatTime(event.startMs)}–${formatTime(event.endMs)}`;
+            row.append(el('span', 'ev__time tnum', when));
+            row.append(el('span', 'ev__title', event.planned ? `${event.title} (vorgemerkt)` : event.title));
+            const source = sourceById(event.source);
+            if (source) {
+                row.append(el('span', 'ev__source', source.name));
+            }
+            const item = el('li');
+            item.append(row);
+            list.append(item);
+        }
+        day.append(list);
+        wrap.append(day);
+    }
+
+    if (shown === 0) {
+        wrap.append(el('p', 'muted', 'Keine Termine in diesem Zeitraum.'));
+    }
+    container.append(wrap);
+}
+
 // ---------- Mehrwochen-Raster ----------
 
 function renderMonth(container) {
@@ -486,7 +551,9 @@ function render() {
     renderControls();
     const container = root.querySelector('[data-calendar]');
     container.replaceChildren();
-    if (state.view === 'day' || state.view === 'week') {
+    if (state.view === 'agenda') {
+        renderAgenda(container);
+    } else if (state.view === 'day' || state.view === 'week') {
         renderGrid(container);
     } else {
         renderMonth(container);

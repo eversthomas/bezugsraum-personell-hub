@@ -4,6 +4,7 @@
 
 ### Added
 
+- Agenda: die nächsten 14 Tage als Liste, gruppiert nach Tagen. „Heute“ und „Morgen“, danach Wochentag und Datum, mit Uhrzeit oder „ganztägig“ und dem Namen der Quelle.
 - Härtung: Cron-Endpunkt `/cron/{token}` mit Token und HTTP Basic, `bin/create-cron-credentials.php`, gemeinsame Auftragsliste mit `bin/cron.php`. Die CI prüft PHP 8.3 und 8.5 und führt `composer audit` aus.
 - Aktualisieren ohne Terminal: angemeldete Nutzer sehen bei ausstehenden Migrationen nur „Datenbank aktualisieren“. Der Cron führt in der Zeit keine Aufträge aus. Cron-Hashes liegen in `storage/cron-credentials.php`, neu erzeugen unter „Sicherheit“.
 - Installer im Browser: Einrichtungscode, Datenbank, Benutzer mit TOTP und Abschluss ohne Terminal. Liegt `config/config.php`, antworten die Installer-Pfade mit 404.
