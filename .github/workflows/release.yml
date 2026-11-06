@@ -43,6 +43,9 @@ jobs:
             --exclude '.git/' \
             --exclude '.github/' \
             --exclude '.cursor/' \
+            --exclude '/docs/' \
+            --exclude '/README.md' \
+            --exclude '/CHANGELOG.md' \
             --exclude 'tests/' \
             --exclude 'build/' \
             --exclude 'phpunit.xml' \

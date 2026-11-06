@@ -25,7 +25,7 @@ Stand: 6. November 2026. Verbindlich für die Reihenfolge ist dieses Dokument, f
 - **Ziel:** Eine frische Installation entsteht aus dem Release-ZIP im Browser, ohne Terminal und ohne Composer auf dem Server.
 - **Begründung:** Auf dem Webhosting gibt es beides nicht, der Authenticator bleibt aber Pflicht.
 - **Abnahme:** Ohne Einrichtungscode ist keine Installation möglich. Nach der Installation liefert die Installer-Route 404, auch bei erneutem Aufruf und nach Löschen der Sperrdatei, solange `config/config.php` existiert. Eine frische Subdomain ist mit dem Release-ZIP ohne Terminal einsatzbereit. Der QR-Code kommt aus einem kleinen etablierten Paket, das in diesem Paket nach Rückfrage gewählt wird. Das TOTP-Geheimnis steht zusätzlich als Text auf der Seite. Die Cron-Adresse wird samt Token angezeigt.
-- **Status:** offen
+- **Status:** erledigt
 
 ### Sicherheitsprüfung des Installers
 

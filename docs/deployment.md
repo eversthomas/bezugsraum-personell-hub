@@ -22,7 +22,7 @@ Das ZIP entsteht auf GitHub, ohne Terminal.
 3. Den Tag neu vergeben, zum Beispiel `v0.1.0`, und das Release veröffentlichen.
 4. Der Workflow hängt danach `personal-hub-v0.1.0.zip` an dieses Release. Die Seite neu laden, sobald der Lauf fertig ist.
 
-Im ZIP liegen `vendor/`, `LICENSE` und leere Verzeichnisse `storage/logs`, `storage/cache`, `storage/sessions` und `storage/uploads`. Nicht darin liegen `.git`, `.github`, `.cursor`, `tests` und die Werkzeuge für Tests und Analyse. `config/config.php` und Schlüsseldateien fehlen ebenfalls.
+Im ZIP liegen `vendor/`, `LICENSE`, `THIRD-PARTY-NOTICES.md` und leere Verzeichnisse `storage/logs`, `storage/cache`, `storage/sessions` und `storage/uploads`. Nicht darin liegen `docs/`, `README.md`, `CHANGELOG.md`, `.git`, `.github`, `.cursor`, `tests` und die Werkzeuge für Tests und Analyse. `config/config.php` und Schlüsseldateien fehlen ebenfalls.
 
 ## Erstinstallation mit Installer
 
@@ -52,7 +52,7 @@ Im ZIP liegen `vendor/`, `LICENSE` und leere Verzeichnisse `storage/logs`, `stor
 Dieser Weg gilt auf dem Entwicklungsrechner und überall, wo eine Kommandozeile zur Verfügung steht.
 
 1. Abhängigkeiten lokal installieren: `composer install --no-dev --optimize-autoloader`. Der Ordner `vendor/` wird mit hochgeladen.
-2. Hochladen ohne `.git`, `tests/`, `config/config.php`, `config/keys/*` und ohne Inhalt von `storage/`. Dokumentenstamm ist `public/`.
+2. Hochladen ohne `.git`, `docs/`, `README.md`, `CHANGELOG.md`, `tests/`, `config/config.php`, `config/keys/*` und ohne Inhalt von `storage/`. `LICENSE` und `THIRD-PARTY-NOTICES.md` bleiben im Wurzelverzeichnis. Dokumentenstamm ist `public/`.
 3. `config/config.example.php` nach `config/config.php` kopieren und ausfüllen: Datenbank, `app.url` mit `https://`, Pfad des Schlüssels, VAPID-Daten. `app.trust_proxy` bleibt false, bis die Prüfliste etwas anderes zeigt.
 4. Auf der Kommandozeile:
 
@@ -87,11 +87,7 @@ Ohne gültiges Token antwortet die Adresse mit 404. Mit gültigem Token und ohne
 
 ## Sicherung
 
-Gesichert werden müssen alle drei Dinge zusammen, sonst ist eine Wiederherstellung nicht möglich:
-
-- Datenbank (Dump)
-- `storage/uploads/` (Fotos)
-- `config/keys/app.key` und die VAPID-Schlüssel aus `config/config.php`
+Gesichert werden die Datenbank, `config/config.php` und `storage/` vollständig. In `storage/` liegen der Cron-Zugang (`storage/cron-credentials.php`), die Uploads und die übrigen Dateien. Der Schlüssel liegt in `config/keys/app.key` und gehört zur selben Sicherung. Die VAPID-Schlüssel stehen in `config/config.php`.
 
 Ohne die Schlüsseldatei sind verschlüsselte ICS-Links und TOTP-Geheimnisse unlesbar. Das Backup verschlüsselt ablegen und die Wiederherstellung einmal an einer Testinstanz üben.
 
