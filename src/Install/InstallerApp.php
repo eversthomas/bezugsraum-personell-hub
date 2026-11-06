@@ -46,6 +46,7 @@ final class InstallerApp
             $this->finisher ?? new InstallFinisher($this->root, new DefaultInstallActions($this->root), $code),
             new TotpVerifier(),
             new TotpQr(),
+            $this->root,
         );
 
         return SecurityHeaders::apply($controller->handle($request), $request->isHttps(false));

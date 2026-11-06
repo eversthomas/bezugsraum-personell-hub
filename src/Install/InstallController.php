@@ -28,11 +28,16 @@ final class InstallController
         private readonly InstallFinisher $finisher,
         private readonly TotpVerifier $totp,
         private readonly TotpQr $qr,
+        private readonly string $root = '',
+        private readonly DocumentRoot $documentRoot = new DocumentRoot(),
     ) {
     }
 
     public function handle(Request $request): Response
     {
+        if (!$this->documentRoot->matches($this->root, $this->documentRootPath($request))) {
+            return $this->render('install/docroot', ['title' => 'Einrichten']);
+        }
         $path = rtrim($request->path, '/') ?: '/';
         if ($request->method === 'POST' && $path === '/einrichten/code') {
             return $this->submitCode($request);
@@ -58,38 +63,42 @@ final class InstallController
 
     private function page(Request $request): Response
     {
-        if (!$this->code->ensure()) {
+        if ($this->session->get('install_unlocked') !== true) {
+            if (!$this->code->ensure()) {
+                return $this->render('install/unavailable', ['title' => 'Einrichten']);
+            }
+
+            return $this->render('install/code', [
+                'title' => 'Einrichten',
+                'error' => null,
+            ]);
+        }
+
+        $problems = $this->check->problems();
+        if ($problems !== []) {
             return $this->render('install/check', [
                 'title' => 'Einrichten',
-                'problems' => ['Der Einrichtungscode konnte nicht geschrieben werden.', ...$this->check->problems()],
+                'problems' => $problems,
                 'ready' => false,
             ]);
         }
-        if ($this->session->get('install_unlocked') === true) {
-            $problems = $this->check->problems();
-            if ($problems !== []) {
-                return $this->render('install/check', [
-                    'title' => 'Einrichten',
-                    'problems' => $problems,
-                    'ready' => false,
-                ]);
+
+        if ($this->draft->saved()) {
+            if ($this->draft->account() === null) {
+                return $this->userForm([]);
             }
 
-            if ($this->draft->saved()) {
-                if ($this->draft->account() === null) {
-                    return $this->userForm([]);
-                }
-
-                return $this->totpForm([]);
-            }
-
-            return $this->databaseForm($request, [], null);
+            return $this->totpForm([]);
         }
 
-        return $this->render('install/code', [
-            'title' => 'Einrichten',
-            'error' => null,
-        ]);
+        return $this->databaseForm($request, [], null);
+    }
+
+    private function documentRootPath(Request $request): string
+    {
+        $value = $request->server['DOCUMENT_ROOT'] ?? '';
+
+        return is_string($value) ? $value : '';
     }
 
     /** @param list<string> $errors */

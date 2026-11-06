@@ -3,6 +3,7 @@
 /config/keys/*
 !/config/keys/.gitkeep
 /storage/*
+!/storage/.htaccess
 !/storage/uploads/
 !/storage/logs/
 !/storage/cache/

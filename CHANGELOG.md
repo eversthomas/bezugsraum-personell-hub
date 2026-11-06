@@ -7,6 +7,7 @@
 - Härtung: Cron-Endpunkt `/cron/{token}` mit Token und HTTP Basic, `bin/create-cron-credentials.php`, gemeinsame Auftragsliste mit `bin/cron.php`. Die CI prüft PHP 8.3 und 8.5 und führt `composer audit` aus.
 - Aktualisieren ohne Terminal: angemeldete Nutzer sehen bei ausstehenden Migrationen nur „Datenbank aktualisieren“. Der Cron führt in der Zeit keine Aufträge aus. Cron-Hashes liegen in `storage/cron-credentials.php`, neu erzeugen unter „Sicherheit“.
 - Installer im Browser: Einrichtungscode, Datenbank, Benutzer mit TOTP und Abschluss ohne Terminal. Liegt `config/config.php`, antworten die Installer-Pfade mit 404.
+- Installer: falscher Dokumentenstamm stoppt mit Hinweis auf das Domainziel im KAS. Ohne Einrichtungscode keine Systemprüfung. `.htaccess` sperrt die Ordner neben `public/`, auch im Release-ZIP.
 - Release: ein Workflow baut bei einem Tag `v*` das ZIP mit `vendor/` und hängt es an das GitHub-Release. Dokumentation außer `LICENSE` und `THIRD-PARTY-NOTICES.md` liegt nicht bei.
 - Projektfundament: Verzeichnisstruktur, Werkzeugkonfiguration und Dokumentation.
 - AP 1: Kern (Router, Container, Db, View, Session, CSRF, Crypto, Migrator), Module-Vertrag, Security-Header, Hell/Dunkel-Tokens mit Atkinson Hyperlegible Next.

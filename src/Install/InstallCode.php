@@ -115,6 +115,9 @@ final class InstallCode
         if (!is_dir($dir) && !mkdir($dir, 0700, true) && !is_dir($dir)) {
             return false;
         }
+        if (!is_writable($dir)) {
+            return false;
+        }
         $handle = fopen($path, 'c');
         if ($handle === false) {
             return false;

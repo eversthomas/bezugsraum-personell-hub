@@ -32,6 +32,7 @@ jobs:
       - name: ZIP bauen
         run: |
           set -euo pipefail
+          printf '%s\n' 'Require all denied' > vendor/.htaccess
           tag="${GITHUB_REF_NAME}"
           if [[ ! "$tag" =~ ^v[0-9A-Za-z._-]+$ ]]; then
             echo "Der Tagname eignet sich nicht als Dateiname."
@@ -64,6 +65,7 @@ jobs:
             mkdir -p "build/${name}/storage/${dir}"
             touch "build/${name}/storage/${dir}/.gitkeep"
           done
+          cp storage/.htaccess "build/${name}/storage/.htaccess"
           (
             cd build
             zip -r -X "../${name}.zip" "${name}"
