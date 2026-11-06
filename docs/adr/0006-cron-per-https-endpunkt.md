@@ -6,8 +6,12 @@ All-Inkl stößt Hintergrundarbeit über einen Cronjob an, der eine Adresse aufr
 
 ## Entscheidung
 
-Auf All-Inkl ruft der Cronjob den Endpunkt minütlich per HTTPS auf. Nötig sind der HTTP-Benutzer und das HTTP-Passwort aus dem KAS sowie ein geheimes Token. Fehlt eines davon, antwortet der Endpunkt mit 404. Lokal bleibt `bin/cron.php`. Beide Wege starten dieselbe Logik. Den Pfad legt das Paket Härtung fest.
+Auf All-Inkl ruft der Cronjob minütlich per HTTPS `/cron/{token}` auf. Das Token umfasst mindestens 32 Byte und ist URL-sicher. Token und Passwort stehen nur als Hash in der Konfiguration.
+
+Fehlt das Token oder stimmt es nicht, antwortet der Endpunkt mit 404 wie eine unbekannte Adresse. Erst ein richtiges Token prüft den HTTP-Basic-Zugang aus dem KAS. Fehlt er oder stimmt er nicht, antwortet der Endpunkt mit 401 und `WWW-Authenticate`. Viele Cron-Clients senden Benutzer und Passwort erst nach dieser Aufforderung.
+
+Lokal bleibt `bin/cron.php`. Beide Wege starten dieselbe Logik. Die Aufträge kommen aus `ModuleInterface::cronJobs()` der aktiven Module.
 
 ## Folgen
 
-Erinnerungen können näher am Zeitpunkt versendet werden als bei einem Viertelstundentakt. Der Endpunkt verrät ohne die drei Merkmale nicht, dass er existiert. `bin/cron.php` bleibt der Weg auf dem Entwicklungsrechner.
+Erinnerungen können näher am Zeitpunkt versendet werden als bei einem Viertelstundentakt. Ohne gültiges Token ist der Endpunkt von einer unbekannten Adresse nicht zu unterscheiden. `bin/cron.php` bleibt der Weg auf dem Entwicklungsrechner.

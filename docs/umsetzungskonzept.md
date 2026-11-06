@@ -35,7 +35,7 @@ Die Entscheidung fällt für ein eigenes PHP-Projekt ohne Framework und ohne CMS
 | Push | `minishlink/web-push` |
 | 2FA / Passkey | `spomky-labs/otphp` (TOTP), später `web-auth/webauthn-lib` |
 | Bilder | GD oder Imagick serverseitig, Verkleinern zusätzlich im Browser |
-| Hintergrund | All-Inkl-Cronjob ruft minütlich per HTTPS einen geschützten Endpunkt auf (HTTP-Benutzer und -Passwort aus dem KAS plus geheimes Token, sonst 404). Dieselbe Logik startet lokal `bin/cron.php`. Der Pfad des Endpunkts wird im Paket Härtung festgelegt (ADR 0006) |
+| Hintergrund | All-Inkl-Cronjob ruft minütlich per HTTPS `/cron/{token}` auf. Falsches oder fehlendes Token ergibt 404. Erst danach werden HTTP-Benutzer und HTTP-Passwort geprüft, sonst 401. Dieselbe Logik startet lokal `bin/cron.php` (ADR 0006) |
 | Deployment | Release-ZIP mit `vendor/`, Einrichtung im Browser. Kein Composer auf dem Server (ADR 0009) |
 | Lizenz | MIT, Abhängigkeiten in `THIRD-PARTY-NOTICES.md` |
 
@@ -65,7 +65,7 @@ Personal Hub bleibt ein persönliches Werkzeug: eine Person pro Installation. Di
 - Der Installer ist nur erreichbar, solange `config/config.php` fehlt. Der erste Aufruf schreibt einen Zufallscode nach `storage/install-code.txt`, außerhalb des Webroots. Ohne diesen Code im Formular entsteht keine Installation.
 - Den Code liest man im Dateimanager des KAS oder per FTP.
 - Das Formular prüft den Datenbankzugang, schreibt `config.php`, legt den Schlüssel an, spielt die Migrationen ein, erzeugt die VAPID-Schlüssel und den ersten Benutzer mit Passwort und TOTP. Der QR-Code kommt aus einem kleinen etablierten Paket. Welches, wird im Installer-Paket nach Rückfrage gewählt. Das TOTP-Geheimnis steht zusätzlich als Text zum Abtippen auf der Seite.
-- Angezeigt wird die fertige Cron-Adresse samt Token. Den Pfad legt das Paket Härtung fest.
+- Angezeigt wird die fertige Cron-Adresse `/cron/{token}` samt Token.
 - Danach legt der Installer eine Sperrdatei an und löscht den Einrichtungscode. Die Installer-Route antwortet dauerhaft mit 404, auch bei erneutem Aufruf und nach Löschen der Sperrdatei, solange `config/config.php` existiert.
 
 ### Spätere Optionen
@@ -281,7 +281,7 @@ Der Kalender kommt vor den Aufgaben, weil er der eigentliche Schmerzpunkt ist. N
 
 - [ ] ICS-Veröffentlichung in allen drei M365-Konten testen, Detailstufe „Titel und Orte“
 - [ ] Google: geheime iCal-Adresse kopieren
-- [ ] All-Inkl: PHP 8.5, Erweiterungen `sodium`, `gd` oder `imagick`, `intl`, `curl`; Cron minütlich per HTTPS (Pfad im Paket Härtung); Upload-Limit
+- [ ] All-Inkl: PHP 8.5, Erweiterungen `sodium`, `gd` oder `imagick`, `intl`, `curl`; Cron minütlich per HTTPS auf `/cron/{token}`; Upload-Limit
 - [ ] Subdomain mit HTTPS anlegen, Domainziel auf `public/`
 - [ ] Datenbank anlegen
 

@@ -27,6 +27,13 @@ return [
         // Zusätzlich erlaubte Push-Dienste (Host-Endungen). Standard: Google, Mozilla, Apple, Microsoft.
         'allowed_hosts' => [],
     ],
+    'cron' => [
+        // Erzeugen mit: php bin/create-cron-credentials.php
+        // Nur die Hashes eintragen, nie Token oder Passwort im Klartext.
+        'token_hash' => '',
+        'basic_user' => '',
+        'basic_password_hash' => '',
+    ],
     'vapid' => [
         'subject' => 'mailto:admin@example.invalid',
         'public_key' => 'replace-me', // erzeugen mit: php bin/create-vapid.php

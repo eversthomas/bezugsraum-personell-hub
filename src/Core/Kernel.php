@@ -52,17 +52,28 @@ final class Kernel
         foreach ($this->modules as $module) {
             $module->routes($this->router, $c);
         }
+        $c->set(CronRunner::class, fn (Container $c): CronRunner => new CronRunner(
+            $this->modules,
+            $c,
+            $c->get(Logger::class),
+            $this->root . '/storage/cache/cron.lock',
+        ));
+        $c->set(CronController::class, fn (Container $c): CronController => new CronController(
+            $c->get(Config::class),
+            $c->get(CronRunner::class),
+        ));
+    }
+
+    /** @return list<ModuleInterface> */
+    public function modules(): array
+    {
+        return $this->modules;
     }
 
     /** @return list<CronJob> */
     public function cronJobs(): array
     {
-        $jobs = [];
-        foreach ($this->modules as $module) {
-            array_push($jobs, ...$module->cronJobs());
-        }
-
-        return $jobs;
+        return CronRunner::collect($this->modules);
     }
 
     /** @return list<NavItem> */
@@ -96,12 +107,15 @@ final class Kernel
             return Response::notFound();
         }
 
-        $authenticated = $this->container->get(AuthenticatorInterface::class)->isAuthenticated($request);
-        if ($match['auth'] === Router::AUTH_REQUIRED && !$authenticated) {
-            return Response::notFound();
-        }
-        if ($match['auth'] === Router::AUTH_REDIRECT && !$authenticated) {
-            return Response::redirect('/login');
+        // Öffentliche Routen (Login, Cron) öffnen hier keine Sitzung und keine Datenbank.
+        if ($match['auth'] !== Router::AUTH_NONE) {
+            $authenticated = $this->container->get(AuthenticatorInterface::class)->isAuthenticated($request);
+            if ($match['auth'] === Router::AUTH_REQUIRED && !$authenticated) {
+                return Response::notFound();
+            }
+            if ($match['auth'] === Router::AUTH_REDIRECT && !$authenticated) {
+                return Response::redirect('/login');
+            }
         }
 
         if ($request->isMutating() && !$this->container->get(Csrf::class)->isValid($request)) {

@@ -78,6 +78,14 @@ Stand: 5. November 2026. Verbindlich für die Reihenfolge ist dieses Dokument, f
 - **Abnahme:** „Horizont“ ist ein zusätzlicher Eintrag, nicht die Standardansicht. Der Aufbau folgt der Beschreibung in der Übergabe: heute, morgen, Rest der Woche, drei weitere Wochen, Zeilen aufklappbar. Farbe ist nie die einzige Information.
 - **Status:** offen
 
+### Abrufeinstellungen
+
+- **Ziel:** In den Einstellungen und pro Kalenderquelle wählbar, wie oft abgerufen wird (z. B. 5, 15, 30, 60 Minuten). Der Cronjob bleibt minütlich und ist nur Taktgeber; die App entscheidet, welche Quellen fällig sind. Dazu ein Knopf „Jetzt aktualisieren“ im Leitstand und auf der Kalenderseite, der über den CronRunner sofort alle aktiven Quellen abruft und die gemeinsame Sperre gegen Doppelläufe nutzt.
+- **Begründung:** Häufige und seltene Kalender brauchen verschiedene Takte. Ein zweiter Lauf darf einen laufenden Abruf nicht überholen.
+- **Bestand:** Pro Quelle gibt es `interval_min` (5 bis 1440 Minuten, Standard 15). Die Seite Kalenderquellen bietet 15, 30 und 60 Minuten. `refreshDue()` ruft nur fällige Quellen ab; der Auftrag `calendar.refresh` hängt am minütlichen Cron. `everyMinutes` am Auftrag wird nicht ausgewertet. „Jetzt abrufen“ gibt es nur je Quelle und geht an `CalendarService::refresh`, ohne CronRunner und ohne die Sperre. Ein globaler Takt und ein Knopf im Leitstand oder auf der Kalenderseite fehlen.
+- **Abnahme:** Der Minuten-Cron bleibt der Taktgeber. Eine Quelle mit 60 Minuten wird nicht jede Minute geholt. „Jetzt aktualisieren“ auf Leitstand und Kalenderseite holt alle aktiven Quellen über den CronRunner. Läuft schon ein Abruf, startet kein zweiter.
+- **Status:** offen
+
 ## Phase 4 – Feinschliff
 
 ### Gestaltung und Barrierefreiheit
