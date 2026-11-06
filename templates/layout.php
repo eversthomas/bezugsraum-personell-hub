@@ -31,6 +31,7 @@
 <?php
 $nav = [
     ['key' => 'leitstand', 'label' => 'Leitstand', 'href' => '/', 'icon' => 'L'],
+    ['key' => 'kalender', 'label' => 'Kalender', 'href' => '/kalender', 'icon' => 'C'],
     ['key' => 'aufgaben', 'label' => 'Aufgaben', 'href' => '/aufgaben', 'icon' => 'A'],
     ['key' => 'notizen', 'label' => 'Notizen', 'href' => '/notizen', 'icon' => 'N'],
     ['key' => 'erfassen', 'label' => 'Erfassen', 'href' => '/erfassen', 'icon' => '+'],

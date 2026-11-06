@@ -7,7 +7,7 @@ namespace App\Core;
 use App\Core\Contracts\ModuleInterface;
 
 /**
- * Grundgerüst der angemeldeten Oberfläche (Startseite, bis der Leitstand in AP 3 kommt).
+ * Grundgerüst der angemeldeten Oberfläche: Startseite und Kalenderseite.
  */
 final class CoreModule implements ModuleInterface
 {
@@ -28,6 +28,17 @@ final class CoreModule implements ModuleInterface
 
             return Response::html($html);
         }, Router::AUTH_REDIRECT);
+        $router->get('/kalender', function (Request $request) use ($container): Response {
+            $html = $container->get(View::class)->render('calendar', [
+                'title' => 'Kalender',
+                'csrf' => $container->get(Csrf::class)->token(),
+                'bodyClass' => 'app',
+                'shell' => true,
+                'active' => 'kalender',
+            ]);
+
+            return Response::html($html);
+        });
         $router->get('/cron/{token}', function (Request $request, array $params) use ($container): Response {
             return $container->get(CronController::class)->run($request, $params);
         }, Router::AUTH_NONE);

@@ -232,6 +232,10 @@ body.auth {
     padding: var(--space-4);
 }
 
+.leitstand--calendar {
+    max-width: none;
+}
+
 .hero {
     display: flex;
     flex-wrap: wrap;

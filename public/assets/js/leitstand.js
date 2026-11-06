@@ -96,15 +96,17 @@ function range() {
 async function load() {
     const { from, to } = range();
     const today = dayKeyOf(Date.now());
+    const hero = root.querySelector('[data-next]') !== null;
     try {
-        const [main, soon] = await Promise.all([
-            api(`/calendar/events?from=${from}&to=${to}`),
-            api(`/calendar/events?from=${today}&to=${addDays(today, 8)}`),
-        ]);
+        const requests = [api(`/calendar/events?from=${from}&to=${to}`)];
+        if (hero) {
+            requests.push(api(`/calendar/events?from=${today}&to=${addDays(today, 8)}`));
+        }
+        const [main, soon] = await Promise.all(requests);
         state.sources = main.sources;
         state.events = main.events.map(normalize);
         state.planned = (main.planned ?? []).map((p) => ({ ...normalize({ ...p, allDay: false, source: 0, location: '' }), planned: true }));
-        state.upcoming = soon.events.map(normalize);
+        state.upcoming = soon === undefined ? [] : soon.events.map(normalize);
         state.loadedAt = Date.now();
         state.failed = false;
     } catch {
@@ -119,23 +121,27 @@ const visible = (events) => events.filter((e) => !state.hidden.has(e.source));
 // ---------- Kopf: Uhr, nächster Termin ----------
 
 function renderHeader() {
+    const clock = root.querySelector('[data-clock]');
+    const nextBox = root.querySelector('[data-next]');
+    if (!clock || !nextBox) {
+        return;
+    }
     const now = Date.now();
-    root.querySelector('[data-clock]').textContent = formatTime(now);
+    clock.textContent = formatTime(now);
     root.querySelector('[data-date]').textContent = formatLongDay(dayKeyOf(now));
 
     const timed = visible(state.upcoming).filter((e) => !e.allDay);
     const running = timed.find((e) => e.startMs <= now && e.endMs > now);
     const next = timed.find((e) => e.startMs > now);
-    const box = root.querySelector('[data-next]');
-    box.replaceChildren();
+    nextBox.replaceChildren();
     const target = running ?? next;
     if (!target) {
-        box.append(el('span', 'muted', 'Kein weiterer Termin in den nächsten 7 Tagen.'));
+        nextBox.append(el('span', 'muted', 'Kein weiterer Termin in den nächsten 7 Tagen.'));
         return;
     }
     const src = sourceById(target.source);
-    box.className = `next ${src ? src.class : 'src-neutral'}`;
-    box.append(
+    nextBox.className = `next ${src ? src.class : 'src-neutral'}`;
+    nextBox.append(
         el('span', 'next__label', running ? 'Läuft gerade' : 'Nächster Termin'),
         el('strong', 'next__title', target.title),
         el(

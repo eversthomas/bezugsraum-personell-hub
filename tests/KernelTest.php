@@ -77,7 +77,7 @@ final class KernelTest extends DbTestCase
 
     public function testUnauthenticatedGetsNothingButLogin(): void
     {
-        foreach (['/api/v1/anything', '/items', '/admin', '/logout', '/.env'] as $path) {
+        foreach (['/api/v1/anything', '/items', '/admin', '/logout', '/.env', '/kalender'] as $path) {
             self::assertSame(404, $this->call('GET', $path)->status, $path);
         }
         self::assertSame(404, $this->call('POST', '/logout')->status);
@@ -119,6 +119,20 @@ final class KernelTest extends DbTestCase
         $home = $this->call('GET', '/');
         self::assertSame(200, $home->status);
         self::assertStringContainsString('data-leitstand', $home->body);
+        self::assertStringContainsString('data-calendar', $home->body);
+        self::assertStringContainsString('Schnell erfassen', $home->body);
+        self::assertStringContainsString('href="/" aria-current="page"', $home->body);
+        self::assertStringNotContainsString('href="/kalender" aria-current="page"', $home->body);
+
+        $calendar = $this->call('GET', '/kalender');
+        self::assertSame(200, $calendar->status);
+        self::assertStringContainsString('data-calendar', $calendar->body);
+        self::assertStringContainsString('data-views', $calendar->body);
+        self::assertStringContainsString('data-sources', $calendar->body);
+        self::assertStringContainsString('leitstand.js', $calendar->body);
+        self::assertStringContainsString('href="/kalender" aria-current="page"', $calendar->body);
+        self::assertStringNotContainsString('Schnell erfassen', $calendar->body);
+        self::assertStringNotContainsString('data-taskcard', $calendar->body);
 
         // Nach dem Login ist das CSRF-Token erneuert: das alte gilt nicht mehr.
         self::assertSame(403, $this->call('POST', '/logout', ['_csrf' => $token])->status);
