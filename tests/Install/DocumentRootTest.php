@@ -115,6 +115,7 @@ final class DocumentRootTest extends TestCase
         self::assertStringContainsString('vendor/.htaccess', $workflow);
         self::assertStringContainsString('storage/.htaccess', $workflow);
         self::assertStringContainsString('.zip.sha256', $workflow);
+        self::assertStringContainsString('GH_REPO: ${{ github.repository }}', $workflow);
         self::assertStringNotContainsString('actions/checkout@v', $workflow);
         self::assertStringNotContainsString('shivammathur/setup-php@v', $workflow);
     }

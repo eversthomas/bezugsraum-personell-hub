@@ -94,9 +94,10 @@ Ohne gültiges Token antwortet die Adresse mit 404. Mit gültigem Token und ohne
 
 ## Aktualisieren
 
-1. Neue Dateien hochladen, ohne `config/config.php`, `config/keys/` und `storage/`.
-2. Nach der Anmeldung zeigt die Anwendung nur noch „Datenbank aktualisieren“, solange Migrationen ausstehen. Der Hinweis erinnert an eine Sicherung. Der Knopf „Jetzt aktualisieren“ spielt die Änderungen ein. Abgemeldete Besucher sehen davon nichts und melden sich normal an. `php bin/migrate.php` bleibt der Weg auf der Kommandozeile. Migrationen laufen nur vorwärts.
-3. Der Service Worker prüft sich selbst. Den Browser-Cache muss man dafür nicht leeren.
+1. Vor jedem Update im KAS eine Sicherung der Datenbank anlegen. Erst danach Dateien hochladen oder die Datenbank aktualisieren.
+2. Neue Dateien hochladen, ohne `config/config.php`, `config/keys/` und `storage/`.
+3. Nach der Anmeldung zeigt die Anwendung nur noch „Datenbank aktualisieren“, solange Migrationen ausstehen. Der Hinweis erinnert an eine Sicherung. Der Knopf „Jetzt aktualisieren“ spielt die Änderungen ein. Abgemeldete Besucher sehen davon nichts und melden sich normal an. `php bin/migrate.php` bleibt der Weg auf der Kommandozeile. Migrationen laufen nur vorwärts.
+4. Der Service Worker prüft sich selbst. Den Browser-Cache muss man dafür nicht leeren.
 
 ## Sicherung
 

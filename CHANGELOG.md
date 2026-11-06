@@ -28,6 +28,7 @@
 ### Fixed
 
 - Das Release-ZIP entsteht nur nach grüner Qualitätsprüfung und nur bei einem Tag `v*`. Daneben liegt eine SHA-256-Datei. Die Anleitung nennt `config.php`, das Cron-Token in Server-Logs und die Prüfung vor Ort.
+- Der Release-Upload nennt das Repository, damit er ohne Checkout auskommt. Vor jedem Update gehört eine Datenbanksicherung im KAS dazu.
 - Falsche Einrichtungscodes zählen je IP. Ab dem fünften Versuch verzögert die Antwort, der Code bleibt. Ein neuer Code entsteht erst nach 15 Minuten. Der Abschluss hält eine Dateisperre und lässt eine vorhandene Konfiguration stehen. HEAD auf `/cron/{token}` startet keinen Lauf.
 - Passwortbestätigung und Passwortänderung zählen Fehlversuche wie die Anmeldung. Bei Sperre endet die Sitzung.
 - Eine fehlgeschlagene Migration nennt nur die Datei und bleibt auf der Seite „Datenbank aktualisieren“. Gleichzeitige Läufe warten auf eine Sperre.
