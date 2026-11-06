@@ -106,9 +106,17 @@ final class DocumentRootTest extends TestCase
         foreach (['.htaccess', 'config/.htaccess', 'storage/.htaccess', 'bin/.htaccess', 'migrations/.htaccess', 'src/.htaccess', 'templates/.htaccess'] as $path) {
             self::assertStringContainsString('Require all denied', (string) file_get_contents($root . '/' . $path), $path);
         }
-        $workflow = (string) file_get_contents($root . '/.github/workflows/release.yml');
+        self::assertFileDoesNotExist($root . '/.github/workflows/release.yml');
+        $workflow = (string) file_get_contents($root . '/.github/workflows/ci.yml');
+        self::assertStringContainsString('tags:', $workflow);
+        self::assertStringContainsString('- "v*"', $workflow);
+        self::assertStringContainsString('needs: quality', $workflow);
+        self::assertStringContainsString('contents: write', $workflow);
         self::assertStringContainsString('vendor/.htaccess', $workflow);
         self::assertStringContainsString('storage/.htaccess', $workflow);
+        self::assertStringContainsString('.zip.sha256', $workflow);
+        self::assertStringNotContainsString('actions/checkout@v', $workflow);
+        self::assertStringNotContainsString('shivammathur/setup-php@v', $workflow);
     }
 
     private function app(): InstallerApp

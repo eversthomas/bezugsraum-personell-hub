@@ -20,9 +20,9 @@ Das ZIP entsteht auf GitHub, ohne Terminal.
 1. In GitHub Desktop „View on GitHub“ öffnen. GitHub Desktop legt das Release nicht an.
 2. Auf der Projektseite Releases öffnen und ein neues Release anlegen.
 3. Den Tag neu vergeben, zum Beispiel `v0.1.0`, und das Release veröffentlichen.
-4. Der Workflow hängt danach `personal-hub-v0.1.0.zip` an dieses Release. Die Seite neu laden, sobald der Lauf fertig ist.
+4. Der Workflow hängt danach `personal-hub-v0.1.0.zip` und `personal-hub-v0.1.0.zip.sha256` an dieses Release. Er startet erst, wenn die Qualitätsprüfung für denselben Tag grün ist. Die Seite neu laden, sobald der Lauf fertig ist.
 
-Im ZIP liegen `vendor/`, `LICENSE`, `THIRD-PARTY-NOTICES.md` und leere Verzeichnisse `storage/logs`, `storage/cache`, `storage/sessions` und `storage/uploads`. Nicht darin liegen `docs/`, `README.md`, `CHANGELOG.md`, `.git`, `.github`, `.cursor`, `tests` und die Werkzeuge für Tests und Analyse. `config/config.php` und Schlüsseldateien fehlen ebenfalls.
+Im ZIP liegen `vendor/`, `LICENSE`, `THIRD-PARTY-NOTICES.md` und leere Verzeichnisse `storage/logs`, `storage/cache`, `storage/sessions` und `storage/uploads`. `LICENSE` liegt absichtlich dabei: sie nennt den Urheber, das gehört zur MIT-Lizenz. Nicht darin liegen `docs/`, `README.md`, `CHANGELOG.md`, `.git`, `.github`, `.cursor`, `tests` und die Werkzeuge für Tests und Analyse. `config/config.php` und Schlüsseldateien fehlen ebenfalls.
 
 ## Erstinstallation mit Installer
 
@@ -32,7 +32,7 @@ Im ZIP liegen `vendor/`, `LICENSE`, `THIRD-PARTY-NOTICES.md` und leere Verzeichn
 4. Den Code im Dateimanager des KAS oder per FTP aus dieser Datei lesen und im Formular eingeben. Ohne den Code entsteht keine Installation.
 5. Im Formular den Datenbankzugang eintragen und den Verbindungstest abwarten. Danach legt der Installer Konfiguration, Schlüssel, Tabellen, VAPID-Schlüssel und den ersten Benutzer an. Passwort mindestens 12 Zeichen. Den TOTP-QR-Code mit der Authenticator-App scannen oder das Geheimnis als Text abtippen.
 6. Den Cronjob einrichten, wie unter „Cron im KAS“ beschrieben. Der Installer zeigt die Adresse später selbst an.
-7. Der Installer legt `storage/install.lock` an und löscht `storage/install-code.txt` sowie `storage/install-attempts.txt`. Die Installer-Route antwortet danach mit 404, auch wenn die Sperrdatei später gelöscht wird, solange `config/config.php` existiert.
+7. Der Installer legt `storage/install.lock` an und löscht `storage/install-code.txt` sowie `storage/install-attempts.txt`. Die Installer-Route antwortet danach mit 404, auch wenn die Sperrdatei später gelöscht wird, solange `config/config.php` existiert. `config/config.php` nie löschen, wenn die Einrichtung bleiben soll. Fehlt die Datei, beginnt die Einrichtung von vorn.
 8. Anmelden, unter „Kalenderquellen“ die ICS-Links eintragen, unter „Benachrichtigungen“ das Gerät aktivieren.
 
 ## Prüfliste nach dem Einrichten
@@ -46,6 +46,19 @@ Im ZIP liegen `vendor/`, `LICENSE`, `THIRD-PARTY-NOTICES.md` und leere Verzeichn
 - Nach dem ersten Aufruf per HTTPS prüfen, ob das Sitzungscookie `ph_session` das Flag Secure trägt und der HSTS-Header gesendet wird. Fehlt beides, erkennt die App HTTPS nicht; dann `app.trust_proxy` auf true setzen und erneut prüfen. Apache sendet den HSTS-Header zusätzlich aus `public/.htaccess`. Fehlt nur das Secure-Flag, gilt derselbe Schritt.
 - Anmeldung auf dem Handy und am Desktop klappt. „Gerät merken“ funktioniert.
 - Kalenderquellen zeigen „Aktuell“ nach dem ersten Abruf. Ein bewusst kaputter Link zeigt einen Fehler, die alten Termine bleiben.
+
+## Vor Ort prüfen
+
+- Das Release-ZIP entpacken: keine `.env`, keine `.pem`, keine `.key`, keine Reste von `tests/`, keine `config.php`, und `docs/` fehlt. Die Größe ansehen.
+- Den ersten Workflow-Lauf ansehen: Tag, Audit-Schritt, hochgeladenes ZIP samt SHA-256-Datei, Berechtigungen.
+- Nach dem Einrichten `curl -I` auf eine statische Datei (Header) und den Cron-Aufruf mit Basic-Zugang prüfen.
+- Einen Cron-Lauf provozieren und im Protokoll prüfen, ob zuerst 401 und danach 200 kommt.
+- Nach der Einrichtung `config/config.php`, `config/keys/app.key` und `storage/cron-credentials.php` auf die Rechte 0600 prüfen.
+- In `storage/sessions/` nach einigen Tagen prüfen, ob alte Dateien verschwinden.
+- Nach dem ersten Aufruf prüfen, ob `Set-Cookie` das Flag `Secure` trägt und der HSTS-Header da ist. Sonst `app.trust_proxy` wie in der Prüfliste oben.
+- `https://<domain>/config/config.php`, `/storage/` und `/config/keys/app.key` mit `curl` abrufen. Erwartet ist 404.
+- `max_execution_time` gegen das Laufzeitbudget des Cron von etwa 50 Sekunden prüfen.
+- Den Verbindungstest des Installers mit dem Datenbankserver des Hosters machen: Host, Port und die Fehlermeldung.
 
 ## Ohne Installer
 
@@ -75,7 +88,7 @@ Der Cronjob ist der Taktgeber und ruft jede Minute eine HTTPS-Adresse auf. Adres
 php bin/create-cron-credentials.php
 ```
 
-Der Befehl zeigt Adresse, Benutzer und Passwort einmal und schreibt nur die Hashes nach `storage/cron-credentials.php` (Dateirechte 0600). `config/config.php` bleibt unverändert. Ein neuer Aufruf macht den bisherigen Zugang sofort ungültig. Dasselbe kann nach der Anmeldung unter „Sicherheit“ der Knopf „Cron-Zugang neu erzeugen“. Im KAS: jede Minute, Protokoll HTTPS, die ausgegebene Adresse (`/cron/{token}`), HTTP-Benutzer und HTTP-Passwort. Das E-Mail-Feld bleibt leer, sonst kommt jede Minute eine Mail. Stehen Datenbankänderungen aus, antwortet der Cron mit einem kurzen Hinweis und führt nichts aus.
+Der Befehl zeigt Adresse, Benutzer und Passwort einmal und schreibt nur die Hashes nach `storage/cron-credentials.php` (Dateirechte 0600). `config/config.php` bleibt unverändert. Ein neuer Aufruf macht den bisherigen Zugang sofort ungültig. Dasselbe kann nach der Anmeldung unter „Sicherheit“ der Knopf „Cron-Zugang neu erzeugen“. Im KAS: jede Minute, Protokoll HTTPS, die ausgegebene Adresse (`/cron/{token}`), HTTP-Benutzer und HTTP-Passwort. Das Token steht in der Adresse und damit in den Zugriffsprotokollen des Servers. Einen neuen Zugang gibt es unter „Sicherheit“. Das E-Mail-Feld bleibt leer, sonst kommt jede Minute eine Mail. Stehen Datenbankänderungen aus, antwortet der Cron mit einem kurzen Hinweis und führt nichts aus.
 
 Ohne gültiges Token antwortet die Adresse mit 404. Mit gültigem Token und ohne oder mit falschem HTTP-Zugang antwortet sie mit 401. Mit beidem läuft derselbe Ablauf wie `php bin/cron.php`.
 
