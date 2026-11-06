@@ -16,6 +16,7 @@
 .idea/
 .vscode/
 .phpunit.cache/
+/phpunit.xml
 .php-cs-fixer.cache
 /storage/sessions/*
 !/storage/sessions/.gitkeep

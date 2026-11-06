@@ -10,4 +10,15 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+    <!--
+        Lokale Kopie: phpunit.xml.dist nach phpunit.xml kopieren und diesen Block aktivieren.
+        phpunit.xml wird nicht versioniert. Hier keine echten Zugangsdaten eintragen.
+        <php>
+            <env name="PH_TEST_DB_HOST" value="localhost" force="true"/>
+            <env name="PH_TEST_DB_PORT" value="3306" force="true"/>
+            <env name="PH_TEST_DB_NAME" value="personal_hub_test" force="true"/>
+            <env name="PH_TEST_DB_USER" value="benutzer" force="true"/>
+            <env name="PH_TEST_DB_PASSWORD" value="passwort" force="true"/>
+        </php>
+    -->
 </phpunit>

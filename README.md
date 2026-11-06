@@ -40,7 +40,7 @@ php -S localhost:8080 -t public
 `bin/create-user.php` gibt den TOTP-Schlüssel und die `otpauth://`-URI aus. Beides in die Authenticator-App übernehmen.
 Der Schlüssel in `config/keys/app.key` muss mitgesichert werden: Ohne ihn sind verschlüsselte Daten (TOTP-Geheimnisse, später ICS-Links) verloren.
 
-Tests brauchen eine leere MariaDB-Datenbank (`personal_hub_test`, Zugang über `PH_TEST_DB_*`, Standard `ph`/`ph` auf 127.0.0.1). Ist sie nicht erreichbar, werden die Datenbanktests übersprungen.
+Tests brauchen eine leere MariaDB-Datenbank. Zugang und Anlage stehen in [docs/entwicklung.md](docs/entwicklung.md). Ist sie nicht erreichbar, werden die Datenbanktests übersprungen.
 
 `config/config.php` bleibt lokal und wird nicht versioniert. Abhängigkeiten werden für PHP 8.3 aufgelöst, auch wenn lokal eine neuere PHP-Version liegt.
 
