@@ -11,7 +11,7 @@ Kern: nur lesende Kalender-Gesamtansicht (ICS), Inbox, Aufgaben, Notizen, Push-E
 Gestaltung und Abläufe: siehe docs/prototyp/. Code daraus nicht übernehmen.
 
 ## Technik
-- PHP 8.3, strict_types, PSR-4 unter src/, kein Framework, kein ORM.
+- Code ab 8.3, getestet mit 8.3 und 8.5, strict_types, PSR-4 unter src/, kein Framework, kein ORM.
 - Datenbank nur über Core\Db (PDO, Prepared Statements). Nie SQL mit Strings zusammenbauen.
 - Frontend: Server-HTML aus templates/ + Vanilla-JS-Module. Kein Build-Schritt, kein npm, keine CDNs.
 - CSS nur über Tokens aus public/assets/css/tokens.css.
