@@ -74,6 +74,33 @@ final class ImageProcessorTest extends TestCase
         self::assertSame(1200, $result->height);
     }
 
+    public function testBicubicFailureFallsBackToBilinear(): void
+    {
+        $modes = [];
+        $processor = new ImageProcessor(function (\GdImage $image, int $width, int $height, int $mode) use (&$modes): \GdImage|false {
+            $modes[] = $mode;
+            if ($mode === IMG_BICUBIC) {
+                return false;
+            }
+
+            return imagescale($image, $width, $height, $mode);
+        });
+
+        $result = $processor->process($this->jpeg(3200, 2400));
+
+        self::assertSame([IMG_BICUBIC, IMG_BILINEAR_FIXED], $modes);
+        self::assertSame([1600, 1200], $this->dimensions($result->data));
+    }
+
+    public function testFailedScalingIsRejected(): void
+    {
+        $processor = new ImageProcessor(static fn (\GdImage $image, int $width, int $height, int $mode): false => false);
+
+        $this->expectException(ImageException::class);
+        $this->expectExceptionMessage('Das Bild konnte nicht verkleinert werden.');
+        $processor->process($this->jpeg(3200, 2400));
+    }
+
     public function testSmallImageIsNotUpscaled(): void
     {
         self::assertSame([320, 200], $this->dimensions((new ImageProcessor())->process($this->jpeg(320, 200))->data));

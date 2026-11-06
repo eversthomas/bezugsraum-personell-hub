@@ -17,6 +17,18 @@ final class ImageProcessor
 
     private const ALLOWED = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP, IMAGETYPE_GIF];
 
+    /** @var callable(\GdImage, int, int, int): (\GdImage|false) */
+    private $scale;
+
+    /**
+     * @param (callable(\GdImage, int, int, int): (\GdImage|false))|null $scale
+     *        Ersatz für imagescale(), nur für Tests. Parameter: Bild, Breite, Höhe, Modus.
+     */
+    public function __construct(?callable $scale = null)
+    {
+        $this->scale = $scale ?? $this->gdScale(...);
+    }
+
     /** @throws ImageException */
     public function process(string $binary): ProcessedImage
     {
@@ -65,9 +77,24 @@ final class ImageProcessor
             return $image;
         }
         $scale = self::MAX_SIDE / $longest;
-        $scaled = imagescale($image, max(1, (int) round($width * $scale)), max(1, (int) round($height * $scale)), IMG_BICUBIC);
+        $targetWidth = max(1, (int) round($width * $scale));
+        $targetHeight = max(1, (int) round($height * $scale));
 
-        return $scaled === false ? $image : $scaled;
+        // Manche GD-Builds liefern für IMG_BICUBIC false. Dann der einfachere Modus.
+        // Ein Fehlschlag darf nie das Original durchlassen: die Kante bliebe über 1600 px.
+        foreach ([IMG_BICUBIC, IMG_BILINEAR_FIXED] as $mode) {
+            $scaled = ($this->scale)($image, $targetWidth, $targetHeight, $mode);
+            if ($scaled instanceof \GdImage && max(imagesx($scaled), imagesy($scaled)) <= self::MAX_SIDE) {
+                return $scaled;
+            }
+        }
+
+        throw new ImageException('Das Bild konnte nicht verkleinert werden.');
+    }
+
+    private function gdScale(\GdImage $image, int $width, int $height, int $mode): \GdImage|false
+    {
+        return imagescale($image, $width, $height, $mode);
     }
 
     private function orient(\GdImage $image, int $orientation): \GdImage
