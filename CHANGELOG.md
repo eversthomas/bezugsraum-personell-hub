@@ -27,6 +27,7 @@
 
 ### Fixed
 
+- Die Tagesansicht zeigt den gewählten Tag. Blättern in den Wochenrastern setzt den Tag nicht mehr auf Montag.
 - Das Release-ZIP entsteht nur nach grüner Qualitätsprüfung und nur bei einem Tag `v*`. Daneben liegt eine SHA-256-Datei. Die Anleitung nennt `config.php`, das Cron-Token in Server-Logs und die Prüfung vor Ort.
 - Der Release-Upload nennt das Repository, damit er ohne Checkout auskommt. Vor jedem Update gehört eine Datenbanksicherung im KAS dazu.
 - Falsche Einrichtungscodes zählen je IP. Ab dem fünften Versuch verzögert die Antwort, der Code bleibt. Ein neuer Code entsteht erst nach 15 Minuten. Der Abschluss hält eine Dateisperre und lässt eine vorhandene Konfiguration stehen. HEAD auf `/cron/{token}` startet keinen Lauf.

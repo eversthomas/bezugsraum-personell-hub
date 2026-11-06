@@ -439,9 +439,9 @@ function render() {
     }
 }
 
+// Der Anker bleibt der gewählte Tag. Der Montag gilt nur für die Anzeige der Wochenraster.
 function shift(direction) {
-    const step = state.view === 'day' ? 1 : DAYS[state.view];
-    state.anchor = addDays(state.view === 'day' ? state.anchor : startOfWeek(state.anchor), direction * step);
+    state.anchor = addDays(state.anchor, direction * DAYS[state.view]);
     load();
 }
 
