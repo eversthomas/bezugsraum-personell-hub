@@ -19,6 +19,7 @@ final class InstallerApp
     public function __construct(
         private readonly string $root,
         private readonly ?Session $session = null,
+        private readonly ?DatabaseProbe $probe = null,
     ) {
     }
 
@@ -37,6 +38,8 @@ final class InstallerApp
             $session,
             new Csrf($session),
             new View($this->root . '/templates'),
+            new InstallDraft($session),
+            $this->probe ?? new DatabaseProbe(),
         );
 
         return SecurityHeaders::apply($controller->handle($request), $request->isHttps(false));

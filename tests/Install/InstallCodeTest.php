@@ -123,10 +123,13 @@ final class InstallCodeTest extends TestCase
         $posted = $app->handle(new Request('POST', '/einrichten/code', post: ['_csrf' => $token, 'code' => $stored]));
         self::assertSame(303, $posted->status);
 
-        $page = $app->handle(new Request('GET', '/einrichten'));
+        $page = $app->handle(new Request('GET', '/einrichten', server: ['HTTP_HOST' => 'hub.example.test', 'HTTPS' => 'on']));
         self::assertSame(200, $page->status);
         self::assertStringContainsString('Die Systemprüfung ist in Ordnung.', $page->body);
-        self::assertStringNotContainsString('/einrichten/datenbank', $page->body);
+        self::assertStringContainsString('/einrichten/datenbank', $page->body);
+        self::assertStringContainsString('value="Europe/Berlin"', $page->body);
+        self::assertStringContainsString('value="https://hub.example.test"', $page->body);
+        self::assertFileDoesNotExist($this->dir . '/config/config.php');
     }
 
     public function testFailedCheckOffersNoWayForward(): void
@@ -136,7 +139,15 @@ final class InstallCodeTest extends TestCase
         $code = $this->code();
         $code->ensure();
         $check = new SystemCheck($this->dir, 80200, static fn (string $extension): bool => !in_array($extension, ['sodium', 'gmp', 'bcmath'], true));
-        $controller = new InstallController($code, $check, $session, new Csrf($session), new View(dirname(__DIR__, 2) . '/templates'));
+        $controller = new InstallController(
+            $code,
+            $check,
+            $session,
+            new Csrf($session),
+            new View(dirname(__DIR__, 2) . '/templates'),
+            new \App\Install\InstallDraft($session),
+            new \App\Install\DatabaseProbe(),
+        );
 
         $response = $controller->handle(new Request('GET', '/einrichten'));
 
