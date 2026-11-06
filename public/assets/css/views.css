@@ -567,6 +567,23 @@ body.detail-open {
 .cal__col .ev {
     position: absolute;
     z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding-block: 0;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.cal__col .ev__time {
+    flex: none;
+}
+
+.cal__col .ev__title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .ev:hover {
