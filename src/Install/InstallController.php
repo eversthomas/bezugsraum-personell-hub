@@ -30,6 +30,7 @@ final class InstallController
         private readonly TotpQr $qr,
         private readonly string $root = '',
         private readonly DocumentRoot $documentRoot = new DocumentRoot(),
+        private readonly InstallTransport $transport = new InstallTransport(),
     ) {
     }
 
@@ -39,6 +40,9 @@ final class InstallController
             return $this->render('install/docroot', ['title' => 'Einrichten']);
         }
         $path = rtrim($request->path, '/') ?: '/';
+        if ($this->installerStep($request->method, $path) && !$this->transport->allows($request)) {
+            return $this->render('install/https', ['title' => 'Einrichten']);
+        }
         if ($request->method === 'POST' && $path === '/einrichten/code') {
             return $this->submitCode($request);
         }
@@ -99,6 +103,21 @@ final class InstallController
         $value = $request->server['DOCUMENT_ROOT'] ?? '';
 
         return is_string($value) ? $value : '';
+    }
+
+    private function installerStep(string $method, string $path): bool
+    {
+        if ($method === 'GET' && ($path === '/' || $path === '/einrichten')) {
+            return true;
+        }
+
+        return $method === 'POST' && in_array($path, [
+            '/einrichten/code',
+            '/einrichten/datenbank/testen',
+            '/einrichten/datenbank',
+            '/einrichten/benutzer',
+            '/einrichten/abschluss',
+        ], true);
     }
 
     /** @param list<string> $errors */
@@ -316,6 +335,8 @@ final class InstallController
             || isset($parts['pass'])
         ) {
             $errors[] = 'Die App-Adresse muss mit http:// oder https:// beginnen.';
+        } elseif (!InstallTransport::allowsHttpUrl($url)) {
+            $errors[] = 'Eine http-Adresse ist nur für localhost zulässig.';
         }
         if (!in_array($timezone, timezone_identifiers_list(), true)) {
             $errors[] = 'Die Zeitzone ist unbekannt.';
@@ -360,6 +381,7 @@ final class InstallController
         $result = $this->code->check($request->input('code'));
         if ($result === 'ok') {
             $this->session->set('install_unlocked', true);
+            $this->session->regenerate();
 
             return Response::redirect('/einrichten');
         }

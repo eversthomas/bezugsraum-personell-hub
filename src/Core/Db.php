@@ -16,7 +16,26 @@ final class Db
     {
     }
 
-    public static function connect(Config $config): self
+    /** @return array<int, int|bool> */
+    public static function options(?int $connectTimeoutSeconds = null): array
+    {
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+            PDO::ATTR_STRINGIFY_FETCHES => false,
+        ];
+        if ($connectTimeoutSeconds !== null) {
+            $options[PDO::ATTR_TIMEOUT] = $connectTimeoutSeconds;
+            if (defined('PDO::MYSQL_ATTR_CONNECT_TIMEOUT')) {
+                $options[(int) constant('PDO::MYSQL_ATTR_CONNECT_TIMEOUT')] = $connectTimeoutSeconds;
+            }
+        }
+
+        return $options;
+    }
+
+    public static function connect(Config $config, ?int $connectTimeoutSeconds = null): self
     {
         $dsn = sprintf(
             'mysql:host=%s;port=%d;dbname=%s;charset=%s',
@@ -25,12 +44,12 @@ final class Db
             $config->string('db.name'),
             $config->string('db.charset', 'utf8mb4'),
         );
-        $pdo = new PDO($dsn, $config->string('db.user'), $config->string('db.password'), [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-            PDO::ATTR_STRINGIFY_FETCHES => false,
-        ]);
+        $pdo = new PDO(
+            $dsn,
+            $config->string('db.user'),
+            $config->string('db.password'),
+            self::options($connectTimeoutSeconds),
+        );
         $pdo->exec("SET time_zone = '+00:00'");
 
         return new self($pdo);

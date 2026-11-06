@@ -12,6 +12,8 @@ use App\Core\Db;
  */
 final class DatabaseProbe
 {
+    public const CONNECT_TIMEOUT_SECONDS = 3;
+
     /** @var (callable(Config): bool)|null */
     private $connect;
 
@@ -35,7 +37,7 @@ final class DatabaseProbe
             if ($this->connect !== null) {
                 return ($this->connect)($config);
             }
-            Db::connect($config)->fetchValue('SELECT 1');
+            Db::connect($config, self::CONNECT_TIMEOUT_SECONDS)->fetchValue('SELECT 1');
 
             return true;
         } catch (\Throwable) {

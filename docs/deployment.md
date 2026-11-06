@@ -27,7 +27,7 @@ Im ZIP liegen `vendor/`, `LICENSE`, `THIRD-PARTY-NOTICES.md` und leere Verzeichn
 ## Erstinstallation mit Installer
 
 1. Das Release-ZIP aus dem GitHub-Release herunterladen. Es enthält `vendor/`. Es enthält keine `config/config.php`, keine Schlüssel und keinen Inhalt von `storage/`. Die Datei heißt `personal-hub-` plus der Tag, zum Beispiel `personal-hub-v0.1.0.zip`.
-2. Das Archiv entpacken und hochladen. Der Dokumentenstamm der Subdomain ist `public/`.
+2. Das Archiv entpacken und hochladen. Der Dokumentenstamm der Subdomain ist `public/`. Eine Antwort „403 Forbidden“ direkt nach dem Hochladen bedeutet meist ein falsches Domainziel. Das Ziel muss auf `public/` zeigen, weil die `.htaccess` im Projektordner alles sperrt.
 3. Die Subdomain im Browser öffnen. Der Installer schreibt einen Zufallscode nach `storage/install-code.txt`, außerhalb des Webroots.
 4. Den Code im Dateimanager des KAS oder per FTP aus dieser Datei lesen und im Formular eingeben. Ohne den Code entsteht keine Installation.
 5. Im Formular den Datenbankzugang eintragen und den Verbindungstest abwarten. Danach legt der Installer Konfiguration, Schlüssel, Tabellen, VAPID-Schlüssel und den ersten Benutzer an. Passwort mindestens 12 Zeichen. Den TOTP-QR-Code mit der Authenticator-App scannen oder das Geheimnis als Text abtippen.
